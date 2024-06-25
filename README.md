@@ -6,6 +6,8 @@
 
 슬라임으로 살아남기 서버.
 
+![slime](https://github.com/sellpiad/sas-server/assets/17512385/beb491f3-c5de-4ee0-b635-a14833ca195a)
+
 <h3>초기 버전 기능</h3>
 <li>플레이어 슬라임 추가</li>
 <li>인공지능 슬라임 자동 생성 및 플레이</li>
