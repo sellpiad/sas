@@ -1,0 +1,41 @@
+@keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes dominateAnimation {
+    0% {
+      background-color: transparent; 
+    }
+    100% {
+      background-color: brown;
+    }
+  }
+
+
+
+  .clickable {
+    animation: pulse 1s infinite;
+  }
+
+  .clickable :hover {
+    border-radius: 1rem;
+    background-color: brown;
+    box-shadow: 0px 0px 15px 2px;
+  }
+
+  .slime-Box {
+    border: solid #ffffff
+  }
+
+  .isDominating {
+    animation: dominateAnimation 5s ease-in-out forwards;
+  }
+  
