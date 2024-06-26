@@ -14,12 +14,14 @@
 - 플레이어 슬라임 추가
 - 인공지능 슬라임 자동 생성 및 플레이
 
-### 실행 환경
+### 제작 및 실행 환경
 - JAVA 21
 - Redis
 - Springboot 3.0
 - NodeJS 20.11.0
 - Javascript
+- Typescript
+- HTML
 - React
 
 ### 설치
