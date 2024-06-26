@@ -24,11 +24,11 @@
 
 ### 설치
 
-1. **클론** 레포지토리:
+1. **클론** 리포지토리:
 
     ```bash
-    git clone https://github.com/your-username/slime-survival-server.git
-    cd slime-survival-server
+    git clone https://github.com/sellpiad/sas.git
+    cd sas
     ```
 
 2. **의존성 설치**:
