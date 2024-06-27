@@ -46,6 +46,10 @@ public class GameController {
 
         String sessionId = simpMessageHeaderAccessor.getSessionId();
 
+        if(!gameService.isInGame(sessionId)){
+            return null;
+        }
+
         return gameService.updateMove(sessionId, keyDown);
     }
 

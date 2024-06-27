@@ -5,12 +5,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import com.sas.server.dto.Game.SlimeDTO;
 import com.sas.server.entity.GameEntity;
@@ -38,6 +44,8 @@ public class AIController {
 
     private final ObjectProvider<AISlime> aiSlimeProvider;
 
+    private final RedissonClient redisson;
+
     private Map<String, AISlime> slimeController = new HashMap<>();
 
     /**
@@ -46,14 +54,16 @@ public class AIController {
      * @param playerPercentage
      */
     @Transactional
-    public void placeRandomAI(double playerPercentage) {
+    public String placeRandomAI(double playerPercentage) {
 
-        log.info("Deploy Random AI!");
+        log.info("placeRandomAI");
 
         GameEntity game = gameService.findGame();
 
-        if (game == null)
-            return;
+        if (game == null) {
+            log.error("Game Entity not found At placeRandomAI");
+            return null;
+        }
 
         Map<String, String> cubeTable = game.cubeTable;
 
@@ -65,6 +75,7 @@ public class AIController {
         if (fraction > playerPercentage) {
 
             UserEntity ai = createAI();
+
             List<String> cubekeySet = cubeTable.entrySet()
                     .stream()
                     .filter(entry -> entry.getValue().equals("null"))
@@ -82,31 +93,32 @@ public class AIController {
             playerService.registerPlayer(ai, true, cubeNickname);
             gameService.addOnly(game, ai.sessionId, randCubeId);
 
-           
             UserEntity aiPlayer = userSerivce.findBySessionId(ai.sessionId);
 
-            SlimeDTO slime = SlimeDTO.builder()
-                    .playerId(aiPlayer.playerId)
-                    .attr(aiPlayer.attr)
-                    .direction("down")
-                    .position(cubeNickname)
-                    .build();
-                    
-            gameService.saveGame(game);
-
-            String msg = ai.nickname + "이 " + cubeNickname + "에서 플레이를 시작합니다.";
-
-            messagingTemplate.convertAndSend("/topic/game/addSlime", slime);
-            messagingTemplate.convertAndSend("/topic/game/chat", msg);
-
-            try {
-                slimeController.get(ai.sessionId).run(ai.sessionId, () -> {
-                    slimeController.remove(ai.sessionId);
-                });
-            } catch (Exception e) {
-                log.error(e.getMessage());
+            if (aiPlayer == null) {
+                log.error("aiPlayer doesn't exist!");
+                return null;
             }
 
+            gameService.saveGame(game);
+
+            CompletableFuture.runAsync(() -> {
+                runAI(ai.sessionId);
+            });
+
+            return ai.sessionId;
+        }
+
+        return null;
+    }
+
+    public void runAI(String sessionId) {
+        try {
+            slimeController.get(sessionId).run(sessionId, () -> {
+                slimeController.remove(sessionId);
+            });
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
 
     }
