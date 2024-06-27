@@ -2,6 +2,7 @@ package com.sas.server.service.player;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -23,6 +24,10 @@ public class PlayerService {
 
     @Transactional
     public void registerPlayer(UserEntity user, boolean ai, String startCubeNickname) {
+
+        Objects.requireNonNull(user,"UserEntity cannot be null");
+        Objects.requireNonNull(ai,"ai cannot be null");
+        Objects.requireNonNull(startCubeNickname,"start cube nickname cannot be null");
 
         Set<String> conqueredCubes = new HashSet<>();
 

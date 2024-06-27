@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Scope("prototype")
 @RequiredArgsConstructor
 @Slf4j
-public class AISlime implements Serializable{
+public class AISlime implements Serializable {
 
     private String sessionId;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
@@ -31,13 +31,13 @@ public class AISlime implements Serializable{
     private boolean movable;
     private Runnable remove;
 
-
     /**
      * 인공지능 슬라임이 자동으로 움직이도록 만든다. 콜백 함수는 해당 인공지능이 멈췄을 때 작동.
+     * 
      * @param sessionId
      * @param afterStop
      */
-    public void run(String sessionId,Runnable afterStop) {
+    public void run(String sessionId, Runnable afterStop) {
 
         this.sessionId = sessionId;
         this.remove = afterStop;
@@ -54,18 +54,21 @@ public class AISlime implements Serializable{
             scheduler.shutdown();
     }
 
-    private synchronized void moving() {
+    private void moving() {
 
-        if(!movable)
+        if (!movable){
             return;
+        }
 
-        MoveData moveData = gameService.updateMove(sessionId, randDirection());
-
-        if(moveData == null){
+        if (!gameService.isInGame(sessionId)) {
             stop();
             remove.run();
             return;
         }
+
+        log.info("moving");
+
+        MoveData moveData = gameService.updateMove(sessionId, randDirection());
 
         movable = false;
 
@@ -75,8 +78,6 @@ public class AISlime implements Serializable{
 
         simpMessagingTemplate.convertAndSend("/topic/game/move", moveData);
     }
-
-
 
     private String randDirection() {
 

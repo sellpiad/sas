@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -53,6 +54,10 @@ public class GameService {
 
     private static UUID GAME_ID;
 
+    public UUID getGameId(){
+        return GAME_ID;
+    }
+
     public GameEntity createGame(int initialSize, String title, int life, int voteTime) {
 
         GameEntity game = GameEntity.builder()
@@ -78,7 +83,25 @@ public class GameService {
     }
 
     public void saveGame(GameEntity game) {
-        gameRepo.save(game);
+       
+        try {
+            gameRepo.save(game);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+
+    }
+
+    public boolean isInGame(String sessionId) {
+
+        GameEntity game = findGame();
+
+        if (game.userTable.get(sessionId) == null) {
+            return false;
+        }
+
+        return true;
+
     }
 
     public void createCubeTable(List<CubeEntity> cubeSet) {
@@ -103,6 +126,10 @@ public class GameService {
      */
     public void addOnly(GameEntity game, String sessionId, String targetCubeId) {
 
+        Objects.requireNonNull(game, "GameEntity cannot be null");
+        Objects.requireNonNull(sessionId, "sessionId cannot be null");
+        Objects.requireNonNull(targetCubeId, "targetCubeId cannot be null");
+
         if (targetCubeId != null)
             game.cubeTable.put(targetCubeId, sessionId);
 
@@ -120,6 +147,9 @@ public class GameService {
      * @param sessionId
      */
     public void removeOnly(GameEntity game, String sessionId) {
+
+        Objects.requireNonNull(game, "GameEntity cannot be null");
+        Objects.requireNonNull(sessionId, "sessionId cannot be null");
 
         String currentCubeId = game.userTable.get(sessionId);
 
@@ -325,6 +355,10 @@ public class GameService {
 
         MoveData moveResult = processMove(game, sessionId, direction);
 
+        UserEntity user = userSerivce.findBySessionId(sessionId);
+
+        playerService.update(user.toBuilder().life(user.life+1).build());
+
         gameRepo.save(game);
 
         return moveResult;
@@ -334,16 +368,15 @@ public class GameService {
     private MoveData processMove(GameEntity game, String sessionId, String direction) {
 
         UserEntity player;
+        String departCubeId;
 
         try {
             player = userSerivce.findBySessionId(sessionId);
-        } catch (IllegalArgumentException e) {
+            departCubeId = game.userTable.get(sessionId);
+        } catch (Exception e) {
             log.error(e.getMessage());
             return null;
         }
-
-        String departCubeId = game.userTable.get(player.sessionId);
-
 
         // 이동 가능한지 판별
         CubeEntity arrivalCube = movementSystem.move(game, player, direction);
@@ -363,8 +396,12 @@ public class GameService {
 
         if (enemy == null) {
 
-            removeOnly(game, sessionId);
-            addOnly(game, sessionId, arrivalCube.id);
+            try {
+                removeOnly(game, sessionId);
+                addOnly(game, sessionId, arrivalCube.id);
+            } catch (NullPointerException e) {
+                log.error(e.getMessage());
+            }
 
             return MoveData.builder()
                     .playerId(player.playerId)
@@ -373,7 +410,6 @@ public class GameService {
                     .build();
         }
 
-
         // 적이 있다면 승패 유무 가리기
         try {
 
@@ -381,8 +417,6 @@ public class GameService {
 
             // 승리시
             if (battleSystem.attrJudgment(player.attr, enemy.attr)) {
-
-                log.info("{}가 사망함",enemy.sessionId);
 
                 removeOnly(game, sessionId);
                 addOnly(game, sessionId, arrivalCube.id);
@@ -396,8 +430,6 @@ public class GameService {
 
                 // 패배시
             } else {
-
-                log.info("{}가 사망함",player.sessionId);
 
                 removeOnly(game, sessionId);
                 userSerivce.deleteById(sessionId);
