@@ -4,6 +4,7 @@ import Slime from "../slime/Slime.tsx";
 import { Client } from "@stomp/stompjs";
 import { useDispatch } from "react-redux";
 import { updateAttr } from "../redux/userSlice.tsx";
+import './CreateModal.css'
 
 interface Props {
     client: Client | undefined
@@ -54,12 +55,12 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
 
 
     return (
-        <Modal show={show} onHide={onHide} centered>
+        <Modal show={show} onHide={onHide} size="sm" centered>
             <ModalBody>
                 <Carousel controls={true} onSelect={(eventKey) => setSlime(eventKey)}>
                     <Carousel.Item>
                         <div style={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-                            <Slime move="down" fill="GRASS" isAbsolute={false} position={undefined}></Slime>
+                            <Slime move="down" fill="GRASS" width="5vw" height="5vh" isAbsolute={false} position={undefined}></Slime>
                             <div style={{ textAlign: "center" }}>
                                 <strong>속성 - 풀</strong>
                                 <p></p>
@@ -71,7 +72,7 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
                     </Carousel.Item>
                     <Carousel.Item>
                         <div style={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-                            <Slime move="down"  fill="FIRE" isAbsolute={false}></Slime>
+                            <Slime move="down"  fill="FIRE" width="5vw" height="5vh" isAbsolute={false}></Slime>
                             <div style={{ textAlign: "center" }}>
                                 <strong>속성 - 불</strong>
                                 <p></p>
@@ -83,7 +84,7 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
                     </Carousel.Item>
                     <Carousel.Item>
                         <div style={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-                            <Slime move="down" fill="WATER" isAbsolute={false}></Slime>
+                            <Slime move="down" fill="WATER" width="5vw" height="5vh" isAbsolute={false}></Slime>
                             <div style={{ textAlign: "center" }}>
                                 <strong>속성 - 물</strong>
                                 <p></p>
@@ -105,7 +106,7 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
                         onChange={(e) => setNickname(e.target.value)}
                     />
                     <Button style={{ backgroundColor: btnColor }} onClick={btnHanlder} variant="outline-secondary">
-                        {btnText} 슬라임으로 전생
+                        전생
                     </Button>
                 </InputGroup>
             </ModalBody>
