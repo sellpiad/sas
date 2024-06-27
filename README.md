@@ -48,8 +48,16 @@
 
     Maven을 사용하여 의존성을 설치합니다.
 
+   Windows
+
     ```bash
-    mvn clean install
+    mvnw.cmd clean install
+    ```
+
+    Linux
+
+    ```bash
+    mvnw clean install 
     ```
 
 3. **Redis 설정**:
@@ -60,12 +68,21 @@
     spring.redis.host=localhost
     spring.redis.port=6379
     ```
-4. **클라이언트 설정**
+4. **클라이언트 설정 및 시작**
 
    ```
    cd client
    npm i
+   npm start
    ```
+5. **서버 구동**
+
+   ```bash
+   cd target
+   java -jar server-0.0.1-SNAPSHOT.jar
+   ```
+
+   혹은 그냥 Run 클릭.
 
 
 
