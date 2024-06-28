@@ -2,7 +2,7 @@ import { Client, IMessage } from "@stomp/stompjs";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/store.tsx";
-import { updatePlayerId } from "../redux/userSlice.tsx";
+import { updatePlayerId, updatePosition } from "../redux/userSlice.tsx";
 import Slime from "../slime/Slime.tsx";
 import { updateCubeNickname } from "../redux/cubeSlice.tsx";
 
@@ -85,13 +85,11 @@ export default function SlimeField({ client }: Props) {
                 })
             })
 
-            client.subscribe("/topic/game/chat", (msg:IMessage) => {
-                console.log(msg.body)
+            client.subscribe("/topic/game/chat", (msg: IMessage) => {
+
             })
 
             client.subscribe("/topic/game/deleteSlime", (msg: IMessage) => {
-
-                console.log(msg.body + " 가 삭제됨")
 
                 setSlimes(prevSlimes => {
                     const slimeSet = new Map(prevSlimes)
@@ -113,8 +111,13 @@ export default function SlimeField({ client }: Props) {
             })
 
             client.subscribe("/user/queue/player/ingame", (msg: IMessage) => {
-                dispatch(updatePlayerId({ playerId: msg.body }))
+                dispatch(updatePlayerId({ playerId: JSON.parse(msg.body) }))
             })
+
+            client.subscribe("/user/queue/player/initialPosition", (msg: IMessage) => {
+                dispatch(updatePosition({ position: msg.body }))
+            })
+
 
             client.subscribe("/user/queue/player/movable", (msg: IMessage) => {
                 setMovable(JSON.parse(msg.body))
@@ -145,16 +148,24 @@ export default function SlimeField({ client }: Props) {
 
     useEffect(() => {
 
-        if (slimes) {
-           
+        if (playerId) {
+            //
         }
 
-    }, [slimes])
+    }, [playerId])
+
+
+
 
 
     useEffect(() => {
 
         if (move) {
+
+            if (playerId == move.playerId) {
+                dispatch(updatePosition({ position: move.position }))
+            }
+
             setSlimes(prevSlimes => {
                 const slime = prevSlimes.get(move.playerId)
 

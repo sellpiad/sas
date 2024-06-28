@@ -8,7 +8,8 @@ const initialState = {
     playerId: null,
     selectedKey: '',
     attr: '',
-    isDominating: false
+    isDominating: false,
+    position: ''
 }
 
 export const user = createSlice({
@@ -35,6 +36,9 @@ export const user = createSlice({
         },
         updateIsDominating(state,action){
             state.isDominating = action.payload.isDominating
+        },
+        updatePosition(state,action){
+            state.position = action.payload.position
         }
     },
     extraReducers: builder => {
@@ -42,7 +46,7 @@ export const user = createSlice({
     }
 })
 
-export const { changeUserName, changeLogin, changeToken, updatePlayerId, updateSelectedKey, updateAttr, updateIsDominating } = user.actions
+export const { changeUserName, changeLogin, changeToken, updatePlayerId, updateSelectedKey, updateAttr, updateIsDominating,updatePosition } = user.actions
 
 export default user.reducer
 
