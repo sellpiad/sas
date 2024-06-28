@@ -25,15 +25,15 @@ public class PlayerService {
     @Transactional
     public void registerPlayer(UserEntity user, boolean ai, String startCubeNickname) {
 
-        Objects.requireNonNull(user,"UserEntity cannot be null");
-        Objects.requireNonNull(ai,"ai cannot be null");
-        Objects.requireNonNull(startCubeNickname,"start cube nickname cannot be null");
-
-        Set<String> conqueredCubes = new HashSet<>();
-
-        conqueredCubes.add(startCubeNickname);
+        Objects.requireNonNull(user, "UserEntity cannot be null");
+        Objects.requireNonNull(ai, "ai cannot be null");
+        Objects.requireNonNull(startCubeNickname, "start cube nickname cannot be null");
 
         try {
+            Set<String> conqueredCubes = new HashSet<>();
+
+            conqueredCubes.add(startCubeNickname);
+
             repo.save(user.toBuilder()
                     .state("PLAYER")
                     .playerId(UUID.randomUUID())

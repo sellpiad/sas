@@ -134,13 +134,17 @@ public class GameService {
         Objects.requireNonNull(sessionId, "sessionId cannot be null");
         Objects.requireNonNull(targetCubeId, "targetCubeId cannot be null");
 
-        if (targetCubeId != null)
-            game.cubeTable.put(targetCubeId, sessionId);
+        try {
+            if (targetCubeId != null)
+                game.cubeTable.put(targetCubeId, sessionId);
 
-        if (game.userTable == null)
-            game.userTable = new HashMap<>();
+            if (game.userTable == null)
+                game.userTable = new HashMap<>();
 
-        game.userTable.put(sessionId, targetCubeId);
+            game.userTable.put(sessionId, targetCubeId);
+        } catch (Exception e) {
+            log.info("[addOnly] {}" + e.getMessage());
+        }
 
     }
 
@@ -357,7 +361,7 @@ public class GameService {
         String lockKey = "lock:game";
 
         try {
-            Boolean acquired = redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 10, TimeUnit.SECONDS);
+            Boolean acquired = redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 1, TimeUnit.SECONDS);
             if (acquired != null && acquired) {
 
                 GameEntity game = gameRepo.findById(GAME_ID)
@@ -365,15 +369,13 @@ public class GameService {
 
                 MoveData moveResult = processMove(game, sessionId, direction);
 
-                UserEntity user = userSerivce.findBySessionId(sessionId);
-
-                playerService.update(user.toBuilder().life(user.life + 1).build());
-
                 gameRepo.save(game);
 
                 return moveResult;
 
             }
+        } catch (Exception e) {
+            log.error("{}",e.getMessage());
         } finally {
             redisTemplate.delete(lockKey);
         }
@@ -414,9 +416,11 @@ public class GameService {
         if (enemy == null) {
 
             try {
+
                 removeOnly(game, sessionId);
+
                 addOnly(game, sessionId, arrivalCube.id);
-            } catch (NullPointerException e) {
+            } catch (Exception e) {
                 log.error(e.getMessage());
             }
 
@@ -482,7 +486,7 @@ public class GameService {
      * @param targetCube
      * @return 적이 있다면 UserEntity를 반환. 없다면 Null을 반환.
      */
-    private UserEntity searchEnemy(GameEntity game, String targetCube) {
+    private UserEntity searchEnemy(GameEntity game, String targetCube) throws ClassCastException, NullPointerException {
 
         Map<String, String> cubeTable = game.cubeTable;
 

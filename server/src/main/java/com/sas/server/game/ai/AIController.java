@@ -1,5 +1,6 @@
 package com.sas.server.game.ai;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,12 +54,10 @@ public class AIController {
     @Transactional
     public String placeRandomAI(double playerPercentage) {
 
-        log.info("placeRandomAI");
-
         String lockKey = "lock:game";
 
         try {
-            Boolean acquired = redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 10, TimeUnit.SECONDS);
+            Boolean acquired = redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 1, TimeUnit.SECONDS);
             if (acquired != null && acquired) {
 
                 GameEntity game = gameService.findGame();
@@ -76,6 +75,8 @@ public class AIController {
                 double fraction = (double) totalNull / totalCube;
 
                 if (fraction > playerPercentage) {
+
+                    log.info("placeRandomAI");
 
                     UserEntity ai = createAI();
 
@@ -112,6 +113,8 @@ public class AIController {
                     return ai.sessionId;
                 }
             }
+        } catch (Exception e) {
+            log.error("[placeRandomAI] {}",e.getMessage());
         } finally {
             redisTemplate.delete(lockKey);
         }
@@ -135,6 +138,7 @@ public class AIController {
 
         UserEntity ai = UserEntity.builder()
                 .sessionId(UUID.randomUUID().toString())
+                .createdTime(LocalDateTime.now())
                 .ai(true)
                 .nickname(randNickname())
                 .attr(getRandAttr())

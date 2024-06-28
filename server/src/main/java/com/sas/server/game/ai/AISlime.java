@@ -7,6 +7,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.context.annotation.Scope;
+import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
@@ -56,17 +57,16 @@ public class AISlime implements Serializable {
 
     private void moving() {
 
-        if (!movable){
+        if (!movable) {
             return;
         }
 
         if (!gameService.isInGame(sessionId)) {
+            log.info("{} 아웃", sessionId);
             stop();
             remove.run();
             return;
         }
-
-        log.info("moving");
 
         MoveData moveData = gameService.updateMove(sessionId, randDirection());
 
@@ -76,7 +76,10 @@ public class AISlime implements Serializable {
             this.movable = true;
         }, 500, TimeUnit.MILLISECONDS);
 
-        simpMessagingTemplate.convertAndSend("/topic/game/move", moveData);
+        if(moveData != null)
+            simpMessagingTemplate.convertAndSend("/topic/game/move", moveData);
+
+
     }
 
     private String randDirection() {
