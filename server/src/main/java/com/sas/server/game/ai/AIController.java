@@ -9,16 +9,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
-import com.sas.server.dto.Game.SlimeDTO;
 import com.sas.server.entity.GameEntity;
 import com.sas.server.entity.UserEntity;
 import com.sas.server.service.cube.CubeService;
@@ -44,7 +41,7 @@ public class AIController {
 
     private final ObjectProvider<AISlime> aiSlimeProvider;
 
-    private final RedissonClient redisson;
+    private final StringRedisTemplate redisTemplate;
 
     private Map<String, AISlime> slimeController = new HashMap<>();
 
@@ -58,58 +55,69 @@ public class AIController {
 
         log.info("placeRandomAI");
 
-        GameEntity game = gameService.findGame();
+        String lockKey = "lock:game";
 
-        if (game == null) {
-            log.error("Game Entity not found At placeRandomAI");
-            return null;
-        }
+        try {
+            Boolean acquired = redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 10, TimeUnit.SECONDS);
+            if (acquired != null && acquired) {
 
-        Map<String, String> cubeTable = game.cubeTable;
+                GameEntity game = gameService.findGame();
 
-        long totalNull = cubeTable.values().stream().filter(value -> value.equals("null")).count();
-        int totalCube = cubeTable.size();
+                if (game == null) {
+                    log.error("Game Entity not found At placeRandomAI");
+                    return null;
+                }
 
-        double fraction = (double) totalNull / totalCube;
+                Map<String, String> cubeTable = game.cubeTable;
 
-        if (fraction > playerPercentage) {
+                long totalNull = cubeTable.values().stream().filter(value -> value.equals("null")).count();
+                int totalCube = cubeTable.size();
 
-            UserEntity ai = createAI();
+                double fraction = (double) totalNull / totalCube;
 
-            List<String> cubekeySet = cubeTable.entrySet()
-                    .stream()
-                    .filter(entry -> entry.getValue().equals("null"))
-                    .map(Map.Entry::getKey)
-                    .collect(Collectors.toList());
+                if (fraction > playerPercentage) {
 
-            if (cubekeySet.isEmpty()) {
-                throw new IllegalArgumentException("There's no cube with null");
+                    UserEntity ai = createAI();
+
+                    List<String> cubekeySet = cubeTable.entrySet()
+                            .stream()
+                            .filter(entry -> entry.getValue().equals("null"))
+                            .map(Map.Entry::getKey)
+                            .collect(Collectors.toList());
+
+                    if (cubekeySet.isEmpty()) {
+                        throw new IllegalArgumentException("There's no cube with null");
+                    }
+
+                    String randCubeId = cubekeySet.get(new Random().nextInt(cubekeySet.size()));
+
+                    String cubeNickname = cubeService.getCubeNickname(randCubeId);
+
+                    playerService.registerPlayer(ai, true, cubeNickname);
+                    gameService.addOnly(game, ai.sessionId, randCubeId);
+
+                    UserEntity aiPlayer = userSerivce.findBySessionId(ai.sessionId);
+
+                    if (aiPlayer == null) {
+                        log.error("aiPlayer doesn't exist!");
+                        return null;
+                    }
+
+                    gameService.saveGame(game);
+
+                    CompletableFuture.runAsync(() -> {
+                        runAI(ai.sessionId);
+                    });
+
+                    return ai.sessionId;
+                }
             }
-
-            String randCubeId = cubekeySet.get(new Random().nextInt(cubekeySet.size()));
-
-            String cubeNickname = cubeService.getCubeNickname(randCubeId);
-
-            playerService.registerPlayer(ai, true, cubeNickname);
-            gameService.addOnly(game, ai.sessionId, randCubeId);
-
-            UserEntity aiPlayer = userSerivce.findBySessionId(ai.sessionId);
-
-            if (aiPlayer == null) {
-                log.error("aiPlayer doesn't exist!");
-                return null;
-            }
-
-            gameService.saveGame(game);
-
-            CompletableFuture.runAsync(() -> {
-                runAI(ai.sessionId);
-            });
-
-            return ai.sessionId;
+        } finally {
+            redisTemplate.delete(lockKey);
         }
 
         return null;
+
     }
 
     public void runAI(String sessionId) {

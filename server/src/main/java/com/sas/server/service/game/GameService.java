@@ -10,7 +10,9 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,9 +54,11 @@ public class GameService {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private ScheduledFuture<?> scheduledFuture;
 
+    private final StringRedisTemplate redisTemplate;
+
     private static UUID GAME_ID;
 
-    public UUID getGameId(){
+    public UUID getGameId() {
         return GAME_ID;
     }
 
@@ -83,7 +87,7 @@ public class GameService {
     }
 
     public void saveGame(GameEntity game) {
-       
+
         try {
             gameRepo.save(game);
         } catch (Exception e) {
@@ -350,18 +354,31 @@ public class GameService {
     @Transactional
     public MoveData updateMove(String sessionId, String direction) {
 
-        GameEntity game = gameRepo.findById(GAME_ID)
-                .orElseThrow(() -> new IllegalArgumentException("[updateMove] Game Entity not found with id"));
+        String lockKey = "lock:game";
 
-        MoveData moveResult = processMove(game, sessionId, direction);
+        try {
+            Boolean acquired = redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 10, TimeUnit.SECONDS);
+            if (acquired != null && acquired) {
 
-        UserEntity user = userSerivce.findBySessionId(sessionId);
+                GameEntity game = gameRepo.findById(GAME_ID)
+                        .orElseThrow(() -> new IllegalArgumentException("[updateMove] Game Entity not found with id"));
 
-        playerService.update(user.toBuilder().life(user.life+1).build());
+                MoveData moveResult = processMove(game, sessionId, direction);
 
-        gameRepo.save(game);
+                UserEntity user = userSerivce.findBySessionId(sessionId);
 
-        return moveResult;
+                playerService.update(user.toBuilder().life(user.life + 1).build());
+
+                gameRepo.save(game);
+
+                return moveResult;
+
+            }
+        } finally {
+            redisTemplate.delete(lockKey);
+        }
+
+        return null;
 
     }
 
