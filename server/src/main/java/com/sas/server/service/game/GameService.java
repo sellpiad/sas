@@ -321,20 +321,26 @@ public class GameService {
 
                             gameRepo.save(game);
 
-                            simpMessagingTemplate.convertAndSendToUser(userInQueue.sessionId, "/queue/cube/clickable",
-                                    clickable,
-                                    msgBroker.createHeaders(userInQueue.sessionId));
+                            try {
+                                simpMessagingTemplate.convertAndSendToUser(userInQueue.sessionId,
+                                        "/queue/cube/clickable",
+                                        clickable,
+                                        msgBroker.createHeaders(userInQueue.sessionId));
 
-                            simpMessagingTemplate.convertAndSendToUser(userInQueue.sessionId,
-                                    "/queue/cube/conqueredCubes",
-                                    conqueredCubes,
-                                    msgBroker.createHeaders(userInQueue.sessionId));
+                                simpMessagingTemplate.convertAndSendToUser(userInQueue.sessionId,
+                                        "/queue/player/initialPosition",
+                                        position,
+                                        msgBroker.createHeaders(userInQueue.sessionId));
 
-                            simpMessagingTemplate.convertAndSendToUser(userInQueue.sessionId, "/queue/player/ingame",
-                                    player.playerId,
-                                    msgBroker.createHeaders(userInQueue.sessionId));
+                                simpMessagingTemplate.convertAndSendToUser(userInQueue.sessionId,
+                                        "/queue/player/ingame",
+                                        player.playerId,
+                                        msgBroker.createHeaders(userInQueue.sessionId));
 
-                            simpMessagingTemplate.convertAndSend("/topic/game/addSlime", slime);
+                                simpMessagingTemplate.convertAndSend("/topic/game/addSlime", slime);
+                            } catch (Exception e) {
+                                log.error("{}", e.getMessage());
+                            }
 
                             log.info("scan queue and joining new player");
                         } else {
@@ -375,7 +381,7 @@ public class GameService {
 
             }
         } catch (Exception e) {
-            log.error("{}",e.getMessage());
+            log.error("{}", e.getMessage());
         } finally {
             redisTemplate.delete(lockKey);
         }
@@ -416,9 +422,7 @@ public class GameService {
         if (enemy == null) {
 
             try {
-
                 removeOnly(game, sessionId);
-
                 addOnly(game, sessionId, arrivalCube.id);
             } catch (Exception e) {
                 log.error(e.getMessage());

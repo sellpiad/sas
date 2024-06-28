@@ -8,6 +8,7 @@ import Slime from "../slime/Slime.tsx";
 import { cube, updateRenderingState, updateSize } from "../redux/cubeSlice.tsx";
 import { updateIsDominating, updatePlayerId } from "../redux/userSlice.tsx";
 import { boxResize, changeGameSize } from "../redux/gameSlice.tsx";
+import { Root } from "react-dom/client";
 
 interface Props {
     client: Client | undefined;
@@ -31,6 +32,7 @@ export default function CubeSet({ client }: Props) {
     const width = useSelector((state:RootState) => state.game.width)
     const size = useSelector((state:RootState) => state.game.size)
     const boxSize = useSelector((state:RootState) => state.game.boxSize)
+    const playerPos = useSelector((state:RootState) => state.user.position)
 
 
     const isConquered = (cubeNickname: string) => {
@@ -38,7 +40,7 @@ export default function CubeSet({ client }: Props) {
     }
 
     const isClickable = (cubeNickname: string) => {
-        return clickable.has(cubeNickname)
+        return playerPos === cubeNickname ? true : false
     }
 
     const isDominating = (cubeNickname: string) => {
@@ -78,7 +80,7 @@ export default function CubeSet({ client }: Props) {
             })
 
             client.subscribe("/user/queue/cube/conqueredCubes", (msg: IMessage) => {
-                setConqueredCubes(new Set<string>(JSON.parse(msg.body)))
+                //setConqueredCubes(new Set<string>(JSON.parse(msg.body)))
             })
 
             client.subscribe("/user/queue/cube/clickable", (msg: IMessage) => {

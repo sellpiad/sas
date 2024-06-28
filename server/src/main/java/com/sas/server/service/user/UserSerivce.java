@@ -36,12 +36,19 @@ public class UserSerivce {
     @Transactional
     public void deleteById(String sessionId) {
 
-        try{
-            userRepo.deleteById(sessionId);
-        } catch(IllegalArgumentException e){
-            log.error(e.getMessage());
-        } 
-        
+        UserEntity user = findBySessionId(sessionId);
+
+        try {
+            if (user.ai == true) {
+                userRepo.deleteById(sessionId);
+            } else {
+                user.state = "GUEST";
+                userRepo.save(user);
+            }
+        } catch (Exception e) {
+            log.error("{}", e.getMessage());
+        }
+
     }
 
     /**

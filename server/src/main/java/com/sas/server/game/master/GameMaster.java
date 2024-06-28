@@ -48,7 +48,7 @@ public class GameMaster {
 
         setting();
 
-        aiDeploymentRun(0, 500, TimeUnit.MILLISECONDS, 0.8);
+        aiDeploymentRun(0, 500, TimeUnit.MILLISECONDS, 0.9);
         queueRun(0, 1000, TimeUnit.MILLISECONDS);
     }
 
