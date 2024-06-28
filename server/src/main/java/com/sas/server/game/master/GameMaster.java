@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
@@ -47,7 +48,7 @@ public class GameMaster {
 
         setting();
 
-        aiDeploymentRun(0, 500, TimeUnit.MILLISECONDS, 0.7);
+        aiDeploymentRun(0, 500, TimeUnit.MILLISECONDS, 0.8);
         queueRun(0, 1000, TimeUnit.MILLISECONDS);
     }
 
@@ -74,25 +75,37 @@ public class GameMaster {
 
             String sessionId = aiController.placeRandomAI(percentage);
 
-            UserEntity ai = userSerivce.findBySessionId(sessionId);
+            try {
 
-            if (gameService.isInGame(sessionId)) {
-                SlimeDTO slime = SlimeDTO.builder()
-                        .playerId(ai.playerId)
-                        .attr(ai.attr)
-                        .direction("down")
-                        .position(ai.conqueredCubes.iterator().next())
-                        .build();
+                if(sessionId == null)
+                    return ;
 
-                String msg = slime.playerId + "가 플레이를 시작합니다.";
+                UserEntity ai = userSerivce.findBySessionId(sessionId);
 
-                messagingTemplate.convertAndSend("/topic/game/addSlime", slime);
-                messagingTemplate.convertAndSend("/topic/game/chat", msg);
+                if (gameService.isInGame(sessionId)) {
+                    SlimeDTO slime = SlimeDTO.builder()
+                            .playerId(ai.playerId)
+                            .attr(ai.attr)
+                            .direction("down")
+                            .position(ai.conqueredCubes.iterator().next())
+                            .build();
+
+                    String msg = slime.playerId + "가 플레이를 시작합니다.";
+
+
+                    try{
+                        messagingTemplate.convertAndSend("/topic/game/addSlime", slime);
+                        messagingTemplate.convertAndSend("/topic/game/chat", msg);
+                    } catch(MessagingException e){
+                        log.error("[aiDeploymentRun] {}",e.getMessage());
+                    }
+                  
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage());
             }
 
-        },
-                initialDelay, period,
-                unit);
+        }, initialDelay, period, unit);
     }
 
     private void aiDeploymentStop() {

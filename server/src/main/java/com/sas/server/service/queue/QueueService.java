@@ -1,5 +1,6 @@
 package com.sas.server.service.queue;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class QueueService {
 
         userRepo.save(user.toBuilder()
                 .nickname(nickName)
+                .createdTime(LocalDateTime.now())
                 .attr(attr)
                 .state("INQUEUE")
                 .build());
