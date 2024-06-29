@@ -124,7 +124,7 @@ function App() {
 
       </Navbar>
       <Container>
-        <Row className='g-2'>
+        <Row>
           {
             isConn &&
             <>

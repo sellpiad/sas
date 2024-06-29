@@ -46,7 +46,7 @@ public class MovementSystem {
             }
 
         } catch (NoSuchElementException | NullPointerException e) {
-            log.error(e.getMessage());
+            log.error("[move] {}",e.getMessage());
             return null;
         }
     }
