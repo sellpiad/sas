@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.esotericsoftware.kryo.util.Null;
 import com.sas.server.entity.UserEntity;
 import com.sas.server.repository.UserRepository;
 
@@ -55,6 +56,23 @@ public class PlayerService {
         repo.findById(user.sessionId).orElseThrow(() -> new IllegalArgumentException("There's no matched user"));
 
         repo.save(user);
+    }
+
+    /**
+     * 유저의 킬 횟수 증가
+     * 
+     * @param sessionId
+     * @return 갱신한 유저 객체 리턴
+     */
+    public UserEntity addKillCount(String sessionId) throws NullPointerException {
+        UserEntity user = repo.findById(sessionId)
+                .orElseThrow(() -> new NullPointerException("There's no matched user"));
+
+        user.toBuilder().kill(user.kill++).build();
+
+        repo.save(user);
+
+        return user;
     }
 
     public List<UserEntity> findAll() {

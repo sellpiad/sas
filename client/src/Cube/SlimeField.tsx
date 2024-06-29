@@ -98,6 +98,8 @@ export default function SlimeField({ client }: Props) {
 
                     return slimeSet
                 })
+                
+                dispatch(updatePosition({position:''}))
 
             })
 

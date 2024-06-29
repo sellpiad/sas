@@ -77,8 +77,6 @@ public class UserSerivce {
         for (UserEntity conqueror : conquerorList) {
             dataList.add(RankerDTO.builder()
                     .nickname(conqueror.nickname)
-                    .life(conqueror.life)
-                    .conqueredTime(conqueror.conqueredTime)
                     .build());
         }
 

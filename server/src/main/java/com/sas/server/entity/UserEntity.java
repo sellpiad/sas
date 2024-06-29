@@ -36,5 +36,6 @@ public class UserEntity {
     public Set<String> conqueredCubes;
     public String direction;
     public LocalDateTime conqueredTime;
+    public int kill;
 
 }

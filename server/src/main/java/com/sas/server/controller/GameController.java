@@ -57,7 +57,7 @@ public class GameController {
     @SendToUser("/queue/game/ranker")
     public List<RankerDTO> getRankerList() {
 
-        return rankerService.findAll();
+        return null;
     }
 
     @EventListener

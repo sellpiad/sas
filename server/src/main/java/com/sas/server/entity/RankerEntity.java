@@ -19,10 +19,7 @@ public class RankerEntity {
     @Nonnull
     public String nickname;
 
-    @Nonnull
-    public int life;
-
-    @Nonnull
-    public LocalDateTime conqueredTime;
+    public int kill;    
+    public String attr;
 
 }

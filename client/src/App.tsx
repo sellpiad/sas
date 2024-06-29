@@ -1,17 +1,16 @@
 import { Client, IMessage } from '@stomp/stompjs';
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, Col, Container, Navbar, Row, Stack } from 'react-bootstrap';
+import { Button, Col, Container, Navbar, Row } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import SockJS from 'sockjs-client';
 import './App.css';
-import Intro from './introduction/Intro.tsx';
-import PlayBody from './playboard/PlayBody.tsx';
-import { RootState } from './redux/store.tsx';
 import CreateModal from './createModal/CreateModal.tsx';
-import Chat from './Chat/Chat.tsx';
-import Slime from './slime/Slime.tsx';
+import PlayBody from './playboard/PlayBody.tsx';
 import { resize } from './redux/gameSlice.tsx';
+import { RootState } from './redux/store.tsx';
 import { changeLogin } from './redux/userSlice.tsx';
+import Slime from './slime/Slime.tsx';
+import RankingBoard from './Ranker/RankingBoard.tsx';
 
 function App() {
 
@@ -128,8 +127,11 @@ function App() {
           {
             isConn &&
             <>
-              <Col sm={9} xxl={{span:6, offset:3}} style={{ overflow: "hidden" }}>
+              <Col sm={9} xxl={{ span: 6, offset: 3 }} style={{ overflow: "hidden" }}>
                 <PlayBody client={ws.current}></PlayBody>
+              </Col>
+              <Col sm={3}>
+                <RankingBoard client={ws.current}></RankingBoard>
               </Col>
             </>
           }
