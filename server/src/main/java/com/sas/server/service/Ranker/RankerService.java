@@ -1,6 +1,7 @@
 package com.sas.server.service.Ranker;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,31 +25,33 @@ public class RankerService {
         RankerEntity ranker = RankerEntity.builder()
                 .sessiondId(user.sessionId)
                 .nickname(user.nickname)
-                .life(user.life)
-                .conqueredTime(user.conqueredTime)
+                .attr(user.attr)
+                .kill(user.kill)
                 .build();
 
         rankerRepo.save(ranker);
     }
 
-    public List<RankerDTO> findAll() {
+    public List<RankerDTO> getRankerList() {
 
-        Iterator<RankerEntity> list = rankerRepo.findAll().iterator();
+        Iterator<RankerEntity> rankerIter = rankerRepo.findAll().iterator();
+        List<RankerDTO> rankerList = new ArrayList<>();
 
-        List<RankerDTO> rankerDTOList = new ArrayList<>();
+        while (rankerIter.hasNext()) {
 
-        while (list.hasNext()) {
+            RankerEntity ranker = rankerIter.next();
 
-            RankerEntity ranker = list.next();
-
-            rankerDTOList.add(RankerDTO.builder()
+            RankerDTO rankerDTO = RankerDTO.builder()
+                    .attr(ranker.attr)
                     .nickname(ranker.nickname)
-                    .life(ranker.life)
-                    .conqueredTime(ranker.conqueredTime)
-                    .build());
+                    .kill(ranker.kill)
+                    .build();
+
+            rankerList.add(rankerDTO);
         }
 
-        return rankerDTOList;
+        rankerList.sort(Comparator.comparingInt(RankerDTO::getKill).reversed());
 
+        return rankerList;
     }
 }

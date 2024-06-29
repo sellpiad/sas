@@ -27,6 +27,7 @@ import com.sas.server.game.message.MessengerBroker;
 import com.sas.server.game.rule.BattleSystem;
 import com.sas.server.game.rule.MovementSystem;
 import com.sas.server.repository.GameRepository;
+import com.sas.server.service.Ranker.RankerService;
 import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.player.PlayerService;
 import com.sas.server.service.queue.QueueService;
@@ -45,6 +46,7 @@ public class GameService {
     private final CubeService cubeService;
     private final QueueService queueService;
     private final UserSerivce userSerivce;
+    private final RankerService rankerService;
 
     private final MovementSystem movementSystem;
     private final BattleSystem battleSystem;
@@ -457,9 +459,14 @@ public class GameService {
                 removeOnly(game, enemy.sessionId);
                 userSerivce.deleteById(enemy.sessionId);
 
+                UserEntity winner = playerService.addKillCount(sessionId);
+
+                rankerService.save(winner);
+
                 judgementMsg = player.nickname + "이(가)" + enemy.nickname + "을(를) 사냥했습니다!";
 
                 simpMessagingTemplate.convertAndSend("/topic/game/deleteSlime", enemy.playerId);
+                simpMessagingTemplate.convertAndSend("/topic/game/ranker", rankerService.getRankerList());
 
                 // 패배시
             } else {
@@ -467,10 +474,15 @@ public class GameService {
                 removeOnly(game, sessionId);
                 userSerivce.deleteById(sessionId);
 
+                UserEntity winner = playerService.addKillCount(enemy.sessionId);
+
+                rankerService.save(winner);
+
                 judgementMsg = enemy.nickname + "이(가)" + player.nickname + "을(를) 사냥했습니다!";
 
                 simpMessagingTemplate.convertAndSend("/topic/game/deleteSlime", player.playerId);
-
+                simpMessagingTemplate.convertAndSend("/topic/game/ranker", rankerService.getRankerList());
+                
                 return null;
             }
 

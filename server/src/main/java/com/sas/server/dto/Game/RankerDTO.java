@@ -10,7 +10,7 @@ import lombok.Data;
 public class RankerDTO{
 
     public String nickname;
-    public int life;
-    public LocalDateTime conqueredTime;
+    public int kill;
+    public String attr;
 
 }
