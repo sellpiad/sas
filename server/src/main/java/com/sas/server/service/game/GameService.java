@@ -13,6 +13,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -305,6 +306,11 @@ public class GameService {
                             UserEntity userInQueue = waitingIter.next();
                             String position = cubeService.getCubeNickname(cube.getKey());
 
+                            // 참가하기 전, 기존 슬라임이 존재한다면 삭제.
+                            if (isInGame(userInQueue.sessionId)) {
+                                deletePlayer(userInQueue.sessionId);
+                            }
+
                             playerService.registerPlayer(userInQueue, false, position);
 
                             UserEntity player = userSerivce.findBySessionId(userInQueue.sessionId);
@@ -499,6 +505,28 @@ public class GameService {
         String enemyId = cubeTable.get(targetCube);
 
         return userSerivce.findBySessionId(enemyId);
+
+    }
+
+    public void deletePlayer(String sessoinId) {
+
+        GameEntity game;
+        UserEntity user;
+
+        try {
+
+            user = userSerivce.findBySessionId(sessoinId);
+
+            game = gameRepo.findById(GAME_ID)
+                    .orElseThrow(() -> new NullPointerException("Game Entity not found with id"));
+
+            removeOnly(game, sessoinId);
+
+            simpMessagingTemplate.convertAndSend("/topic/game/deleteSlime", user.playerId);
+
+        } catch (NullPointerException | MessagingException e) {
+            log.error("[deletePlayer] {}", e.getMessage());
+        }
 
     }
 
