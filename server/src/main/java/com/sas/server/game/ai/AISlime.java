@@ -62,7 +62,6 @@ public class AISlime implements Serializable {
         }
 
         if (!gameService.isInGame(sessionId)) {
-            log.info("{} 아웃", sessionId);
             stop();
             remove.run();
             return;

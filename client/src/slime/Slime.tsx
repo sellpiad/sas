@@ -48,9 +48,9 @@ export default function Slime({ move, fill, border, position, isAbsolute, ...pro
         const slimeBox = position !== undefined && document.getElementById(position)
 
         if (slimeBox) {
-           
-            setWidth(slimeBox.offsetWidth+"")
-            setHeight(slimeBox.offsetHeight+"")
+
+            setWidth(slimeBox.offsetWidth + "")
+            setHeight(slimeBox.offsetHeight + "")
             setMoveX(slimeBox.offsetLeft)
             setMoveY(slimeBox.offsetTop)
 
@@ -68,12 +68,12 @@ export default function Slime({ move, fill, border, position, isAbsolute, ...pro
     useEffect(() => {
 
         setUniqueKey(nanoid())
-        setTimeout(()=>{setSpeed(0.5)},10)
+        setTimeout(() => { setSpeed(0.5) }, 10)
 
     }, [])
 
     useEffect(() => {
-     
+
         updateSlimeBox()
 
     }, [position, width, height])
@@ -107,9 +107,9 @@ export default function Slime({ move, fill, border, position, isAbsolute, ...pro
     return (
         speed > 0 &&
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={width} height={height} preserveAspectRatio="xMidYMid meet" transform={pos} style={{ position: isAbsolute ? "absolute" : "relative", transition: "transform " + speed + "s ease" }}>
-            
+
             <use xlinkHref={slimeMove ? slime1 : slime2} x={11} y={25} width={150} height={150} />
-        
+
             <symbol id={'slime-' + uniqueKey + '-down-1'} viewBox="0 0 150 150">
                 <g clipPath="url(#a)">
                     <path fill={fill === undefined ? '#D9D9D9' : getAttr()} fillRule="evenodd"
@@ -168,8 +168,8 @@ export default function Slime({ move, fill, border, position, isAbsolute, ...pro
                     <path id="Rectangle 1" d="M29 91h70v9H29z" />
                     <path id="Rectangle 3" d="M10 37h10v45H10z" />
                     <path id="Rectangle 13" d="M19 18h10v19H19z" />
-                    <path id="RightEye" d="M89 45h10v19H89z" />
-                    <path id="LeftEye" d="M48 45h10v19H48z" />
+                    <rect id="RightEye" x="84" y="64" width="10" height="19" transform="rotate(-90 84 64)" fill="black" />
+                    <rect id="LeftEye" x="43" y="64" width="10" height="19" transform="rotate(-90 43 64)" fill="black" />
                     <path id="Rectangle 7" d="M39 18h20v9H39z" transform="rotate(180 39 18)" />
                     <path id="Rectangle 10" d="M39 91h19v9H39z" transform="rotate(180 39 91)" />
                     <path id="Rectangle 11" d="M109 91h19v9h-19z" transform="rotate(180 109 91)" />
@@ -218,8 +218,8 @@ export default function Slime({ move, fill, border, position, isAbsolute, ...pro
                     <path id="Rectangle 1" d="M0 0h70v9H0z" transform="matrix(-1 0 0 1 99 91)" />
                     <path id="Rectangle 3" d="M0 0h10v45H0z" transform="matrix(-1 0 0 1 118 37)" />
                     <path id="Rectangle 13" d="M0 0h10v19H0z" transform="matrix(-1 0 0 1 109 18)" />
-                    <path id="RightEye" d="M0 0h10v19H0z" transform="matrix(-1 0 0 1 39 45)" />
-                    <path id="LeftEye" d="M0 0h10v19H0z" transform="matrix(-1 0 0 1 80 45)" />
+                    <rect id="RightEye" width="10" height="19" transform="matrix(0 -1 -1 0 44 64)" fill="black" />
+                    <rect id="LeftEye" width="10" height="19" transform="matrix(0 -1 -1 0 85 64)" fill="black" />
                     <path id="Rectangle 7" d="M0 0h20v9H0z" transform="matrix(1 0 0 -1 89 18)" />
                     <path id="Rectangle 10" d="M0 0h19v9H0z" transform="matrix(1 0 0 -1 89 91)" />
                     <path id="Rectangle 11" d="M0 0h19v9H0z" transform="matrix(1 0 0 -1 19 91)" />

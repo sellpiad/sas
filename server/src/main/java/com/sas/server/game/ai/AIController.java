@@ -76,8 +76,6 @@ public class AIController {
 
                 if (fraction > playerPercentage) {
 
-                    log.info("placeRandomAI");
-
                     UserEntity ai = createAI();
 
                     List<String> cubekeySet = cubeTable.entrySet()

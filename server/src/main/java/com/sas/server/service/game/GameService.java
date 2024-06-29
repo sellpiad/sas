@@ -280,7 +280,7 @@ public class GameService {
     public void scanQueue() {
 
         GameEntity game = gameRepo.findById(GAME_ID)
-                .orElseThrow(() -> new IllegalArgumentException("[updateMove] Game Entity not found with id"));
+                .orElseThrow(() -> new NullPointerException("[updateMove] Game Entity not found with id"));
 
         if (game == null)
             return;
@@ -339,7 +339,7 @@ public class GameService {
 
                                 simpMessagingTemplate.convertAndSend("/topic/game/addSlime", slime);
                             } catch (Exception e) {
-                                log.error("{}", e.getMessage());
+                                log.error("[scanQueue] {}", e.getMessage());
                             }
 
                             log.info("scan queue and joining new player");
@@ -351,7 +351,7 @@ public class GameService {
                 }
             }
         } catch (Exception e) {
-            log.error("ERROR! ", e);
+            log.error("[scanQueue] {}", e.getMessage());
         }
     }
 
@@ -381,7 +381,7 @@ public class GameService {
 
             }
         } catch (Exception e) {
-            log.error("{}", e.getMessage());
+            log.error("[updateMove] {}", e.getMessage());
         } finally {
             redisTemplate.delete(lockKey);
         }
@@ -399,7 +399,7 @@ public class GameService {
             player = userSerivce.findBySessionId(sessionId);
             departCubeId = game.userTable.get(sessionId);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("[processMove] {}",e.getMessage());
             return null;
         }
 
@@ -425,7 +425,7 @@ public class GameService {
                 removeOnly(game, sessionId);
                 addOnly(game, sessionId, arrivalCube.id);
             } catch (Exception e) {
-                log.error(e.getMessage());
+                log.error("[processMove-remove and add] {}",e.getMessage());
             }
 
             return MoveData.builder()
@@ -476,8 +476,8 @@ public class GameService {
 
             return moveData;
 
-        } catch (IllegalArgumentException e) {
-            log.error(e.getMessage());
+        } catch (Exception e) {
+            log.error("[processMove-judgement] {}",e.getMessage());
             return null;
         }
 
