@@ -279,11 +279,15 @@ public class GameService {
     @Transactional
     public void scanQueue() {
 
-        GameEntity game = gameRepo.findById(GAME_ID)
-                .orElseThrow(() -> new NullPointerException("[updateMove] Game Entity not found with id"));
+        GameEntity game;
 
-        if (game == null)
+        try {
+            game = gameRepo.findById(GAME_ID)
+                    .orElseThrow(() -> new NullPointerException("Game Entity not found with id"));
+        } catch (NullPointerException e) {
+            log.error("[scanQueue] {}", e.getMessage());
             return;
+        }
 
         try {
 
@@ -306,8 +310,6 @@ public class GameService {
                             UserEntity player = userSerivce.findBySessionId(userInQueue.sessionId);
 
                             addOnly(game, userInQueue.sessionId, cube.getKey());
-
-                            log.info("Add player! {}", userInQueue.sessionId);
 
                             Set<String> clickable = cubeService.getClickableCubes(cube.getKey());
                             Set<String> conqueredCubes = player.conqueredCubes;
@@ -399,7 +401,7 @@ public class GameService {
             player = userSerivce.findBySessionId(sessionId);
             departCubeId = game.userTable.get(sessionId);
         } catch (Exception e) {
-            log.error("[processMove] {}",e.getMessage());
+            log.error("[processMove] {}", e.getMessage());
             return null;
         }
 
@@ -425,7 +427,7 @@ public class GameService {
                 removeOnly(game, sessionId);
                 addOnly(game, sessionId, arrivalCube.id);
             } catch (Exception e) {
-                log.error("[processMove-remove and add] {}",e.getMessage());
+                log.error("[processMove-remove and add] {}", e.getMessage());
             }
 
             return MoveData.builder()
@@ -477,7 +479,7 @@ public class GameService {
             return moveData;
 
         } catch (Exception e) {
-            log.error("[processMove-judgement] {}",e.getMessage());
+            log.error("[processMove-judgement] {}", e.getMessage());
             return null;
         }
 
