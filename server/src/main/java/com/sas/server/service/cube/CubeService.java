@@ -8,8 +8,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.sas.server.dto.Cube.CubeDAO;
@@ -25,6 +27,8 @@ public class CubeService {
     private final CubeRepository cubeRepo;
     private final RedisTemplate<String, String> redisTemplate;
 
+    private final String lockKey = "lock:cube";
+
     public List<CubeEntity> createCubeSet(int initialSize) {
 
         int total = initialSize * initialSize;
@@ -39,6 +43,7 @@ public class CubeService {
                     .name("slimebox" + i)
                     .posX(i % initialSize)
                     .posY(i / initialSize)
+                    .attr("NORMAL")
                     .build();
 
             cubeSet.add(cube);
@@ -131,6 +136,7 @@ public class CubeService {
                     .cornerstone(cube.cornerstone)
                     .founder(cube.founder)
                     .createdTime(cube.createdTime)
+                    .attr(cube.attr)
                     .build();
 
             cubeDAOSet.add(dao);
@@ -165,17 +171,17 @@ public class CubeService {
 
     /**
      * 
-     * @param departedCubeId
+     * @param curCubeId
      * @param direction
-     * @return 매개변수로 받은 cubeId의 direction에 해당하는 곳에 위치한 큐브 엔티티 리턴. 
-     *         방향키가 잘못됐다면 null 값을 리턴.   
-     * @throws NoSuchElementException departedCubeId에 해당하는 큐브가 존재하지 않을 때.
-     * @throws NullPointerException departedCubeId가 null값으로 들어왔을 때.
+     * @return 매개변수로 받은 cubeId의 direction에 해당하는 곳에 위치한 큐브 엔티티 리턴.
+     *         방향키가 잘못됐다면 null 값을 리턴.
+     * @throws NoSuchElementException curCubeId에 해당하는 큐브가 존재하지 않을 때.
+     * @throws NullPointerException   curCubeId가 null값으로 들어왔을 때.
      */
-    public CubeEntity getNextCube(String departedCubeId, String direction) {
+    public CubeEntity getNextCube(String curCubeId, String direction) {
 
-        CubeEntity cube = cubeRepo.findById(departedCubeId)
-                .orElseThrow(() -> new NoSuchElementException("Cube Entity not found with " + departedCubeId));
+        CubeEntity cube = cubeRepo.findById(curCubeId)
+                .orElseThrow(() -> new NullPointerException("Cube Entity not found with " + curCubeId));
 
         int posX = cube.posX;
         int posY = cube.posY;
@@ -217,5 +223,25 @@ public class CubeService {
 
         return clickable;
     }
+
+    public void lockCubeSet(List<String> cubeList) {
+
+        for (String cubeId : cubeList) {
+
+            String cubeLockKey = lockKey + ":" + cubeId;
+
+            redisTemplate.opsForValue().set(cubeLockKey, "locked", 500, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    public void unlockCubeSet(List<String> cubeList) {
+        for (String cubeId : cubeList) {
+
+            String cubeLockKey = lockKey + ":" + cubeId;
+
+            redisTemplate.delete(cubeLockKey);
+        }
+    }
+
 
 }

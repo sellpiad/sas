@@ -16,6 +16,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import com.sas.server.dto.Game.MoveData;
 import com.sas.server.dto.Game.RankerDTO;
 import com.sas.server.dto.Game.SlimeDTO;
+import com.sas.server.game.rule.ActionSystem;
 import com.sas.server.service.Ranker.RankerService;
 import com.sas.server.service.game.GameService;
 import com.sas.server.service.user.UserSerivce;

@@ -102,7 +102,6 @@ public class AISlime implements Serializable {
                 return null;
 
         }
-
     }
 
 }
