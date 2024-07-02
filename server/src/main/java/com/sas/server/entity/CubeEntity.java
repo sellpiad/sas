@@ -30,4 +30,6 @@ public class CubeEntity {
      public boolean right;
      public boolean left;
 
+     public String attr;
+
 }

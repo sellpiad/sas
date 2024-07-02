@@ -18,12 +18,14 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sas.server.dto.Game.ActionData;
 import com.sas.server.dto.Game.MoveData;
 import com.sas.server.dto.Game.SlimeDTO;
 import com.sas.server.entity.CubeEntity;
 import com.sas.server.entity.GameEntity;
 import com.sas.server.entity.UserEntity;
 import com.sas.server.game.message.MessengerBroker;
+import com.sas.server.game.rule.ActionSystem;
 import com.sas.server.game.rule.BattleSystem;
 import com.sas.server.game.rule.MovementSystem;
 import com.sas.server.repository.GameRepository;
@@ -50,6 +52,7 @@ public class GameService {
 
     private final MovementSystem movementSystem;
     private final BattleSystem battleSystem;
+    private final ActionSystem actionSystem;
 
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final MessengerBroker msgBroker;
@@ -59,7 +62,9 @@ public class GameService {
 
     private final StringRedisTemplate redisTemplate;
 
-    private static UUID GAME_ID;
+    private UUID GAME_ID;
+
+    private final String lockKey = "lock:game";
 
     public UUID getGameId() {
         return GAME_ID;
@@ -373,31 +378,52 @@ public class GameService {
      */
     @Transactional
     public MoveData updateMove(String sessionId, String direction) {
-
-        String lockKey = "lock:game";
-
+        
         try {
-            Boolean acquired = redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 1, TimeUnit.SECONDS);
-            if (acquired != null && acquired) {
+            String lockKey = "lock:game";
+
+            UserEntity player = userSerivce.findBySessionId(sessionId);
+
+            if (actionSystem.isLocked(sessionId)) {
+                return MoveData.builder()
+                        .direction(direction)
+                        .playerId(player.playerId)
+                        .position(lockKey)
+                        .build();
+            }
+
+            Boolean isGameLocked = lockGame();
+
+            if (isGameLocked != null && isGameLocked) {
 
                 GameEntity game = gameRepo.findById(GAME_ID)
-                        .orElseThrow(() -> new IllegalArgumentException("[updateMove] Game Entity not found with id"));
+                        .orElseThrow(() -> new NullPointerException("[updateMove] Game Entity not found with id"));
 
                 MoveData moveResult = processMove(game, sessionId, direction);
 
                 gameRepo.save(game);
 
+                
+
                 return moveResult;
 
             }
-        } catch (Exception e) {
+        } catch (NullPointerException e) {
             log.error("[updateMove] {}", e.getMessage());
         } finally {
-            redisTemplate.delete(lockKey);
+            unlockGame();
         }
 
         return null;
 
+    }
+
+    private Boolean lockGame() {
+        return redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 1, TimeUnit.SECONDS);
+    }
+
+    private void unlockGame() {
+        redisTemplate.delete(lockKey);
     }
 
     private MoveData processMove(GameEntity game, String sessionId, String direction) {
@@ -409,8 +435,8 @@ public class GameService {
             player = userSerivce.findBySessionId(sessionId);
             departCubeId = game.userTable.get(sessionId);
         } catch (Exception e) {
-            log.error("[processMove] {}", e.getMessage());
-            return null;
+            log.error("Exception [Error location] : {}", e.getStackTrace()[0]);
+            throw new NullPointerException("userTable");
         }
 
         // 이동 가능한지 판별
@@ -438,6 +464,8 @@ public class GameService {
                 log.error("[processMove-remove and add] {}", e.getMessage());
             }
 
+            actionSystem.lock(player, arrivalCube);
+
             return MoveData.builder()
                     .playerId(player.playerId)
                     .direction(direction)
@@ -463,6 +491,8 @@ public class GameService {
 
                 rankerService.save(winner);
 
+                actionSystem.lock(player, arrivalCube);
+
                 judgementMsg = player.nickname + "이(가)" + enemy.nickname + "을(를) 사냥했습니다!";
 
                 simpMessagingTemplate.convertAndSend("/topic/game/deleteSlime", enemy.playerId);
@@ -482,7 +512,7 @@ public class GameService {
 
                 simpMessagingTemplate.convertAndSend("/topic/game/deleteSlime", player.playerId);
                 simpMessagingTemplate.convertAndSend("/topic/game/ranker", rankerService.getRankerList());
-                
+
                 return null;
             }
 

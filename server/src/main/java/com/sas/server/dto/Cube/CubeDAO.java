@@ -18,4 +18,6 @@ public class CubeDAO {
     public String cornerstone;
     public LocalDateTime createdTime;
 
+    public String attr;
+
 }

@@ -2,7 +2,10 @@ package com.sas.server.game.rule;
 
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
 
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import com.sas.server.entity.CubeEntity;
@@ -19,7 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 public class MovementSystem {
 
     private final CubeService cubeService;
-  
+    private final StringRedisTemplate redisTemplate;
+
     /**
      * 
      * @param game      현재 참여 중인 게임
@@ -46,11 +50,9 @@ public class MovementSystem {
             }
 
         } catch (NoSuchElementException | NullPointerException e) {
-            log.error("[move] {}",e.getMessage());
+            log.error("[move] {}", e.getMessage());
             return null;
         }
     }
-
-
 
 }

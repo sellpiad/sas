@@ -43,6 +43,8 @@ public class PlayerService {
                     .conqueredCubes(conqueredCubes)
                     .direction("down")
                     .life(0)
+                    .actionPoint(100)
+                    .rechargingSpeed(20)
                     .build());
 
         } catch (Exception e) {

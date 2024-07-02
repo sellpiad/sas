@@ -37,5 +37,15 @@ public class UserEntity {
     public String direction;
     public LocalDateTime conqueredTime;
     public int kill;
+    public boolean movable;
+
+     /**
+      * 턴을 수행하기 위해 소모되는 포인트. 기본 100.
+      *  */ 
+    public int actionPoint;
+    /**
+     * 1포인트가 충전되는 속도. ms단위. 기본 20ms.
+     */
+    public int rechargingSpeed; 
 
 }
