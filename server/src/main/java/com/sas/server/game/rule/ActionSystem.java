@@ -23,15 +23,16 @@ public class ActionSystem {
      * 
      * @param user
      * @param cube
+     * @return locktime
      */
-    public void lock(UserEntity user, CubeEntity cube) {
+    public long lock(UserEntity user, CubeEntity cube) {
 
         String userLockkey = "lock:user:" + user.sessionId;
         long lockTime = user.actionPoint * user.rechargingSpeed;
 
         if (cube.attr.equals(user.attr)) {
             redisTemplate.opsForValue().set(userLockkey, "locked", lockTime, TimeUnit.MILLISECONDS);
-            return ;
+            return lockTime;
         }
 
         switch (cube.attr) {
@@ -52,6 +53,8 @@ public class ActionSystem {
         }
 
         redisTemplate.opsForValue().set(userLockkey, "locked", lockTime, TimeUnit.MILLISECONDS);
+
+        return lockTime;
     }
 
     /**
