@@ -164,7 +164,7 @@ export default function SlimeField({ client }: Props) {
 
         if (move) {
 
-            if (playerId == move.playerId) {
+            if (playerId == move.playerId && move.position != null) {
                 dispatch(updatePosition({ position: move.position }))
             }
 

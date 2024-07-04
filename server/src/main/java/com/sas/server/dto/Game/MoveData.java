@@ -12,4 +12,5 @@ public class MoveData {
     public UUID playerId;
     public String position;
     public String direction;
+    public long lockTime;
 }

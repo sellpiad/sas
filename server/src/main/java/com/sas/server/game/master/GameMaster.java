@@ -8,6 +8,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.connection.DefaultStringRedisConnection;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.lang.Nullable;
 import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -39,6 +46,8 @@ public class GameMaster {
     private final UserSerivce userSerivce;
 
     private final SimpMessagingTemplate messagingTemplate;
+    
+    private final StringRedisTemplate redisTemplate;
 
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -46,10 +55,18 @@ public class GameMaster {
         log.info("Application initialized!");
         log.info("Game Starting...");
 
+        clear();
         setting();
 
         aiDeploymentRun(0, 500, TimeUnit.MILLISECONDS, 0.9);
         queueRun(0, 1000, TimeUnit.MILLISECONDS);
+    }
+
+    private void clear() {
+        RedisConnection connection = redisTemplate.getConnectionFactory().getConnection();
+        RedisSerializer redisSerializer = redisTemplate.getKeySerializer();
+        DefaultStringRedisConnection defaultStringRedisConnection = new DefaultStringRedisConnection(connection, redisSerializer);
+        defaultStringRedisConnection.flushAll();
     }
 
     private void setting() {

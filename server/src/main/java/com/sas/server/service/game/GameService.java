@@ -378,19 +378,21 @@ public class GameService {
      */
     @Transactional
     public MoveData updateMove(String sessionId, String direction) {
-        
+
+        UserEntity player = userSerivce.findBySessionId(sessionId);
+
+        if(player == null)
+            return null;
+
+        if (actionSystem.isLocked(sessionId)) {
+            return MoveData.builder()
+                    .direction(direction)
+                    .playerId(player.playerId)
+                    .build();
+        }
+
         try {
             String lockKey = "lock:game";
-
-            UserEntity player = userSerivce.findBySessionId(sessionId);
-
-            if (actionSystem.isLocked(sessionId)) {
-                return MoveData.builder()
-                        .direction(direction)
-                        .playerId(player.playerId)
-                        .position(lockKey)
-                        .build();
-            }
 
             Boolean isGameLocked = lockGame();
 
@@ -402,8 +404,6 @@ public class GameService {
                 MoveData moveResult = processMove(game, sessionId, direction);
 
                 gameRepo.save(game);
-
-                
 
                 return moveResult;
 
@@ -464,12 +464,13 @@ public class GameService {
                 log.error("[processMove-remove and add] {}", e.getMessage());
             }
 
-            actionSystem.lock(player, arrivalCube);
+            long locktime = actionSystem.lock(player, arrivalCube);
 
             return MoveData.builder()
                     .playerId(player.playerId)
                     .direction(direction)
                     .position(arrivalCube.name)
+                    .lockTime(locktime)
                     .build();
         }
 
@@ -477,6 +478,7 @@ public class GameService {
         try {
 
             String judgementMsg;
+            long locktime;
 
             // 승리시
             if (battleSystem.attrJudgment(player.attr, enemy.attr)) {
@@ -491,7 +493,7 @@ public class GameService {
 
                 rankerService.save(winner);
 
-                actionSystem.lock(player, arrivalCube);
+                locktime = actionSystem.lock(player, arrivalCube);
 
                 judgementMsg = player.nickname + "이(가)" + enemy.nickname + "을(를) 사냥했습니다!";
 
@@ -520,6 +522,7 @@ public class GameService {
                     .playerId(player.playerId)
                     .position(arrivalCube.name)
                     .direction(direction)
+                    .lockTime(locktime)
                     .build();
 
             simpMessagingTemplate.convertAndSend("/topic/game/chat", judgementMsg);
