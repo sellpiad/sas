@@ -46,7 +46,7 @@ public class GameMaster {
     private final UserSerivce userSerivce;
 
     private final SimpMessagingTemplate messagingTemplate;
-    
+
     private final StringRedisTemplate redisTemplate;
 
     @EventListener
@@ -65,7 +65,8 @@ public class GameMaster {
     private void clear() {
         RedisConnection connection = redisTemplate.getConnectionFactory().getConnection();
         RedisSerializer redisSerializer = redisTemplate.getKeySerializer();
-        DefaultStringRedisConnection defaultStringRedisConnection = new DefaultStringRedisConnection(connection, redisSerializer);
+        DefaultStringRedisConnection defaultStringRedisConnection = new DefaultStringRedisConnection(connection,
+                redisSerializer);
         defaultStringRedisConnection.flushAll();
     }
 
@@ -83,7 +84,14 @@ public class GameMaster {
 
     private void queueRun(long initialDelay, long period, TimeUnit unit) {
         // if (scheduledFuture == null || scheduledFuture.isCancelled()) {
-        scheduledQueue = scheduler.scheduleAtFixedRate(() -> gameService.scanQueue(), initialDelay, period, unit);
+        scheduledQueue = scheduler.scheduleAtFixedRate(() -> {
+            try {
+                gameService.scanQueue();
+            } catch (NullPointerException | MessagingException e) {
+                log.error("[scanQueue] {}", e.getMessage());
+            }
+
+        }, initialDelay, period, unit);
 
     }
 
@@ -94,8 +102,8 @@ public class GameMaster {
 
             try {
 
-                if(sessionId == null)
-                    return ;
+                if (sessionId == null)
+                    return;
 
                 UserEntity ai = userSerivce.findBySessionId(sessionId);
 
@@ -109,14 +117,13 @@ public class GameMaster {
 
                     String msg = slime.playerId + "가 플레이를 시작합니다.";
 
-
-                    try{
+                    try {
                         messagingTemplate.convertAndSend("/topic/game/addSlime", slime);
                         messagingTemplate.convertAndSend("/topic/game/chat", msg);
-                    } catch(MessagingException e){
-                        log.error("[aiDeploymentRun] {}",e.getMessage());
+                    } catch (MessagingException e) {
+                        log.error("[aiDeploymentRun] {}", e.getMessage());
                     }
-                  
+
                 }
             } catch (Exception e) {
                 log.error(e.getMessage());

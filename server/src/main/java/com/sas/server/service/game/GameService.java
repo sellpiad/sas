@@ -78,9 +78,11 @@ public class GameService {
                 .life(life)
                 .size(initialSize)
                 .voteTime(voteTime)
+                .userTable(new HashMap<>())
                 .build();
 
         GAME_ID = game.id;
+        game.userTable.put("null", "null");
 
         gameRepo.save(game);
 
@@ -107,6 +109,8 @@ public class GameService {
     public boolean isInGame(String sessionId) {
 
         GameEntity game = findGame();
+
+        Objects.requireNonNull(game.userTable, "[isInGame] game.userTable is null");
 
         if (game.userTable.get(sessionId) == null) {
             return false;
@@ -150,6 +154,8 @@ public class GameService {
                 game.userTable = new HashMap<>();
 
             game.userTable.put(sessionId, targetCubeId);
+
+            log.info("[addOnly] {}", sessionId);
         } catch (Exception e) {
             log.info("[addOnly] {}" + e.getMessage());
         }
@@ -172,6 +178,7 @@ public class GameService {
         if (currentCubeId != null) {
             game.cubeTable.put(currentCubeId, "null");
             game.userTable.remove(sessionId);
+            log.info("[removeOnly] {}", sessionId);
         }
 
     }
@@ -289,85 +296,72 @@ public class GameService {
 
         GameEntity game;
 
-        try {
-            game = gameRepo.findById(GAME_ID)
-                    .orElseThrow(() -> new NullPointerException("Game Entity not found with id"));
-        } catch (NullPointerException e) {
-            log.error("[scanQueue] {}", e.getMessage());
-            return;
-        }
+        game = gameRepo.findById(GAME_ID)
+                .orElseThrow(() -> new NullPointerException("Game Entity not found with id"));
 
-        try {
+        if (checkUserTableEmpty(game)) {
 
-            if (checkUserTableEmpty(game)) {
+            Iterator<UserEntity> waitingIter = queueService.findAll().iterator();
 
-                Iterator<UserEntity> waitingIter = queueService.findAll().iterator();
+            Map<String, String> cubeTable = game.cubeTable;
 
-                Map<String, String> cubeTable = game.cubeTable;
+            for (Map.Entry<String, String> cube : cubeTable.entrySet()) {
 
-                for (Map.Entry<String, String> cube : cubeTable.entrySet()) {
+                if (cube.getValue().equals("null")) {
+                    if (waitingIter.hasNext()) {
 
-                    if (cube.getValue().equals("null")) {
-                        if (waitingIter.hasNext()) {
+                        UserEntity userInQueue = waitingIter.next();
+                        String position = cubeService.getCubeNickname(cube.getKey());
 
-                            UserEntity userInQueue = waitingIter.next();
-                            String position = cubeService.getCubeNickname(cube.getKey());
-
-                            // 참가하기 전, 기존 슬라임이 존재한다면 삭제.
-                            if (isInGame(userInQueue.sessionId)) {
-                                deletePlayer(userInQueue.sessionId);
-                            }
-
-                            playerService.registerPlayer(userInQueue, false, position);
-
-                            UserEntity player = userSerivce.findBySessionId(userInQueue.sessionId);
-
-                            addOnly(game, userInQueue.sessionId, cube.getKey());
-
-                            Set<String> clickable = cubeService.getClickableCubes(cube.getKey());
-                            Set<String> conqueredCubes = player.conqueredCubes;
-
-                            SlimeDTO slime = SlimeDTO.builder()
-                                    .playerId(player.playerId)
-                                    .attr(player.attr)
-                                    .direction("down")
-                                    .position(position)
-                                    .build();
-
-                            gameRepo.save(game);
-
-                            try {
-                                simpMessagingTemplate.convertAndSendToUser(userInQueue.sessionId,
-                                        "/queue/cube/clickable",
-                                        clickable,
-                                        msgBroker.createHeaders(userInQueue.sessionId));
-
-                                simpMessagingTemplate.convertAndSendToUser(userInQueue.sessionId,
-                                        "/queue/player/initialPosition",
-                                        position,
-                                        msgBroker.createHeaders(userInQueue.sessionId));
-
-                                simpMessagingTemplate.convertAndSendToUser(userInQueue.sessionId,
-                                        "/queue/player/ingame",
-                                        player.playerId,
-                                        msgBroker.createHeaders(userInQueue.sessionId));
-
-                                simpMessagingTemplate.convertAndSend("/topic/game/addSlime", slime);
-                            } catch (Exception e) {
-                                log.error("[scanQueue] {}", e.getMessage());
-                            }
-
-                            log.info("scan queue and joining new player");
-                        } else {
-                            break;
+                        // 참가하기 전, 기존 슬라임이 존재한다면 삭제.
+                        if (isInGame(userInQueue.sessionId)) {
+                            deletePlayer(userInQueue.sessionId);
                         }
-                    }
 
+                        playerService.registerPlayer(userInQueue, false, position);
+
+                        UserEntity player = userSerivce.findBySessionId(userInQueue.sessionId);
+
+                        addOnly(game, userInQueue.sessionId, cube.getKey());
+
+                        Set<String> clickable = cubeService.getClickableCubes(cube.getKey());
+                        Set<String> conqueredCubes = player.conqueredCubes;
+
+                        SlimeDTO slime = SlimeDTO.builder()
+                                .playerId(player.playerId)
+                                .attr(player.attr)
+                                .direction("down")
+                                .position(position)
+                                .build();
+
+                        gameRepo.save(game);
+
+                        simpMessagingTemplate.convertAndSendToUser(userInQueue.sessionId,
+                                "/queue/cube/clickable",
+                                clickable,
+                                msgBroker.createHeaders(userInQueue.sessionId));
+
+                        simpMessagingTemplate.convertAndSendToUser(userInQueue.sessionId,
+                                "/queue/player/initialPosition",
+                                position,
+                                msgBroker.createHeaders(userInQueue.sessionId));
+
+                        simpMessagingTemplate.convertAndSendToUser(userInQueue.sessionId,
+                                "/queue/player/ingame",
+                                player.playerId,
+                                msgBroker.createHeaders(userInQueue.sessionId));
+
+                        simpMessagingTemplate.convertAndSend("/topic/game/addSlime", slime);
+
+                        log.info("scan queue and joining new player");
+                    } else {
+                        break;
+                    }
                 }
+
             }
-        } catch (Exception e) {
-            log.error("[scanQueue] {}", e.getMessage());
         }
+
     }
 
     /**
@@ -377,15 +371,16 @@ public class GameService {
      * @return MoveData형식으로 슬라임 닉네임, 위치 리턴. 실패시 null
      */
     @Transactional
-    public MoveData updateMove(String sessionId, String direction) {
+    public ActionData updateMove(String sessionId, String direction) {
 
         UserEntity player = userSerivce.findBySessionId(sessionId);
 
-        if(player == null)
+        if (player == null)
             return null;
 
         if (actionSystem.isLocked(sessionId)) {
-            return MoveData.builder()
+            return ActionData.builder()
+                    .actionType("IDLE")
                     .direction(direction)
                     .playerId(player.playerId)
                     .build();
@@ -401,11 +396,11 @@ public class GameService {
                 GameEntity game = gameRepo.findById(GAME_ID)
                         .orElseThrow(() -> new NullPointerException("[updateMove] Game Entity not found with id"));
 
-                MoveData moveResult = processMove(game, sessionId, direction);
+                ActionData action = processMove(game, sessionId, direction);
 
                 gameRepo.save(game);
 
-                return moveResult;
+                return action;
 
             }
         } catch (NullPointerException e) {
@@ -426,7 +421,7 @@ public class GameService {
         redisTemplate.delete(lockKey);
     }
 
-    private MoveData processMove(GameEntity game, String sessionId, String direction) {
+    private ActionData processMove(GameEntity game, String sessionId, String direction) {
 
         UserEntity player;
         String departCubeId;
@@ -445,10 +440,11 @@ public class GameService {
         if (arrivalCube == null) {
             CubeEntity departCube = cubeService.findById(departCubeId);
 
-            return MoveData.builder()
+            return ActionData.builder()
+                    .actionType("MOVE")
                     .playerId(player.playerId)
                     .direction(direction)
-                    .position(departCube.name)
+                    .target(departCube.name)
                     .build();
         }
 
@@ -466,10 +462,11 @@ public class GameService {
 
             long locktime = actionSystem.lock(player, arrivalCube);
 
-            return MoveData.builder()
+            return ActionData.builder()
+                    .actionType("MOVE")
                     .playerId(player.playerId)
                     .direction(direction)
-                    .position(arrivalCube.name)
+                    .target(arrivalCube.name)
                     .lockTime(locktime)
                     .build();
         }
@@ -518,9 +515,10 @@ public class GameService {
                 return null;
             }
 
-            MoveData moveData = MoveData.builder()
+            ActionData moveData = ActionData.builder()
+                    .actionType("ATTACK")
                     .playerId(player.playerId)
-                    .position(arrivalCube.name)
+                    .target(arrivalCube.name)
                     .direction(direction)
                     .lockTime(locktime)
                     .build();

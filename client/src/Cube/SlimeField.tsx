@@ -11,15 +11,17 @@ interface Props {
 }
 
 interface SlimeDTO {
+    actionType: string
     playerId: string
     position: string
     attr: string
     direction: string
 }
 
-interface MoveData {
+interface ActionData {
+    actionType: string
     playerId: string
-    position?: string
+    target?: string
     direction: string
 }
 
@@ -29,7 +31,7 @@ export default function SlimeField({ client }: Props) {
     const [slimes, setSlimes] = useState<Map<string, SlimeDTO>>(new Map())
 
     // 움직임 관련 states
-    const [move, setMove] = useState<MoveData>()
+    const [move, setMove] = useState<ActionData>()
     const [movable, setMovable] = useState<boolean>()
 
     const [direction, setDirection] = useState<string>()
@@ -106,9 +108,9 @@ export default function SlimeField({ client }: Props) {
 
             client.subscribe("/topic/game/move", (msg: IMessage) => {
 
-                const moveData = JSON.parse(msg.body) as MoveData
+                const ActionData = JSON.parse(msg.body) as ActionData
 
-                setMove(moveData)
+                setMove(ActionData)
 
             })
 
@@ -164,8 +166,8 @@ export default function SlimeField({ client }: Props) {
 
         if (move) {
 
-            if (playerId == move.playerId && move.position != null) {
-                dispatch(updatePosition({ position: move.position }))
+            if (playerId == move.playerId && move.target != null) {
+                dispatch(updatePosition({ position: move.target }))
             }
 
             setSlimes(prevSlimes => {
@@ -173,14 +175,15 @@ export default function SlimeField({ client }: Props) {
 
                 if (slime) {
                     const moveSlime: SlimeDTO = {
-                        position: move.position ?? slime.position,
+                        actionType: move.actionType,
+                        position: move.target ?? slime.position,
                         playerId: move.playerId,
                         attr: slime.attr,
                         direction: move.direction
                     }
 
-                    if (move.position !== undefined)
-                        dispatch(updateCubeNickname({ cubeNickname: move.position }))
+                    if (move.target !== undefined)
+                        dispatch(updateCubeNickname({ cubeNickname: move.target }))
 
                     const tempSlimes = new Map(prevSlimes)
 
@@ -200,7 +203,7 @@ export default function SlimeField({ client }: Props) {
 
         /*if (direction && playerId != null) {
 
-            const selected: MoveData = {
+            const selected: ActionData = {
                 playerId: JSON.parse(playerId),
                 direction: direction
             }
@@ -237,7 +240,9 @@ export default function SlimeField({ client }: Props) {
             {
                 [...slimes.values()].map((value, index, array) => {
                     return <Slime key={value['playerId']}
-                        move={value['direction']}
+                        playerId = {value['playerId']}
+                        actionType={value['actionType']}
+                        direction={value['direction']}
                         fill={value['attr']}
                         position={value['position']}
                         isAbsolute={true}

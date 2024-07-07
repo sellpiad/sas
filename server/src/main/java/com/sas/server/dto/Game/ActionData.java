@@ -1,5 +1,8 @@
 package com.sas.server.dto.Game;
 
+import java.util.UUID;
+
+import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
 
@@ -8,15 +11,22 @@ import lombok.Data;
 public class ActionData {
     
     /**
-     * NONE, MOVE, BATTLE, CONQUER
+     * IDLE, MOVE, ATTACK, CONQUER
      */
+
+    @NotBlank(message = "actionType value cannot be null, empty, and blank.")
     String actionType;
 
+    @NotBlank(message = "playerId value cannot be null, empty, and blank.")
+    UUID playerId;
     String target;
         
     /**
      * UP, DOWN, LEFT, RIGHT
      */
+    @NotBlank(message = "direction value cannot be null, empty, and blank.")
     String direction;
+
+    public long lockTime;
     
 }

@@ -11,6 +11,7 @@ import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
+import com.sas.server.dto.Game.ActionData;
 import com.sas.server.dto.Game.MoveData;
 import com.sas.server.service.game.GameService;
 
@@ -67,7 +68,7 @@ public class AISlime implements Serializable {
             return;
         }
 
-        MoveData moveData = gameService.updateMove(sessionId, randDirection());
+        ActionData action = gameService.updateMove(sessionId, randDirection());
 
         movable = false;
 
@@ -75,8 +76,8 @@ public class AISlime implements Serializable {
             this.movable = true;
         }, 500, TimeUnit.MILLISECONDS);
 
-        if(moveData != null)
-            simpMessagingTemplate.convertAndSend("/topic/game/move", moveData);
+        if(action != null)
+            simpMessagingTemplate.convertAndSend("/topic/game/move", action);
 
 
     }
