@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
+import com.sas.server.dto.Game.ActionData;
 import com.sas.server.dto.Game.MoveData;
 import com.sas.server.dto.Game.RankerDTO;
 import com.sas.server.dto.Game.SlimeDTO;
@@ -42,7 +43,7 @@ public class GameController {
 
     @MessageMapping("/game/move")
     @SendTo("/topic/game/move")
-    public MoveData setMove(@RequestBody String keyDown,
+    public ActionData setMove(@RequestBody String keyDown,
             SimpMessageHeaderAccessor simpMessageHeaderAccessor) {
 
         String sessionId = simpMessageHeaderAccessor.getSessionId();
