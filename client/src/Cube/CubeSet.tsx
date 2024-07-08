@@ -12,27 +12,28 @@ import { Root } from "react-dom/client";
 
 interface Props {
     client: Client | undefined;
+    left: number
+    top: number
+    right: number
+    down: number
 }
 
-export default function CubeSet({ client }: Props) {
+export default function CubeSet({ client, left, top, right, down }: Props) {
 
     const [conqueredCubes, setConqueredCubes] = useState<Set<string>>(new Set<string>())
     const [clickable, setClickable] = useState<Set<string>>(new Set<string>())
 
     const [cubeSet, setCubeSet] = useState(new Array)
 
-
-
     const [targetCube, setTartgetCube] = useState<string>('')
-
 
 
     const dispatch = useDispatch()
     const playerId = useSelector((state: RootState) => state.user.playerId)
-    const width = useSelector((state:RootState) => state.game.width)
-    const size = useSelector((state:RootState) => state.game.size)
-    const boxSize = useSelector((state:RootState) => state.game.boxSize)
-    const playerPos = useSelector((state:RootState) => state.user.position)
+    const width = useSelector((state: RootState) => state.game.width)
+    const size = useSelector((state: RootState) => state.game.size)
+    
+    const playerPos = useSelector((state: RootState) => state.user.position)
 
 
     const isConquered = (cubeNickname: string) => {
@@ -108,11 +109,11 @@ export default function CubeSet({ client }: Props) {
     useEffect(() => {
 
         if (cubeSet[0] != undefined) {
-            
+
             const lengths = Object.values(cubeSet).map((value) => value.length)
 
             dispatch(updateRenderingState({ isRendered: true }))
-            dispatch(changeGameSize({size:Math.max(...lengths)}))
+            dispatch(changeGameSize({ size: Math.max(...lengths) }))
         }
 
     }, [cubeSet])
@@ -129,11 +130,11 @@ export default function CubeSet({ client }: Props) {
 
     useEffect(() => {
 
-        dispatch(boxResize({boxSize:width/size}))
-       
-    },[width,size])
-    
-  
+        dispatch(boxResize({ boxSize: width / size }))
+
+    }, [width, size])
+
+
 
 
 
@@ -143,19 +144,19 @@ export default function CubeSet({ client }: Props) {
 
             {
                 Object.keys(cubeSet).map((rowNum, index) => {
-                    return (<div key={'row-' + rowNum} style={{display:"flex", flexFlow:"row", gap:"0.5rem"}}>
-                        {  
-                            cubeSet[rowNum].map((cube, index) => {
+                    return top <= Number(rowNum) && down >= Number(rowNum) && (
+                        <div key={'row-' + rowNum} style={{ display: "flex", flexFlow: "row", gap: "0.5rem", flex: "1"}}>
+                            {
+                                cubeSet[rowNum].map((cube, index) => {
+                                    return left <= Number(cube.posX) && right >= Number(cube.posX) &&
+                                        <div key={'col-' + cube.posX + cube.posY} style={{width:"100%", height:"100%"}}>
+                                            <CubeObj name={cube.name} isConquest={isConquered(cube.name)} isClickable={isClickable(cube.name)} isDominating={isDominating(cube.name)} />
+                                        </div>
 
-                                return (
-                                    <div key={'col-' + cube.posX + cube.posY}>
-                                        <CubeObj name={cube.name} isConquest={isConquered(cube.name)} isClickable={isClickable(cube.name)} isDominating={isDominating(cube.name)} />
-                                    </div>
-                                )
-                            })
+                                })
 
-                        }
-                    </div>)
+                            }
+                        </div>)
                 })
 
             }
