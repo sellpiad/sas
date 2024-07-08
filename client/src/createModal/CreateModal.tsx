@@ -60,7 +60,7 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
                 <Carousel controls={true} onSelect={(eventKey) => setSlime(eventKey)} interval={null}>
                     <Carousel.Item>
                         <div style={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-                            <Slime direction="down" fill="GRASS" width="5vw" height="5vh" isAbsolute={false} position={undefined}></Slime>
+                            <Slime direction="down" fill="GRASS" width="5vw" height="5vh" isAbsolute={false} target={undefined}></Slime>
                             <div style={{ textAlign: "center" }}>
                                 <strong>속성 - 풀</strong>
                                 <p></p>

@@ -5,10 +5,11 @@ const initialState = {
     gameStatus: 0,
     voteTime: 0,
     size: 0,
-    boxSize: 0,
     width: 0,
     height: 0,
-    scale: 0
+    scale: 0, // 게임 스케일
+    observeX: 3, // 게임 시점용 좌표 x
+    observeY: 3 // 게임 시점용 좌표 y
 }
 
 export const cube = createSlice({
@@ -24,15 +25,16 @@ export const cube = createSlice({
         changeVoteTime(state, action) {
             state.voteTime = action.payload.voteTime
         },
-        boxResize(state, action) {
-            state.boxSize = action.payload.boxSize
-        },
         resize(state, action) {
             state.width = action.payload.width
             state.height = action.payload.height
         },
         updateScale(state, action) {
             state.scale = action.payload.scale
+        },
+        updateObserve(state, action) {
+            state.observeX = action.payload.observeX
+            state.observeY = action.payload.observeY
         }
     },
     extraReducers: builder => {
@@ -40,7 +42,7 @@ export const cube = createSlice({
     }
 })
 
-export const { changeGameStatus, changeVoteTime, changeGameSize, boxResize, resize, updateScale } = cube.actions
+export const { changeGameStatus, changeVoteTime, changeGameSize, resize, updateScale, updateObserve } = cube.actions
 
 export default cube.reducer
 

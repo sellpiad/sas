@@ -58,7 +58,7 @@ public class GameMaster {
         clear();
         setting();
 
-        aiDeploymentRun(0, 500, TimeUnit.MILLISECONDS, 0.9);
+        //aiDeploymentRun(0, 500, TimeUnit.MILLISECONDS, 0.9);
         queueRun(0, 1000, TimeUnit.MILLISECONDS);
     }
 
@@ -112,7 +112,7 @@ public class GameMaster {
                             .playerId(ai.playerId)
                             .attr(ai.attr)
                             .direction("down")
-                            .position(ai.conqueredCubes.iterator().next())
+                            .target(ai.conqueredCubes.iterator().next())
                             .build();
 
                     String msg = slime.playerId + "가 플레이를 시작합니다.";

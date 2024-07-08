@@ -1,14 +1,12 @@
 import { Client, IMessage } from "@stomp/stompjs";
 import React, { useEffect, useState } from "react";
-import { Col, Row, Stack } from "react-bootstrap";
-import CubeObj from "./CubeObj.tsx";
+import { Stack } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
+import { updateRenderingState, updateSize } from "../redux/cubeSlice.tsx";
+import { changeGameSize } from "../redux/gameSlice.tsx";
 import { RootState } from "../redux/store.tsx";
-import Slime from "../slime/Slime.tsx";
-import { cube, updateRenderingState, updateSize } from "../redux/cubeSlice.tsx";
-import { updateIsDominating, updatePlayerId } from "../redux/userSlice.tsx";
-import { boxResize, changeGameSize } from "../redux/gameSlice.tsx";
-import { Root } from "react-dom/client";
+import { updatePlayerId } from "../redux/userSlice.tsx";
+import CubeObj from "./CubeObj.tsx";
 
 interface Props {
     client: Client | undefined;
@@ -27,12 +25,13 @@ export default function CubeSet({ client, left, top, right, down }: Props) {
 
     const [targetCube, setTartgetCube] = useState<string>('')
 
-
     const dispatch = useDispatch()
+
     const playerId = useSelector((state: RootState) => state.user.playerId)
-    const width = useSelector((state: RootState) => state.game.width)
-    const size = useSelector((state: RootState) => state.game.size)
-    
+    const observeX = useSelector((state: RootState) => state.game.observeX)
+    const observeY = useSelector((state: RootState) => state.game.observeY)
+
+
     const playerPos = useSelector((state: RootState) => state.user.position)
 
 
@@ -92,6 +91,8 @@ export default function CubeSet({ client, left, top, right, down }: Props) {
             client.publish({ destination: '/app/cube/cubeSet' })
         }
 
+        window.addEventListener('resize',updateCubeSize)
+
 
         return () => {
 
@@ -101,9 +102,23 @@ export default function CubeSet({ client, left, top, right, down }: Props) {
                 client.unsubscribe("/user/queue/cube/clickable")
             }
 
+            window.removeEventListener('resize',updateCubeSize)
+
         }
 
     }, [])
+
+
+
+    const updateCubeSize = () => {
+
+        const slimeBox = document.getElementById('slimebox' + observeX + "" + observeY)
+
+        if (slimeBox) {
+            dispatch(updateSize({ width: slimeBox?.offsetWidth, height: slimeBox?.offsetHeight }))
+        }
+
+    }
 
 
     useEffect(() => {
@@ -114,9 +129,14 @@ export default function CubeSet({ client, left, top, right, down }: Props) {
 
             dispatch(updateRenderingState({ isRendered: true }))
             dispatch(changeGameSize({ size: Math.max(...lengths) }))
+            updateCubeSize()
         }
 
     }, [cubeSet])
+
+    useEffect(() => {
+        updateCubeSize()
+    }, [left, top, right, down])
 
     useEffect(() => {
 
@@ -128,16 +148,6 @@ export default function CubeSet({ client, left, top, right, down }: Props) {
     }, [playerId])
 
 
-    useEffect(() => {
-
-        dispatch(boxResize({ boxSize: width / size }))
-
-    }, [width, size])
-
-
-
-
-
     return (
 
         <Stack gap={2} id="cubeSet">
@@ -145,11 +155,11 @@ export default function CubeSet({ client, left, top, right, down }: Props) {
             {
                 Object.keys(cubeSet).map((rowNum, index) => {
                     return top <= Number(rowNum) && down >= Number(rowNum) && (
-                        <div key={'row-' + rowNum} style={{ display: "flex", flexFlow: "row", gap: "0.5rem", flex: "1"}}>
+                        <div key={'row-' + rowNum} style={{ display: "flex", flexFlow: "row", gap: "0.5rem", flex: "1" }}>
                             {
                                 cubeSet[rowNum].map((cube, index) => {
                                     return left <= Number(cube.posX) && right >= Number(cube.posX) &&
-                                        <div key={'col-' + cube.posX + cube.posY} style={{width:"100%", height:"100%"}}>
+                                        <div key={'col-' + cube.posX + cube.posY} style={{ width: "100%", height: "100%" }}>
                                             <CubeObj name={cube.name} isConquest={isConquered(cube.name)} isClickable={isClickable(cube.name)} isDominating={isDominating(cube.name)} />
                                         </div>
 

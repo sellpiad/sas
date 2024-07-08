@@ -3,18 +3,27 @@ import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 
 
+/**
+ * Component Slime
+ * 슬라임 컴포넌트
+ * 슬라임의 각종 정보 및 이동, 공격 등 모션 정보 포함
+ * 
+ */
+
 interface Props {
     playerId?: string
     actionType?: string
     direction?: string
     fill?: string
     border?: string
-    position?: string | undefined // 현재 위치한 큐브 이름
+    target?: string | undefined // 현재 위치한 큐브 이름
     width?: string
     height?: string
     isAbsolute: boolean
 }
 
+//기본 프레임과 해당 액션의 소요 시간
+//시간은 ms 단위
 const idleFrame = 2;
 const idleTime = 500;
 
@@ -24,11 +33,17 @@ const movingTime = 300;
 const attackFrame = 3;
 const attackTime = 300;
 
-export default function Slime({ playerId, actionType, direction, fill, border, position, isAbsolute, ...props }: Props) {
+export default function Slime({ playerId, actionType, direction, fill, border, target, isAbsolute, ...props }: Props) {
 
+    // 슬라임 넓이와 높이
+    // 이 컴포넌트는 여러 곳에서 쓰기 때문에 props에서 따로 width와 height이 들어오거나,
+    // 슬라임 박스 내에 위치 시키거나 하는 경우 때문에 어댑터 역할로 따로 state를 선언.
     const [width, setWidth] = useState<string>('0')
     const [height, setHeight] = useState<string>('0')
+
     const scale = useSelector((state: RootState) => state.game.scale)
+    const boxWidth = useSelector((state: RootState) => state.cube.width)
+    const boxHeight = useSelector((state: RootState) => state.cube.height)
 
     const [speed, setSpeed] = useState<number>(0) // 이동 스피드
 
@@ -42,11 +57,10 @@ export default function Slime({ playerId, actionType, direction, fill, border, p
     const actionRef = useRef('idle')
     const frameRef = useRef<number>(1)
 
-    const positionRef = useRef<string>()
+    const targetRef = useRef<string>()
 
 
-
-
+    // 슬라임의 속성을 나타내는 색을 반환하는 메소드
     const getAttr = () => {
         switch (fill) {
             case 'GRASS':
@@ -60,27 +74,22 @@ export default function Slime({ playerId, actionType, direction, fill, border, p
         }
     }
 
+    // 슬라임이 속한 큐브의 정보 업데이트 메소드
     const updateSlimeBox = () => {
 
-        const slimeBox = position !== undefined && document.getElementById(position)
-
-        if (slimeBox) {
-
-            setWidth(slimeBox.offsetWidth + "")
-            setHeight(slimeBox.offsetHeight + "")
-
-        } else {
-            if (props.width !== undefined && props.height !== undefined) {
-                setWidth(props.width)
-                setHeight(props.height)
-            }
-
+        if (props.width !== undefined && props.height !== undefined) {
+            setWidth(props.width)
+            setHeight(props.height)
+        } else{
+            setWidth(boxWidth+'')
+            setHeight(boxHeight+'')
         }
     }
 
-    const updatePosition = () => {
+    // 위치 업데이트 메소드
+    const updateTarget = () => {
 
-        const slimeBox = position !== undefined && document.getElementById(position)
+        const slimeBox = target !== undefined && document.getElementById(target)
 
         if (slimeBox) {
             setMoveX(slimeBox.offsetLeft)
@@ -89,11 +98,13 @@ export default function Slime({ playerId, actionType, direction, fill, border, p
 
     }
 
+    // 모션 업데이트 메소드
     const updateMotion = () => {
         setMotion('#slime-' + playerId + '-' + direction + '-' + action + '-' + frame)
     }
 
 
+    // 애니메이션 업데이트 메소드
     const updateAnimation = (currentTime) => {
 
         let maxFrame = 0;
@@ -121,21 +132,17 @@ export default function Slime({ playerId, actionType, direction, fill, border, p
             setFrame(prev => prev + 1)
             startTimeRef.current = currentTime
 
-            if (actionRef.current === 'move' || actionRef.current === 'attack') {
+            // 좌표 체크
+            const slimeBox = targetRef.current !== undefined && document.getElementById(targetRef.current)
 
-                // 좌표 체크
-                const slimeBox = positionRef.current !== undefined && document.getElementById(positionRef.current)
+            if (slimeBox) {
+                const targetX = slimeBox.offsetLeft
+                const targetY = slimeBox.offsetTop
 
-                if (slimeBox) {
-                    const targetX = slimeBox.offsetLeft
-                    const targetY = slimeBox.offsetTop
+                const t = frameRef.current / movingFrame
 
-                    const t = frameRef.current / movingFrame
-
-                    setMoveX(prevX => prevX * (1 - t) + targetX * t)
-                    setMoveY(prevY => prevY * (1 - t) + targetY * t)
-                }
-
+                setMoveX(prevX => prevX * (1 - t) + targetX * t)
+                setMoveY(prevY => prevY * (1 - t) + targetY * t)
             }
 
             if (frameRef.current === maxFrame) {
@@ -156,6 +163,7 @@ export default function Slime({ playerId, actionType, direction, fill, border, p
 
     }, [playerId])
 
+    // 액션타입이 변경되었을 때 감지 및, action state 업데이트
     useEffect(() => {
 
         if (actionType) {
@@ -177,23 +185,20 @@ export default function Slime({ playerId, actionType, direction, fill, border, p
     }, [action, direction, frame])
 
 
-    // 박스 사이즈 변경시
+    // 박스 사이즈, 혹은 스케일 변경시
     useEffect(() => {
 
         updateSlimeBox()
-        updatePosition()
+        updateTarget()
 
+    }, [boxWidth, boxHeight, width, height, scale])
 
-    }, [width, height])
-
+    // 포지션 업데이트
     useEffect(() => {
-        positionRef.current = position
-    }, [position])
+        targetRef.current = target
+    }, [target])
 
-    useEffect(() => {
-        updateSlimeBox()
-        updatePosition()
-    }, [scale])
+
 
 
     return (
