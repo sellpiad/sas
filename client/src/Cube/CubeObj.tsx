@@ -30,7 +30,6 @@ export default function CubeObj({ name, isConquest, isClickable, isDominating }:
         }
     }
 
-
     const getBackground = () => {
         if (isConquest) {
             return getAttr()
@@ -39,20 +38,10 @@ export default function CubeObj({ name, isConquest, isClickable, isDominating }:
         }
     }
 
-    useEffect(() => {
-
-        if (isDominating) {
-            console.log("정복중")
-        }
-
-    }, [isDominating])
-
-
     return (
 
         <div key={name} className={classNames} id={name} color="#ffffff" style={{
             border: isClickable ? 'solid' + getAttr() : 'solid #ffffff',
-            aspectRatio:"1/1",
             borderRadius: "15%",
             backgroundColor: getBackground(),
             justifyContent: "center",

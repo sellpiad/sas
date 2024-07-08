@@ -15,9 +15,9 @@ interface Props {
 }
 
 interface SlimeDTO {
-    actionType: string
-    playerId: string
-    position: string
+    actionType: string 
+    playerId: string 
+    target: string // 위치
     attr: string
     direction: string
 }
@@ -25,48 +25,34 @@ interface SlimeDTO {
 interface ActionData {
     actionType: string
     playerId: string
-    target?: string
+    target?: string // 위치
     direction: string
 }
 
 
 export default function SlimeField({ client }: Props) {
 
+    // 슬라임 저장용 state
     const [slimes, setSlimes] = useState<Map<string, SlimeDTO>>(new Map())
 
     // 움직임 관련 states
     const [move, setMove] = useState<ActionData>()
-    const [movable, setMovable] = useState<boolean>()
 
-    const [direction, setDirection] = useState<string>()
-    const [go, setGo] = useState<boolean>()
-
-    const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+    // 플레이어 아이디(게임 참가시)
     const playerId = useSelector((state: RootState) => state.user.playerId);
-
+    // 큐브 렌더링 확인용
     const slimeBoxRendered = useSelector((state: RootState) => state.cube.isRendered)
 
     const dispatch = useDispatch()
 
-    const keyDown = (e: KeyboardEvent) => {
-
-        if (arrowKeys.includes(e.code)) {
-            setDirection(e.code.toLowerCase().substring(5))
-            setGo(true)
-        } else if (e.code.match('Space')) {
-            setGo(true)
-        }
-    }
-
-
-
     useEffect(() => {
-
-        window.addEventListener('keydown', keyDown)
 
         if (client != undefined) {
 
+            // 처음 접속 했을 때, 현재 게임에 참가 중인 슬라임들 요청
+            client.publish({ destination: '/app/game/slimes' })
 
+            // 초기 슬라임들 받아오기
             client.subscribe('/user/queue/game/slimes', (msg: IMessage) => {
 
                 const json = JSON.parse(msg.body) as { [key: string]: SlimeDTO }
@@ -78,6 +64,28 @@ export default function SlimeField({ client }: Props) {
                 client.unsubscribe('/user/queue/game/slimes')
             })
 
+
+            // 유저 아이디 
+            client.subscribe("/user/queue/player/ingame", (msg: IMessage) => {
+                dispatch(updatePlayerId({ playerId: JSON.parse(msg.body) }))
+            })
+
+            // 초기 위치
+            client.subscribe("/user/queue/player/initialPosition", (msg: IMessage) => {
+                dispatch(updatePosition({ position: msg.body }))
+            })
+
+            // 슬라임 위치 업데이트
+            client.subscribe("/topic/game/move", (msg: IMessage) => {
+
+                const ActionData = JSON.parse(msg.body) as ActionData
+
+                setMove(ActionData)
+
+            })
+
+
+            // 슬라임 추가
             client.subscribe('/topic/game/addSlime', (msg: IMessage) => {
 
                 const parser: SlimeDTO = JSON.parse(msg.body)
@@ -91,10 +99,8 @@ export default function SlimeField({ client }: Props) {
                 })
             })
 
-            client.subscribe("/topic/game/chat", (msg: IMessage) => {
 
-            })
-
+            // 슬라임 삭제
             client.subscribe("/topic/game/deleteSlime", (msg: IMessage) => {
 
                 setSlimes(prevSlimes => {
@@ -104,68 +110,26 @@ export default function SlimeField({ client }: Props) {
 
                     return slimeSet
                 })
-                
-                dispatch(updatePosition({position:''}))
+
+                dispatch(updatePosition({ position: '' }))
 
             })
-
-
-            client.subscribe("/topic/game/move", (msg: IMessage) => {
-
-                const ActionData = JSON.parse(msg.body) as ActionData
-
-                setMove(ActionData)
-
-            })
-
-            client.subscribe("/user/queue/player/ingame", (msg: IMessage) => {
-                dispatch(updatePlayerId({ playerId: JSON.parse(msg.body) }))
-            })
-
-            client.subscribe("/user/queue/player/initialPosition", (msg: IMessage) => {
-                dispatch(updatePosition({ position: msg.body }))
-            })
-
-
-            client.subscribe("/user/queue/player/movable", (msg: IMessage) => {
-                setMovable(JSON.parse(msg.body))
-            })
-
-            client.subscribe("/user/queue/game/complete", (msg: IMessage) => {
-                console.log("정복자! " + msg.body)
-            })
-
-
-
-            client.publish({ destination: '/app/game/slimes' })
-
         }
-
 
 
         return () => {
             client?.unsubscribe('/topic/game/move')
             client?.unsubscribe('/topic/game/slimes')
             client?.unsubscribe("/user/queue/player/movable")
-            client?.unsubscribe("/user/queue/game/complete")
             client?.unsubscribe("/user/queue/player/ingame")
-            window.removeEventListener('keydown', keyDown)
+
         }
 
     }, [])
 
-    useEffect(() => {
-
-        if (playerId) {
-            //
-        }
-
-    }, [playerId])
 
 
-
-
-
+    // 새로운 움직임이 들어왔을 때
     useEffect(() => {
 
         if (move) {
@@ -181,7 +145,7 @@ export default function SlimeField({ client }: Props) {
 
                     const moveSlime: SlimeDTO = {
                         actionType: move.actionType,
-                        position: move.target ?? slime.position,
+                        target: move.target ?? slime.target,
                         playerId: move.playerId,
                         attr: slime.attr,
                         direction: move.direction
@@ -203,41 +167,7 @@ export default function SlimeField({ client }: Props) {
         }
     }, [move])
 
-
-    useEffect(() => {
-
-        /*if (direction && playerId != null) {
-
-            const selected: ActionData = {
-                playerId: JSON.parse(playerId),
-                direction: direction
-            }
-
-            client?.publish({ destination: '/topic/game/move', body: JSON.stringify(selected) })
-        }*/
-
-    }, [direction])
-
-    useEffect(() => {
-
-        if (go) {
-            client?.publish({ destination: '/app/game/move', body: direction })
-            setGo(false)
-        }
-    }, [go])
-
-
-
-    useEffect(() => {
-
-        if (movable) {
-            // 여기에 슬라임이 주위로 나갈 수 있도록 표시.
-            console.log("움직일 수 있다!")
-        }
-
-    }, [movable])
-
-
+  
     return (
         slimeBoxRendered &&
         <div style={{ position: "absolute", padding: 0 }}>
@@ -245,11 +175,11 @@ export default function SlimeField({ client }: Props) {
             {
                 [...slimes.values()].map((value, index, array) => {
                     return <Slime key={value['playerId']}
-                        playerId = {value['playerId']}
+                        playerId={value['playerId']}
                         actionType={value['actionType']}
                         direction={value['direction']}
                         fill={value['attr']}
-                        position={value['position']}
+                        target={value['target']}
                         isAbsolute={true}
                     />
                 })

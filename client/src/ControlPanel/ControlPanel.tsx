@@ -1,12 +1,28 @@
 import React, { useEffect, useState } from "react";
 import { Col, Row } from "react-bootstrap";
 import './ControlPanel.css'
+import { Client } from "@stomp/stompjs";
 
-export default function ControlPanel() {
+/**
+ * Component ControlPanel
+ * 플레이어의 컨트롤을 전담하는 컴포넌트
+ * 
+ */
 
-    const [direction, setDirection] = useState<string>()
+interface Props {
+    client: Client | undefined
+}
 
+export default function ControlPanel({ client }: Props) {
+
+    const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']; //키보드로 들어올 키값
+
+    const [direction, setDirection] = useState<string>() // 유저가 입력한 방향
+
+
+    // 터치 및 클릭 버튼 이벤트 처리 메소드
     const handleClick = (button: string) => {
+
         setDirection(button)
 
         setTimeout(() => {
@@ -14,8 +30,29 @@ export default function ControlPanel() {
         }, 500)
     };
 
+    // 키보드 이벤트 처리 메소드
+    const keyDown = (e: KeyboardEvent) => {
+
+        if (arrowKeys.includes(e.code)) {
+            setDirection(e.code.toLowerCase().substring(5))
+            
+            setTimeout(() => {
+                setDirection('')
+            }, 500)
+        }
+
+    }
 
     useEffect(() => {
+        if (direction !== '')
+            client?.publish({ destination: '/app/game/move', body: direction })
+    }, [direction])
+
+    useEffect(() => {
+
+        window.addEventListener('keydown', keyDown)
+
+        return () => window.removeEventListener('keydown', keyDown)
 
     }, [])
 

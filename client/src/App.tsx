@@ -26,10 +26,15 @@ function App() {
 
   const isLogined = useSelector((state: RootState) => state.user.isLogined)
 
-  const [modal, setModal] = useState(false)
+  const [createModal, setCreateModal] = useState(false)
+  const [rankingModal, setRankingModal] = useState(false)
 
-  const showModal = () => {
-    setModal(true)
+  const showCreateModal = () => {
+    setCreateModal(true)
+  }
+
+  const showRankingModal = () => {
+    setRankingModal(true)
   }
 
   const windowResize = () => {
@@ -99,7 +104,7 @@ function App() {
   return (
     <div className="App" ref={app}>
       <Navbar>
-        <Container>
+        <Container style={{justifyContent:"center"}}>
           <Row className='w-100 justify-content-between'>
             <Col xs={12} sm={6}>
               <Navbar.Brand>
@@ -119,16 +124,16 @@ function App() {
             <Col className="d-flex flex-column justify-content-lg-center" xs={12} sm={6}>
               <Row className="justify-content-end justify-content-lg-end">
                 <Col xs={3} sm={2}>
-                  <Button variant="outline-light" onClick={showModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%" }}>PLAY</Button>
+                  <Button variant="outline-light" onClick={showCreateModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%" }}>PLAY</Button>
                 </Col>
                 <Col xs={3} sm={2}>
-                  <Button variant="outline-light" onClick={showModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%" }}>CHAT</Button>
+                  <Button variant="outline-light" onClick={showCreateModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%" }}>CHAT</Button>
                 </Col>
                 <Col xs={3} sm={2}>
-                  <Button variant="outline-light" onClick={showModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%" }}>RANK</Button>
+                  <Button variant="outline-light" onClick={showRankingModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%" }}>RANK</Button>
                 </Col>
                 <Col xs={3} sm={2}>
-                  <Button variant="outline-light" onClick={showModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%" }}>BOARD</Button>
+                  <Button variant="outline-light" onClick={showCreateModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%" }}>BOARD</Button>
                 </Col>
 
               </Row>
@@ -141,22 +146,19 @@ function App() {
         <Row >
           {
             isConn &&
-            <>
-              <Col xs={12} sm={9} xxl={{ span: 6, offset: 3 }}>
-                <Stack gap={2}>
-                  <PlayBody client={ws.current}></PlayBody>
-                  <ControlPanel></ControlPanel>
-                </Stack>
-              </Col>
-              <Col sm={3}>
-                <RankingBoard client={ws.current}></RankingBoard>
-              </Col>
-            </>
+            <Col xs={12} sm={9} xxl={{ span: 6, offset: 3 }}>
+              <Stack gap={4} style={{ alignItems: "center" }}>
+                <PlayBody client={ws.current}></PlayBody>
+                <ControlPanel client={ws.current}></ControlPanel>
+              </Stack>
+            </Col>
           }
         </Row>
 
       </Container>
-      <CreateModal show={modal} onHide={() => setModal(false)} client={ws.current}></CreateModal>
+
+      <CreateModal show={createModal} onHide={() => setCreateModal(false)} client={ws.current}></CreateModal>
+      <RankingBoard show={rankingModal} onHide={() => setRankingModal(false)} client={ws.current}></RankingBoard>
     </div>
   );
 }

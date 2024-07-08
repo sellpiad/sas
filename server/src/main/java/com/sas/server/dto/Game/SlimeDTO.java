@@ -12,6 +12,6 @@ public class SlimeDTO {
     public UUID playerId;
     public String attr;
     public String direction;
-    public String position;
+    public String target;
     
 }

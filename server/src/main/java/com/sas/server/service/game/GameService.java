@@ -269,7 +269,7 @@ public class GameService {
                         .playerId(player.playerId)
                         .attr(player.attr)
                         .direction(player.direction)
-                        .position(cube.name)
+                        .target(cube.name)
                         .build();
 
                 slimeSet.put(player.playerId.toString(), slimeDTO);
@@ -331,7 +331,7 @@ public class GameService {
                                 .playerId(player.playerId)
                                 .attr(player.attr)
                                 .direction("down")
-                                .position(position)
+                                .target(position)
                                 .build();
 
                         gameRepo.save(game);
