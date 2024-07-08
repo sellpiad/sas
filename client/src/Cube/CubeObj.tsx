@@ -52,12 +52,13 @@ export default function CubeObj({ name, isConquest, isClickable, isDominating }:
 
         <div key={name} className={classNames} id={name} color="#ffffff" style={{
             border: isClickable ? 'solid' + getAttr() : 'solid #ffffff',
-            borderRadius: "1rem",
+            aspectRatio:"1/1",
+            borderRadius: "15%",
             backgroundColor: getBackground(),
             justifyContent: "center",
             display: "flex",
-            width:"96px",
-            height:"96px"
+            width:"100%",
+            height:"100%"
         }}/>
     )
 

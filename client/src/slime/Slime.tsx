@@ -1,5 +1,6 @@
-import { current, nanoid } from "@reduxjs/toolkit";
-import React, { act, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "../redux/store";
 
 
 interface Props {
@@ -27,6 +28,7 @@ export default function Slime({ playerId, actionType, direction, fill, border, p
 
     const [width, setWidth] = useState<string>('0')
     const [height, setHeight] = useState<string>('0')
+    const scale = useSelector((state: RootState) => state.game.scale)
 
     const [speed, setSpeed] = useState<number>(0) // 이동 스피드
 
@@ -38,12 +40,11 @@ export default function Slime({ playerId, actionType, direction, fill, border, p
 
     const startTimeRef = useRef(0)
     const actionRef = useRef('idle')
-    const rafRef = useRef<number>(0)
     const frameRef = useRef<number>(1)
 
     const positionRef = useRef<string>()
-    const dxRef = useRef<number>(0) // x좌표 변화량
-    const dyRef = useRef<number>(0) // y좌표 변화량
+
+
 
 
     const getAttr = () => {
@@ -92,39 +93,6 @@ export default function Slime({ playerId, actionType, direction, fill, border, p
         setMotion('#slime-' + playerId + '-' + direction + '-' + action + '-' + frame)
     }
 
- 
-
-    // 해당 컴포넌트는 애니메이션 및 이동 수행.
-    // 기본 상태는 idle, 그 외 상태는 attack, move 등이 존재.
-    // 애니메이션은 requestAnimationFrame으로 수행.
-    // requestAnimationFrame은 실행 시점에서는 state를 기준으로 수행한다.
-    // 그러므로, raf 내에서 state를 업데이트한다해서 이것이 다음 연산에 적용된다는 법은 없다.
-    // rAF 내에서 변화한 값을 사용하고 싶다면 useRef를 사용해야한다.
-    // 변화값 => action, direction, position
-    // 슬라임 모션은 action과 direction이 변할때마다.
-    // 슬라임 위치는 position이 변할때마다.
-    // 위치 변동은 프레임에 기반해서 바뀌게 해야한다.
-    // 즉, 위치 변동이 일어나지 않더라도 이 값을 참조해서 계산하는 편이 효율적이다.
-    // updateAnimation이란 메소드를 만든다.
-    // rAF의 목적은 결국 프레임 기반으로 motion, moveX, moveY를 수정하고 이를 반영하는 것.
-    // idle, move, attack을 나눠서 구현해야하는 이유는 이것들이 적용되는 시간이 다르기 때문?
-    // 적용되는 시간이 달라도 가능.
-    // 단, action이 변화할 때마다 현재 애니메이션 관련 필드들은 초기화 시켜야한다.
-    // 프레임을 적용시키는 시간은 어떻게 구할까?
-    // 최대 프레임을 최대 시간으로 나눈다.
-    // 3프레임, 300ms 라면 100ms가 나온다. 100ms마다 좌표와 모션을 업데이트한다.
-    // 최대 프레임과 최대 시간은 사전에 정해준다. action 타입에 따라 골라 쓴다.
-    // 변경되어야하는 state들 -> actionType, direction, frame, moveX, moveY
-    // rAF 내부에서는 state를 업데이트 할순 있지만, 업데이트 된 값을 내부에 반영하지는 못한다.
-    // 그래서 매개체로 ref를 써야한다.
-    // actionRef, directionRef, frameRef, moveXRef, moveYRef
-    // rAF가 frame과 좌표만 수정.
-    // action과 direction의 rAF가 관여할 것이 아니다.
-    // 현재 action에 따라서 최대 프레임 변할뿐.
-    // 좌표가 변동됐다면 좌표도 변하게 할뿐.
-    // 즉, 말그대로 updateAnimation이다.
-    // 액션이 변경될 때마다 프레임도 초기화 되어야한다.
-    // 즉, 현재 프레임을 나타내는 ref가 하나 있어야한다. frameRef.
 
     const updateAnimation = (currentTime) => {
 
@@ -153,7 +121,7 @@ export default function Slime({ playerId, actionType, direction, fill, border, p
             setFrame(prev => prev + 1)
             startTimeRef.current = currentTime
 
-            if (actionRef.current == 'move' || actionRef.current == 'attack') {
+            if (actionRef.current === 'move' || actionRef.current === 'attack') {
 
                 // 좌표 체크
                 const slimeBox = positionRef.current !== undefined && document.getElementById(positionRef.current)
@@ -170,7 +138,7 @@ export default function Slime({ playerId, actionType, direction, fill, border, p
 
             }
 
-            if (frameRef.current == maxFrame) {
+            if (frameRef.current === maxFrame) {
                 setAction('idle')
                 setFrame(1)
             }
@@ -215,19 +183,22 @@ export default function Slime({ playerId, actionType, direction, fill, border, p
         updateSlimeBox()
         updatePosition()
 
+
     }, [width, height])
 
     useEffect(() => {
         positionRef.current = position
     }, [position])
 
-
-
+    useEffect(() => {
+        updateSlimeBox()
+        updatePosition()
+    }, [scale])
 
 
     return (
         speed > 0 &&
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={width} height={height} preserveAspectRatio="xMidYMid meet" transform={`translate(${moveX}, ${moveY})`} style={{ position: isAbsolute ? "absolute" : "relative", transition: "transform " + speed + "s ease" }}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={width} height={height} preserveAspectRatio="xMidYMid meet" style={{ position: isAbsolute ? "absolute" : "relative", transform: "translate(" + moveX + "px," + moveY + "px)", transition: "transform " + speed + "s ease" }}>
 
             <use xlinkHref={motion} x={11} y={25} width={150} height={150} />
 

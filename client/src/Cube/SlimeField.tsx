@@ -8,6 +8,10 @@ import { updateCubeNickname } from "../redux/cubeSlice.tsx";
 
 interface Props {
     client: Client | undefined
+    left: number
+    top: number
+    right: number
+    down: number
 }
 
 interface SlimeDTO {
@@ -174,6 +178,7 @@ export default function SlimeField({ client }: Props) {
                 const slime = prevSlimes.get(move.playerId)
 
                 if (slime) {
+
                     const moveSlime: SlimeDTO = {
                         actionType: move.actionType,
                         position: move.target ?? slime.position,

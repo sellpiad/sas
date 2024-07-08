@@ -13,3 +13,9 @@
   font-weight: normal;
   font-style: normal;
 }
+
+@font-face {
+  font-family: 'Dotfont';         
+  src: url('./font/BallsoOnTheRampage.ttf'); 
+}
+

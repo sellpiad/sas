@@ -8,14 +8,15 @@ const initialState = {
     boxSize: 0,
     width: 0,
     height: 0,
+    scale: 0
 }
 
 export const cube = createSlice({
     name: 'game',
     initialState,
     reducers: {
-        changeGameSize(state,action) {
-          state.size = action.payload.size  
+        changeGameSize(state, action) {
+            state.size = action.payload.size
         },
         changeGameStatus(state, action) {
             state.gameStatus = action.payload.gameStatus
@@ -23,12 +24,15 @@ export const cube = createSlice({
         changeVoteTime(state, action) {
             state.voteTime = action.payload.voteTime
         },
-        boxResize(state,action){
+        boxResize(state, action) {
             state.boxSize = action.payload.boxSize
         },
-        resize(state,action) {
+        resize(state, action) {
             state.width = action.payload.width
             state.height = action.payload.height
+        },
+        updateScale(state, action) {
+            state.scale = action.payload.scale
         }
     },
     extraReducers: builder => {
@@ -36,7 +40,7 @@ export const cube = createSlice({
     }
 })
 
-export const { changeGameStatus, changeVoteTime, changeGameSize, boxResize, resize} = cube.actions
+export const { changeGameStatus, changeVoteTime, changeGameSize, boxResize, resize, updateScale } = cube.actions
 
 export default cube.reducer
 

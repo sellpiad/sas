@@ -1,6 +1,6 @@
 import { Client, IMessage } from '@stomp/stompjs';
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, Col, Container, Navbar, Row } from 'react-bootstrap';
+import { Button, Col, Container, Navbar, Row, Stack } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import SockJS from 'sockjs-client';
 import './App.css';
@@ -11,6 +11,7 @@ import { RootState } from './redux/store.tsx';
 import { changeLogin } from './redux/userSlice.tsx';
 import Slime from './slime/Slime.tsx';
 import RankingBoard from './Ranker/RankingBoard.tsx';
+import ControlPanel from './ControlPanel/ControlPanel.tsx';
 
 function App() {
 
@@ -99,36 +100,53 @@ function App() {
     <div className="App" ref={app}>
       <Navbar>
         <Container>
-          <Navbar.Brand>
-            <Slime move="down" width={"5vw"} height={"5vw"} isAbsolute={false}></Slime>
-            <svg width="100%" height="100%" viewBox="-5 -30 200 50">
-              <text
-                x="0" y="0" fill="#3678ce"
-                fontFamily="SBAggroB"
-                fontSize="1.2rem"
-                rotate="4, 8, -8, -4, -20, -24, 48, 0, 0">
-                슬라임으로 살아남기
-              </text>
-            </svg>
-          </Navbar.Brand>
+          <Row className='w-100 justify-content-between'>
+            <Col xs={12} sm={6}>
+              <Navbar.Brand>
+                <Slime direction="down" width={"96"} height={"96"} isAbsolute={false}></Slime>
+                <svg width="100%" height="100%" viewBox="-5 -30 200 50">
+                  <text
+                    x="0" y="0" fill="#3678ce"
+                    fontFamily="SBAggroB"
+                    fontSize="1rem"
+                    rotate="4, 8, -8, -4, -20, -24, 48, 0, 0">
+                    슬라임으로 살아남기
+                  </text>
+                </svg>
 
-          <Row>
-            <Col xs={12}>
+              </Navbar.Brand>
+            </Col>
+            <Col className="d-flex flex-column justify-content-lg-center" xs={12} sm={6}>
+              <Row className="justify-content-end justify-content-lg-end">
+                <Col xs={3} sm={2}>
+                  <Button variant="outline-light" onClick={showModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%" }}>PLAY</Button>
+                </Col>
+                <Col xs={3} sm={2}>
+                  <Button variant="outline-light" onClick={showModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%" }}>CHAT</Button>
+                </Col>
+                <Col xs={3} sm={2}>
+                  <Button variant="outline-light" onClick={showModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%" }}>RANK</Button>
+                </Col>
+                <Col xs={3} sm={2}>
+                  <Button variant="outline-light" onClick={showModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%" }}>BOARD</Button>
+                </Col>
 
-              <Button onClick={showModal}>슬라임 생성</Button>
+              </Row>
             </Col>
           </Row>
-
         </Container>
 
       </Navbar>
       <Container>
-        <Row>
+        <Row >
           {
             isConn &&
             <>
-              <Col sm={9} xxl={{ span: 6, offset: 3 }} style={{ overflow: "hidden" }}>
-                <PlayBody client={ws.current}></PlayBody>
+              <Col xs={12} sm={9} xxl={{ span: 6, offset: 3 }}>
+                <Stack gap={2}>
+                  <PlayBody client={ws.current}></PlayBody>
+                  <ControlPanel></ControlPanel>
+                </Stack>
               </Col>
               <Col sm={3}>
                 <RankingBoard client={ws.current}></RankingBoard>
@@ -136,6 +154,7 @@ function App() {
             </>
           }
         </Row>
+
       </Container>
       <CreateModal show={modal} onHide={() => setModal(false)} client={ws.current}></CreateModal>
     </div>

@@ -57,10 +57,10 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
     return (
         <Modal show={show} onHide={onHide} size="sm" centered>
             <ModalBody>
-                <Carousel controls={true} onSelect={(eventKey) => setSlime(eventKey)}>
+                <Carousel controls={true} onSelect={(eventKey) => setSlime(eventKey)} interval={null}>
                     <Carousel.Item>
                         <div style={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-                            <Slime move="down" fill="GRASS" width="5vw" height="5vh" isAbsolute={false} position={undefined}></Slime>
+                            <Slime direction="down" fill="GRASS" width="5vw" height="5vh" isAbsolute={false} position={undefined}></Slime>
                             <div style={{ textAlign: "center" }}>
                                 <strong>속성 - 풀</strong>
                                 <p></p>
@@ -72,7 +72,7 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
                     </Carousel.Item>
                     <Carousel.Item>
                         <div style={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-                            <Slime move="down"  fill="FIRE" width="5vw" height="5vh" isAbsolute={false}></Slime>
+                            <Slime direction="down"  fill="FIRE" width="5vw" height="5vh" isAbsolute={false}></Slime>
                             <div style={{ textAlign: "center" }}>
                                 <strong>속성 - 불</strong>
                                 <p></p>
@@ -84,7 +84,7 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
                     </Carousel.Item>
                     <Carousel.Item>
                         <div style={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-                            <Slime move="down" fill="WATER" width="5vw" height="5vh" isAbsolute={false}></Slime>
+                            <Slime direction="down" fill="WATER" width="5vw" height="5vh" isAbsolute={false}></Slime>
                             <div style={{ textAlign: "center" }}>
                                 <strong>속성 - 물</strong>
                                 <p></p>
