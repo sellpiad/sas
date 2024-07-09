@@ -155,7 +155,6 @@ public class GameService {
 
             game.userTable.put(sessionId, targetCubeId);
 
-            log.info("[addOnly] {}", sessionId);
         } catch (Exception e) {
             log.info("[addOnly] {}" + e.getMessage());
         }
@@ -178,7 +177,6 @@ public class GameService {
         if (currentCubeId != null) {
             game.cubeTable.put(currentCubeId, "null");
             game.userTable.remove(sessionId);
-            log.info("[removeOnly] {}", sessionId);
         }
 
     }
@@ -249,35 +247,51 @@ public class GameService {
 
     public Map<String, SlimeDTO> findAllSlimes() {
 
-        GameEntity game = findGame();
+        try {
+            String lockKey = "lock:game";
 
-        if (game == null)
-            return null;
+            Boolean isGameLocked = lockGame();
 
-        Map<String, String> userTable = game.userTable == null ? new HashMap<>() : game.userTable;
+            if (isGameLocked != null && isGameLocked) {
 
-        Map<String, SlimeDTO> slimeSet = new HashMap<>();
+                GameEntity game = findGame();
 
-        for (Map.Entry<String, String> user : userTable.entrySet()) {
+                if (game == null)
+                    return null;
 
-            UserEntity player = userSerivce.findBySessionId(user.getKey());
-            CubeEntity cube = cubeService.findById(user.getValue());
+                Map<String, String> userTable = game.userTable == null ? new HashMap<>() : game.userTable;
 
-            if (player != null && cube != null) {
+                Map<String, SlimeDTO> slimeSet = new HashMap<>();
 
-                SlimeDTO slimeDTO = SlimeDTO.builder()
-                        .playerId(player.playerId)
-                        .attr(player.attr)
-                        .direction(player.direction)
-                        .target(cube.name)
-                        .build();
+                for (Map.Entry<String, String> user : userTable.entrySet()) {
 
-                slimeSet.put(player.playerId.toString(), slimeDTO);
+                    UserEntity player = userSerivce.findBySessionId(user.getKey());
+                    CubeEntity cube = cubeService.findById(user.getValue());
+
+                    if (player != null && cube != null) {
+
+                        SlimeDTO slimeDTO = SlimeDTO.builder()
+                                .playerId(player.playerId)
+                                .attr(player.attr)
+                                .direction(player.direction)
+                                .target(cube.name)
+                                .build();
+
+                        slimeSet.put(player.playerId.toString(), slimeDTO);
+                    }
+
+                }
+
+                return slimeSet;
             }
-
+        } catch (NullPointerException e) {
+            log.error("[findAllSlimes] {}", e.getMessage());
+        } finally {
+            unlockGame();
         }
 
-        return slimeSet;
+        return null;
+
     }
 
     private boolean checkUserTableEmpty(GameEntity game) {

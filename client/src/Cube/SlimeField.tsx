@@ -32,6 +32,8 @@ interface ActionData {
 
 export default function SlimeField({ client, left, top, right, down }: Props) {
 
+    const [isInitialized, setIsInitialized] = useState<boolean>(false)
+
     const [slimes, setSlimes] = useState<Map<string, SlimeDTO>>(new Map())    // 슬라임 저장용 state
 
     const [move, setMove] = useState<ActionData>()  // 움직임 관련 states
@@ -56,13 +58,12 @@ export default function SlimeField({ client, left, top, right, down }: Props) {
 
     useEffect(() => {
 
-        if (client != undefined) {
-
-            // 처음 접속 했을 때, 현재 게임에 참가 중인 슬라임들 요청
-            client.publish({ destination: '/app/game/slimes' })
+        if (client) {
 
             // 초기 슬라임들 받아오기
             client.subscribe('/user/queue/game/slimes', (msg: IMessage) => {
+
+                console.log("받아오기")
 
                 const json = JSON.parse(msg.body) as { [key: string]: SlimeDTO }
 
@@ -123,8 +124,9 @@ export default function SlimeField({ client, left, top, right, down }: Props) {
                 dispatch(updatePosition({ position: '' }))
 
             })
-        }
 
+            setIsInitialized(true)
+        }
 
         return () => {
             client?.unsubscribe('/topic/game/move')
@@ -134,7 +136,18 @@ export default function SlimeField({ client, left, top, right, down }: Props) {
 
         }
 
-    }, [])
+    }, [client])
+
+    useEffect(() => {
+
+        if (client) {
+            // 처음 접속 했을 때, 현재 게임에 참가 중인 슬라임들 요청
+            client.publish({ destination: '/app/game/slimes' })
+
+            console.log("슬라임 요청")
+        }
+
+    }, [isInitialized])
 
 
 
@@ -176,7 +189,7 @@ export default function SlimeField({ client, left, top, right, down }: Props) {
         }
     }, [move])
 
-   
+
     return (
         slimeBoxRendered &&
         <div style={{ position: "absolute", padding: 0 }}>

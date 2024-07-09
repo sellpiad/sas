@@ -85,7 +85,6 @@ function App() {
 
       ws.current.subscribe("/user/queue/user/newbie", (msg: IMessage) => {
         dispatch(changeLogin({ isLogined: msg.body }))
-        console.log("등록")
       })
 
       ws.current.publish({ destination: "/app/user/newbie" })
