@@ -165,7 +165,12 @@ public class CubeService {
 
     public CubeEntity findById(String cubeId) {
 
-        return cubeRepo.findById(cubeId).orElseThrow(() -> new IllegalArgumentException("There's no cube"));
+        if (cubeId.equals("null")) {
+            return null;
+        }
+
+        return cubeRepo.findById(cubeId)
+                .orElseThrow(() -> new NullPointerException("There's no cube. cube id : " + cubeId));
 
     }
 
@@ -242,6 +247,5 @@ public class CubeService {
             redisTemplate.delete(cubeLockKey);
         }
     }
-
 
 }

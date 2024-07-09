@@ -38,7 +38,9 @@ public class GameController {
     @SendToUser("/queue/game/slimes")
     public Map<String, SlimeDTO> getGameStatus(SimpMessageHeaderAccessor simpMessageHeaderAccessor) {
 
-        return gameService.findAllSlimes();
+        Map<String, SlimeDTO> list = gameService.findAllSlimes();
+
+        return list;
     }
 
     @MessageMapping("/game/move")
@@ -48,7 +50,7 @@ public class GameController {
 
         String sessionId = simpMessageHeaderAccessor.getSessionId();
 
-        if(!gameService.isInGame(sessionId)){
+        if (!gameService.isInGame(sessionId)) {
             return null;
         }
 
