@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import CubeSet from "../Cube/CubeSet.tsx";
 import SlimeField from "../Cube/SlimeField.tsx";
 import { persistor } from "../index.js";
-import { updateScale } from "../redux/gameSlice.tsx";
+import { updateObserve, updateScale } from "../redux/gameSlice.tsx";
 import { RootState } from "../redux/store.tsx";
 import { updateSize } from "../redux/cubeSlice.tsx";
 
@@ -30,6 +30,11 @@ export default function PlayBody({ client }: Props) {
     const observeX = useSelector((state: RootState) => state.game.observeX)
     const observeY = useSelector((state: RootState) => state.game.observeY)
 
+    // 현재 유저 위치
+    const playerPos = useSelector((state: RootState) => state.user.position)
+
+    // 현재 게임 사이즈
+    const gameSize = useSelector((state: RootState) => state.game.size)
 
     // 나타낼 큐브 좌표 (left,top)~(right,down)
     const [left, setLeft] = useState<number>(0)
@@ -61,6 +66,16 @@ export default function PlayBody({ client }: Props) {
         }
     }
 
+    const getCoordinate = () => {
+
+        const cubeNumber = Number(playerPos.substring(8))
+
+        const x = cubeNumber % gameSize;
+        const y = Math.floor(cubeNumber / gameSize)
+
+        dispatch(updateObserve({ observeX: x, observeY: y }))
+    }
+
 
     const wheelHandler = (e: React.WheelEvent<HTMLDivElement>) => {
 
@@ -81,6 +96,13 @@ export default function PlayBody({ client }: Props) {
         setDown(observeY + (scale + 3) >= 0 ? observeY + (scale + 3) : down)
 
     }, [scale, observeX, observeY])
+
+
+    useEffect(() => {
+        if (playerPos != '') {
+            getCoordinate()
+        } 
+    }, [playerPos])
 
 
     useEffect(() => {

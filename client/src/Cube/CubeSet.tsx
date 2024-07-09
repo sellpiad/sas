@@ -28,12 +28,10 @@ export default function CubeSet({ client, left, top, right, down }: Props) {
     const dispatch = useDispatch()
 
     const playerId = useSelector((state: RootState) => state.user.playerId)
+    const playerPos = useSelector((state: RootState) => state.user.position)
     const observeX = useSelector((state: RootState) => state.game.observeX)
     const observeY = useSelector((state: RootState) => state.game.observeY)
-
-
-    const playerPos = useSelector((state: RootState) => state.user.position)
-
+   
 
     const isConquered = (cubeNickname: string) => {
         return conqueredCubes.has(cubeNickname)
