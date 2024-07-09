@@ -193,6 +193,7 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
 
     }, [boxWidth, boxHeight, width, height, scale])
 
+  
     // 포지션 업데이트
     useEffect(() => {
         targetRef.current = target

@@ -62,7 +62,6 @@ export default function PlayBody({ client }: Props) {
     }
 
 
-
     const wheelHandler = (e: React.WheelEvent<HTMLDivElement>) => {
 
         if (e.deltaY < 0) {
