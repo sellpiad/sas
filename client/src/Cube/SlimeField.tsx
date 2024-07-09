@@ -15,8 +15,8 @@ interface Props {
 }
 
 interface SlimeDTO {
-    actionType: string 
-    playerId: string 
+    actionType: string
+    playerId: string
     target: string // 위치
     attr: string
     direction: string
@@ -30,20 +30,29 @@ interface ActionData {
 }
 
 
-export default function SlimeField({ client }: Props) {
+export default function SlimeField({ client, left, top, right, down }: Props) {
 
-    // 슬라임 저장용 state
-    const [slimes, setSlimes] = useState<Map<string, SlimeDTO>>(new Map())
+    const [slimes, setSlimes] = useState<Map<string, SlimeDTO>>(new Map())    // 슬라임 저장용 state
 
-    // 움직임 관련 states
-    const [move, setMove] = useState<ActionData>()
+    const [move, setMove] = useState<ActionData>()  // 움직임 관련 states
 
-    // 플레이어 아이디(게임 참가시)
-    const playerId = useSelector((state: RootState) => state.user.playerId);
-    // 큐브 렌더링 확인용
-    const slimeBoxRendered = useSelector((state: RootState) => state.cube.isRendered)
+    const playerId = useSelector((state: RootState) => state.user.playerId);    // 플레이어 아이디(게임 참가시)
+    const slimeBoxRendered = useSelector((state: RootState) => state.cube.isRendered)   // 큐브 렌더링 확인용
+    const gameSize = useSelector((state: RootState) => state.game.size) // 현재 게임 사이즈
 
     const dispatch = useDispatch()
+
+    // 슬라임이 현재 시점 안에 있는지 체크
+    const isWithinRange = (cubeName: string) => {
+
+        const cubeNumber = Number(cubeName.substring(8))
+
+        const x = cubeNumber % gameSize;
+        const y = Math.floor(cubeNumber / gameSize)
+
+        return x >= left && x <= right && y >= top && y <= down
+    }
+
 
     useEffect(() => {
 
@@ -167,14 +176,14 @@ export default function SlimeField({ client }: Props) {
         }
     }, [move])
 
-  
+   
     return (
         slimeBoxRendered &&
         <div style={{ position: "absolute", padding: 0 }}>
 
             {
                 [...slimes.values()].map((value, index, array) => {
-                    return <Slime key={value['playerId']}
+                    return isWithinRange(value['target']) && <Slime key={value['playerId']}
                         playerId={value['playerId']}
                         actionType={value['actionType']}
                         direction={value['direction']}

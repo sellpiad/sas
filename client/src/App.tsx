@@ -108,7 +108,7 @@ function App() {
           <Row className='w-100 justify-content-between'>
             <Col xs={12} sm={6}>
               <Navbar.Brand>
-                <Slime direction="down" width={"96"} height={"96"} isAbsolute={false}></Slime>
+                <Slime playerId={"navbarSlime"} direction="down" width={"96"} height={"96"} isAbsolute={false}></Slime>
                 <svg width="100%" height="100%" viewBox="-5 -30 200 50">
                   <text
                     x="0" y="0" fill="#3678ce"
