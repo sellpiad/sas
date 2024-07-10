@@ -20,7 +20,8 @@ interface Props {
 export default function CubeSet({ client, left, top, right, down }: Props) {
 
     const [conqueredCubes, setConqueredCubes] = useState<Set<string>>(new Set<string>())
-    const [clickable, setClickable] = useState<Set<string>>(new Set<string>())
+    
+    const [hasPlayer, setHasPlayer] = useState<string>()
 
     const [cubeSet, setCubeSet] = useState(new Array)
 
@@ -82,10 +83,6 @@ export default function CubeSet({ client, left, top, right, down }: Props) {
                 //setConqueredCubes(new Set<string>(JSON.parse(msg.body)))
             })
 
-            client.subscribe("/user/queue/cube/clickable", (msg: IMessage) => {
-                setClickable(JSON.parse(msg.body) ? new Set<string>(JSON.parse(msg.body)) : new Set<string>())
-            })
-
 
             client.publish({ destination: '/app/cube/cubeSet' })
         }
@@ -98,7 +95,6 @@ export default function CubeSet({ client, left, top, right, down }: Props) {
             if (client != undefined) {
                 client.unsubscribe("/user/queue/cube/cubeSet")
                 client.unsubscribe("/user/queue/cube/conqueredCubes")
-                client.unsubscribe("/user/queue/cube/clickable")
             }
 
             window.removeEventListener('resize',updateCubeSize)
@@ -141,7 +137,6 @@ export default function CubeSet({ client, left, top, right, down }: Props) {
 
         if (playerId === null) {
             setConqueredCubes(new Set<string>())
-            setClickable(new Set<string>())
         }
 
     }, [playerId])

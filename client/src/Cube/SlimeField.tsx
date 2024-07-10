@@ -90,7 +90,7 @@ export default function SlimeField({ client, left, top, right, down }: Props) {
                 const ActionData = JSON.parse(msg.body) as ActionData
 
                 setMove(ActionData)
-
+                
             })
 
 
@@ -120,7 +120,7 @@ export default function SlimeField({ client, left, top, right, down }: Props) {
                     return slimeSet
                 })
 
-                dispatch(updatePosition({ position: '' }))
+
 
             })
 
@@ -144,7 +144,7 @@ export default function SlimeField({ client, left, top, right, down }: Props) {
 
         if (move) {
 
-            if (playerId == move.playerId && move.target != null) {
+            if (playerId == move.playerId && move.target != undefined) {
                 dispatch(updatePosition({ position: move.target }))
             }
 

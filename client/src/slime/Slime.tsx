@@ -80,9 +80,9 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
         if (props.width !== undefined && props.height !== undefined) {
             setWidth(props.width)
             setHeight(props.height)
-        } else{
-            setWidth(boxWidth+'')
-            setHeight(boxHeight+'')
+        } else {
+            setWidth(boxWidth + '')
+            setHeight(boxHeight + '')
         }
     }
 
@@ -135,6 +135,7 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
             // 좌표 체크
             const slimeBox = targetRef.current !== undefined && document.getElementById(targetRef.current)
 
+
             if (slimeBox) {
                 const targetX = slimeBox.offsetLeft
                 const targetY = slimeBox.offsetTop
@@ -144,6 +145,7 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
                 setMoveX(prevX => prevX * (1 - t) + targetX * t)
                 setMoveY(prevY => prevY * (1 - t) + targetY * t)
             }
+
 
             if (frameRef.current === maxFrame) {
                 setAction('idle')
@@ -159,7 +161,9 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
     useEffect(() => {
 
         setTimeout(() => { setSpeed(0.5) }, 10)
-        requestAnimationFrame(updateAnimation)
+        const animation = requestAnimationFrame(updateAnimation)
+
+        return () => cancelAnimationFrame(animation)
 
     }, [playerId])
 
@@ -167,7 +171,7 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
     useEffect(() => {
 
         if (actionType) {
-            setAction(actionType?.toLowerCase()) // action 변경 트리거
+            setAction(prev => actionType?.toLowerCase() === 'locked' ? prev : actionType?.toLowerCase()) // action 변경 트리거
             setFrame(1) // 액션 변경으로 인한 frame 초기화
         }
 
@@ -193,7 +197,7 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
 
     }, [boxWidth, boxHeight, width, height, scale])
 
-  
+
     // 포지션 업데이트
     useEffect(() => {
         targetRef.current = target

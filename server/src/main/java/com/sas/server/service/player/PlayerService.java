@@ -44,7 +44,7 @@ public class PlayerService {
                     .direction("down")
                     .life(0)
                     .actionPoint(100)
-                    .rechargingSpeed(20)
+                    .rechargingSpeed(15)
                     .build());
 
         } catch (Exception e) {

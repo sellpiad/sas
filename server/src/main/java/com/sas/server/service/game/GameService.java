@@ -394,7 +394,7 @@ public class GameService {
 
         if (actionSystem.isLocked(sessionId)) {
             return ActionData.builder()
-                    .actionType("IDLE")
+                    .actionType("LOCKED")
                     .direction(direction)
                     .playerId(player.playerId)
                     .build();

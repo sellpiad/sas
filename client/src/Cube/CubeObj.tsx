@@ -1,8 +1,7 @@
-import React, { useEffect } from "react"
+import React from "react"
 import { useSelector } from "react-redux"
 import { RootState } from "../redux/store"
 import './CubeObj.css'
-import styled, { css, keyframes } from "styled-components"
 
 interface Props {
     name: string
