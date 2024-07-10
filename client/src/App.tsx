@@ -105,7 +105,7 @@ function App() {
       <Navbar>
         <Container style={{justifyContent:"center"}}>
           <Row className='w-100 justify-content-between'>
-            <Col xs={12} sm={6}>
+            <Col xs={12} sm={6} style={{paddingLeft:0}}>
               <Navbar.Brand>
                 <Slime playerId={"navbarSlime"} direction="down" width={"96"} height={"96"} isAbsolute={false}></Slime>
                 <svg width="100%" height="100%" viewBox="-5 -30 200 50">
@@ -123,16 +123,16 @@ function App() {
             <Col className="d-flex flex-column justify-content-lg-center" xs={12} sm={6}>
               <Row className="justify-content-end justify-content-lg-end">
                 <Col xs={3} sm={2}>
-                  <Button variant="outline-light" onClick={showCreateModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%" }}>PLAY</Button>
+                  <Button variant="outline-light" onClick={showCreateModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%", color:"black", background:"#f8f9fa" }}>PLAY</Button>
                 </Col>
                 <Col xs={3} sm={2}>
-                  <Button variant="outline-light" onClick={showCreateModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%" }}>CHAT</Button>
+                  <Button variant="outline-light" onClick={showCreateModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%", color:"black", background:"#f8f9fa" }}>CHAT</Button>
                 </Col>
                 <Col xs={3} sm={2}>
-                  <Button variant="outline-light" onClick={showRankingModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%" }}>RANK</Button>
+                  <Button variant="outline-light" onClick={showRankingModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%", color:"black", background:"#f8f9fa" }}>RANK</Button>
                 </Col>
                 <Col xs={3} sm={2}>
-                  <Button variant="outline-light" onClick={showCreateModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%" }}>BOARD</Button>
+                  <Button variant="outline-light" onClick={showCreateModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%", color:"black", background:"#f8f9fa" }}>BOARD</Button>
                 </Col>
 
               </Row>

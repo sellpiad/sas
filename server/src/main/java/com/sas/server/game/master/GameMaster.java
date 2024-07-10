@@ -74,7 +74,7 @@ public class GameMaster {
 
         log.info("1. Game Setting Progress.");
 
-        GameEntity game = gameService.createGame(10, "TEST", 1, 10);
+        GameEntity game = gameService.createGame(20, "TEST", 1, 10);
 
         List<CubeEntity> cubeSet = cubeService.createCubeSet(game.size);
 

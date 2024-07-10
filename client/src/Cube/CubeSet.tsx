@@ -7,6 +7,7 @@ import { changeGameSize } from "../redux/gameSlice.tsx";
 import { RootState } from "../redux/store.tsx";
 import { updatePlayerId } from "../redux/userSlice.tsx";
 import CubeObj from "./CubeObj.tsx";
+import './CubeSet.css'
 
 interface Props {
     client: Client | undefined;
@@ -110,10 +111,10 @@ export default function CubeSet({ client, left, top, right, down }: Props) {
 
     const updateCubeSize = () => {
 
-        const slimeBox = document.getElementById('slimebox' + observeX + "" + observeY)
+        const slimeBox = document.getElementById('slimebox' + observeX + "" + observeY)?.getBoundingClientRect()
 
         if (slimeBox) {
-            dispatch(updateSize({ width: slimeBox?.offsetWidth, height: slimeBox?.offsetHeight }))
+            dispatch(updateSize({ width: slimeBox?.width, height: slimeBox?.height }))
         }
 
     }
@@ -148,23 +149,18 @@ export default function CubeSet({ client, left, top, right, down }: Props) {
 
     return (
 
-        <Stack gap={2} id="cubeSet">
-
+        <Stack id="cubeSet" className="cube-set">
             {
                 Object.keys(cubeSet).map((rowNum, index) => {
-                    return top <= Number(rowNum) && down >= Number(rowNum) && (
-                        <div key={'row-' + rowNum} style={{ display: "flex", flexFlow: "row", gap: "0.5rem", flex: "1" }}>
+                    return <div key={'row-' + rowNum} className="cube-row">
                             {
                                 cubeSet[rowNum].map((cube, index) => {
-                                    return left <= Number(cube.posX) && right >= Number(cube.posX) &&
-                                        <div key={'col-' + cube.posX + cube.posY} style={{ width: "100%", height: "100%" }}>
+                                    return <div key={'col-' + cube.posX + cube.posY} style={{ width: "100%", height: "100%" }}>
                                             <CubeObj name={cube.name} isConquest={isConquered(cube.name)} isClickable={isClickable(cube.name)} isDominating={isDominating(cube.name)} />
                                         </div>
-
                                 })
-
                             }
-                        </div>)
+                        </div>
                 })
 
             }

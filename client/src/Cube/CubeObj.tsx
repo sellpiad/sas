@@ -15,7 +15,7 @@ interface Props {
 export default function CubeObj({ name, isConquest, isClickable, isDominating }: Props) {
 
     const attr = useSelector((state: RootState) => state.user.attr)
-    const classNames = `${isClickable ? "clickable" : 'slime-Box'} ${isDominating ? "isDominating" : "none"}`;
+    const classNames = `slime-Box ${isClickable ? "clickable" : ''} ${isDominating ? "isDominating" : ''}`;
     
     const getAttr = () => {
         switch (attr) {
@@ -41,13 +41,8 @@ export default function CubeObj({ name, isConquest, isClickable, isDominating }:
     return (
 
         <div key={name} className={classNames} id={name} color="#ffffff" style={{
-            border: isClickable ? 'solid' + getAttr() : 'solid #ffffff',
-            borderRadius: "15%",
-            backgroundColor: getBackground(),
-            justifyContent: "center",
-            display: "flex",
-            width:"100%",
-            height:"100%"
+            borderColor: isClickable ? getAttr() : '#ffffff',
+            backgroundColor: getBackground()
         }}/>
     )
 
