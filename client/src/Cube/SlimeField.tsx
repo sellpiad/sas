@@ -184,7 +184,7 @@ export default function SlimeField({ client, left, top, right, down }: Props) {
 
             {
                 [...slimes.values()].map((value, index, array) => {
-                    return isWithinRange(value['target']) && <Slime key={value['playerId']}
+                    return <Slime key={value['playerId']}
                         playerId={value['playerId']}
                         actionType={value['actionType']}
                         direction={value['direction']}
