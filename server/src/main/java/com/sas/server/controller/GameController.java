@@ -9,10 +9,14 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
+import com.sas.server.Exception.LockAcquisitionException;
 import com.sas.server.dto.Game.ActionData;
 import com.sas.server.dto.Game.MoveData;
 import com.sas.server.dto.Game.RankerDTO;
@@ -38,9 +42,8 @@ public class GameController {
     @SendToUser("/queue/game/slimes")
     public Map<String, SlimeDTO> getGameStatus(SimpMessageHeaderAccessor simpMessageHeaderAccessor) {
 
-        Map<String, SlimeDTO> list = gameService.findAllSlimes();
+        return gameService.findAllSlimes();
 
-        return list;
     }
 
     @MessageMapping("/game/move")
@@ -50,7 +53,7 @@ public class GameController {
 
         String sessionId = simpMessageHeaderAccessor.getSessionId();
 
-        if (!gameService.isInGame(sessionId)) {
+        if (gameService.isInGame(sessionId) == null) {
             return null;
         }
 

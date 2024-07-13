@@ -179,7 +179,7 @@ public class CubeService {
      * @param curCubeId
      * @param direction
      * @return 매개변수로 받은 cubeId의 direction에 해당하는 곳에 위치한 큐브 엔티티 리턴.
-     *         방향키가 잘못됐다면 null 값을 리턴.
+     *         존재하지 않는다면 유저가 현재 위치한 기존 큐브 리턴.
      * @throws NoSuchElementException curCubeId에 해당하는 큐브가 존재하지 않을 때.
      * @throws NullPointerException   curCubeId가 null값으로 들어왔을 때.
      */
@@ -209,7 +209,7 @@ public class CubeService {
         }
 
         return cubeRepo.findByPosXAndPosY(posX, posY)
-                .orElse(null);
+                .orElse(cubeRepo.findByPosXAndPosY(cube.posX, cube.posY).get());
     }
 
     public Set<String> getClickableCubes(String cubeId) {

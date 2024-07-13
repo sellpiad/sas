@@ -2,9 +2,11 @@ package com.sas.server.game.ai;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -17,6 +19,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sas.server.Annotation.DistributedLock;
 import com.sas.server.entity.GameEntity;
 import com.sas.server.entity.UserEntity;
 import com.sas.server.service.cube.CubeService;
@@ -50,71 +53,48 @@ public class AIController {
      * 현재 플레이어 숫자가 전체 큐브 수의 playerPercentage 보다 작다면 AI 투입.
      * 
      * @param playerPercentage
+     * @throws IllegalArgumentException
      */
-    @Transactional
-    public String placeRandomAI(double playerPercentage) {
+    @DistributedLock(key = "lock:game")
+    public UserEntity placeRandomAI(double playerPercentage) {
 
-        String lockKey = "lock:game";
+        GameEntity game = gameService.findGame();
 
-        try {
-            Boolean acquired = redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 1, TimeUnit.SECONDS);
-            if (acquired != null && acquired) {
+        Map<String, String> cubeTable = game.cubeTable;
 
-                GameEntity game = gameService.findGame();
+        long totalNull = cubeTable.values().stream().filter(value -> value.equals("null")).count();
+        int totalCube = cubeTable.size();
 
-                if (game == null) {
-                    log.error("Game Entity not found At placeRandomAI");
-                    return null;
-                }
+        double fraction = (double) totalNull / totalCube;
 
-                Map<String, String> cubeTable = game.cubeTable;
+        if (fraction > playerPercentage) {
 
-                long totalNull = cubeTable.values().stream().filter(value -> value.equals("null")).count();
-                int totalCube = cubeTable.size();
+            UserEntity ai = createAI();
 
-                double fraction = (double) totalNull / totalCube;
+            List<String> cubekeySet = cubeTable.entrySet()
+                    .stream()
+                    .filter(entry -> entry.getValue().equals("null"))
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toList());
 
-                if (fraction > playerPercentage) {
-
-                    UserEntity ai = createAI();
-
-                    List<String> cubekeySet = cubeTable.entrySet()
-                            .stream()
-                            .filter(entry -> entry.getValue().equals("null"))
-                            .map(Map.Entry::getKey)
-                            .collect(Collectors.toList());
-
-                    if (cubekeySet.isEmpty()) {
-                        throw new IllegalArgumentException("There's no cube with null");
-                    }
-
-                    String randCubeId = cubekeySet.get(new Random().nextInt(cubekeySet.size()));
-
-                    String cubeNickname = cubeService.getCubeNickname(randCubeId);
-
-                    playerService.registerPlayer(ai, true, cubeNickname);
-                    gameService.addOnly(game, ai.sessionId, randCubeId);
-
-                    UserEntity aiPlayer = userSerivce.findBySessionId(ai.sessionId);
-
-                    if (aiPlayer == null) {
-                        log.error("aiPlayer doesn't exist!");
-                        return null;
-                    }
-
-                    gameService.saveGame(game);
-
-                    CompletableFuture.runAsync(() -> {
-                        runAI(ai.sessionId);
-                    });
-
-                    return ai.sessionId;
-                }
+            if (cubekeySet.isEmpty()) {
+                throw new IllegalArgumentException("There's no cube with null");
             }
-        } catch (Exception e) {
-            log.error("[placeRandomAI] {}",e.getMessage());
-        } finally {
-            redisTemplate.delete(lockKey);
+
+            String randCubeId = cubekeySet.get(new Random().nextInt(cubekeySet.size()));
+
+            String cubeNickname = cubeService.getCubeNickname(randCubeId);
+
+            gameService.addOnly(game, ai.sessionId, randCubeId);
+            playerService.registerPlayer(ai, true, cubeNickname);
+
+            gameService.saveGame(game);
+
+            CompletableFuture.runAsync(() -> {
+                runAI(ai.sessionId);
+            });
+
+            return userSerivce.findBySessionId(ai.sessionId);
         }
 
         return null;
@@ -122,13 +102,10 @@ public class AIController {
     }
 
     public void runAI(String sessionId) {
-        try {
-            slimeController.get(sessionId).run(sessionId, () -> {
-                slimeController.remove(sessionId);
-            });
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
+
+        slimeController.get(sessionId).run(sessionId, () -> {
+            slimeController.remove(sessionId);
+        });
 
     }
 

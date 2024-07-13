@@ -23,33 +23,27 @@ public class PlayerService {
 
     private final UserRepository repo;
 
-    @Transactional
     public void registerPlayer(UserEntity user, boolean ai, String startCubeNickname) {
 
         Objects.requireNonNull(user, "UserEntity cannot be null");
         Objects.requireNonNull(ai, "ai cannot be null");
         Objects.requireNonNull(startCubeNickname, "start cube nickname cannot be null");
 
-        try {
-            Set<String> conqueredCubes = new HashSet<>();
+        Set<String> conqueredCubes = new HashSet<>();
 
-            conqueredCubes.add(startCubeNickname);
+        conqueredCubes.add(startCubeNickname);
 
-            repo.save(user.toBuilder()
-                    .state("PLAYER")
-                    .playerId(UUID.randomUUID())
-                    .ai(ai)
-                    .nickname(user.nickname)
-                    .conqueredCubes(conqueredCubes)
-                    .direction("down")
-                    .life(0)
-                    .actionPoint(100)
-                    .rechargingSpeed(15)
-                    .build());
-
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
+        repo.save(user.toBuilder()
+                .state("PLAYER")
+                .playerId(UUID.randomUUID())
+                .ai(ai)
+                .nickname(user.nickname)
+                .conqueredCubes(conqueredCubes)
+                .direction("down")
+                .life(0)
+                .actionPoint(100)
+                .rechargingSpeed(15)
+                .build());
 
     }
 

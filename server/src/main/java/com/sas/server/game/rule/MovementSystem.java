@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 public class MovementSystem {
 
     private final CubeService cubeService;
-    private final StringRedisTemplate redisTemplate;
 
     /**
      * 
@@ -30,8 +29,9 @@ public class MovementSystem {
      * @param player    이동 대상 플레이어
      * @param direction 이동하고 싶은 방향
      * 
-     * @return 해당 방향에 큐브가 존재한다면 그 방향에 위치한 CubeEntity 반환. 아니라면 Null 값. 아직 무브먼트 딜레이가
-     *         경과하지 않았어도 Null 값을 리턴.
+     * @return CubeEntity 해당 방향에 큐브가 존재한다면 그 방향에 위치한 CubeEntity 반환.
+     *         그렇지 않다면 기존의 큐브 그대로 리턴.
+     * 
      */
     public CubeEntity move(GameEntity game, UserEntity player, String direction) {
 
@@ -39,20 +39,10 @@ public class MovementSystem {
 
         String departCubeId = userTable.get(player.sessionId);
 
-        try {
+        CubeEntity arrivalCube = cubeService.getNextCube(departCubeId, direction);
 
-            CubeEntity arrivalCube = cubeService.getNextCube(departCubeId, direction);
+        return arrivalCube;
 
-            if (arrivalCube == null) {
-                return null;
-            } else {
-                return arrivalCube;
-            }
-
-        } catch (NoSuchElementException | NullPointerException e) {
-            log.error("[move] {}", e.getMessage());
-            return null;
-        }
     }
 
 }
