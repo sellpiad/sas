@@ -93,6 +93,10 @@ export default function SlimeField({ client, left, top, right, down }: Props) {
                 
             })
 
+            client.subscribe("/topic/game/chat",(msg:IMessage) => {
+                console.log(msg.body)
+            })
+
 
             // 슬라임 추가
             client.subscribe('/topic/game/addSlime', (msg: IMessage) => {
@@ -129,6 +133,7 @@ export default function SlimeField({ client, left, top, right, down }: Props) {
         return () => {
             client?.unsubscribe('/topic/game/move')
             client?.unsubscribe('/topic/game/slimes')
+            client?.unsubscribe('/topic/game/chat')
             client?.unsubscribe("/user/queue/player/movable")
             client?.unsubscribe("/user/queue/player/ingame")
 

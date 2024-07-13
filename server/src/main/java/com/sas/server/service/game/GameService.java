@@ -15,11 +15,15 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sas.server.Annotation.DistributedLock;
+import com.sas.server.Exception.LockAcquisitionException;
 import com.sas.server.dto.Game.ActionData;
-import com.sas.server.dto.Game.MoveData;
 import com.sas.server.dto.Game.SlimeDTO;
 import com.sas.server.entity.CubeEntity;
 import com.sas.server.entity.GameEntity;
@@ -98,26 +102,41 @@ public class GameService {
 
     public void saveGame(GameEntity game) {
 
-        try {
-            gameRepo.save(game);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
+        Objects.requireNonNull(game, "[saveGame] game is null");
+
+        gameRepo.save(game);
 
     }
 
-    public boolean isInGame(String sessionId) {
+    /**
+     * 유저 테이블과 큐브 테이블을 교차 검증하여 유저가 게임에 정상적인 상태로 참여 중인지 확인.
+     * 
+     * @param sessionId
+     * @return 플레이어가 현재 위치한 큐브 ID 리턴
+     * @throws NullPointerException
+     */
+
+    @DistributedLock(key = "lock:game")
+    @Retryable(value = { LockAcquisitionException.class }, maxAttempts = 10, backoff = @Backoff(delay = 100))
+    public String isInGame(String sessionId) {
+
+        Objects.requireNonNull(sessionId, "[isInGame] sessionId is null");
 
         GameEntity game = findGame();
 
-        Objects.requireNonNull(game.userTable, "[isInGame] game.userTable is null");
+        String position = game.userTable.get(sessionId);
+        String name = game.cubeTable.get(position);
 
-        if (game.userTable.get(sessionId) == null) {
-            return false;
-        }
+        if (sessionId.equals(name))
+            return cubeService.getCubeNickname(position);
 
-        return true;
+        return null;
 
+    }
+
+    @Recover
+    public String recoverIngame(LockAcquisitionException e, String sessionId) {
+        throw e;
     }
 
     public void createCubeTable(List<CubeEntity> cubeSet) {
@@ -146,19 +165,8 @@ public class GameService {
         Objects.requireNonNull(sessionId, "sessionId cannot be null");
         Objects.requireNonNull(targetCubeId, "targetCubeId cannot be null");
 
-        try {
-            if (targetCubeId != null)
-                game.cubeTable.put(targetCubeId, sessionId);
-
-            if (game.userTable == null)
-                game.userTable = new HashMap<>();
-
-            game.userTable.put(sessionId, targetCubeId);
-
-        } catch (Exception e) {
-            log.info("[addOnly] {}" + e.getMessage());
-        }
-
+        game.cubeTable.put(targetCubeId, sessionId);
+        game.userTable.put(sessionId, targetCubeId);
     }
 
     /**
@@ -166,6 +174,7 @@ public class GameService {
      * 
      * @param game
      * @param sessionId
+     * @throws NullPointerException
      */
     public void removeOnly(GameEntity game, String sessionId) {
 
@@ -174,11 +183,8 @@ public class GameService {
 
         String currentCubeId = game.userTable.get(sessionId);
 
-        if (currentCubeId != null) {
-            game.cubeTable.put(currentCubeId, "null");
-            game.userTable.remove(sessionId);
-        }
-
+        game.cubeTable.put(currentCubeId, "null");
+        game.userTable.remove(sessionId);
     }
 
     /**
@@ -188,7 +194,6 @@ public class GameService {
      * @param sessionId    대상 유저
      * @param targetCubeId 이동시키고 싶은 큐브 아이디
      */
-    @Transactional
     public void addAndSave(String sessionId, String targetCubeId) {
 
         GameEntity game = gameRepo.findById(GAME_ID)
@@ -215,7 +220,6 @@ public class GameService {
      * 
      * @param sessionId
      */
-    @Transactional
     public void removeAndSave(String sessionId) {
 
         GameEntity game = gameRepo.findById(GAME_ID)
@@ -245,53 +249,46 @@ public class GameService {
         gameRepo.save(game);
     }
 
+    @Retryable(value = { LockAcquisitionException.class }, maxAttempts = 10, backoff = @Backoff(delay = 100))
+    @DistributedLock(key = "lock:game")
     public Map<String, SlimeDTO> findAllSlimes() {
 
-        try {
-            String lockKey = "lock:game";
+        GameEntity game = findGame();
 
-            Boolean isGameLocked = lockGame();
+        Map<String, String> userTable = game.userTable;
 
-            if (isGameLocked != null && isGameLocked) {
+        Map<String, SlimeDTO> slimeSet = new HashMap<>();
 
-                GameEntity game = findGame();
+        for (Map.Entry<String, String> user : userTable.entrySet()) {
 
-                if (game == null)
-                    return null;
+            UserEntity player = !user.getKey().equals("null") ? userSerivce.findBySessionId(user.getKey())
+                    : null;
+            CubeEntity cube = cubeService.findById(user.getValue());
 
-                Map<String, String> userTable = game.userTable == null ? new HashMap<>() : game.userTable;
+            if (player != null && cube != null) {
 
-                Map<String, SlimeDTO> slimeSet = new HashMap<>();
+                SlimeDTO slimeDTO = SlimeDTO.builder()
+                        .playerId(player.playerId)
+                        .attr(player.attr)
+                        .direction(player.direction)
+                        .target(cube.name)
+                        .build();
 
-                for (Map.Entry<String, String> user : userTable.entrySet()) {
-
-                    UserEntity player = userSerivce.findBySessionId(user.getKey());
-                    CubeEntity cube = cubeService.findById(user.getValue());
-
-                    if (player != null && cube != null) {
-
-                        SlimeDTO slimeDTO = SlimeDTO.builder()
-                                .playerId(player.playerId)
-                                .attr(player.attr)
-                                .direction(player.direction)
-                                .target(cube.name)
-                                .build();
-
-                        slimeSet.put(player.playerId.toString(), slimeDTO);
-                    }
-
-                }
-
-                return slimeSet;
+                slimeSet.put(player.playerId.toString(), slimeDTO);
             }
-        } catch (NullPointerException e) {
-            log.error("[findAllSlimes] {}", e.getMessage());
-        } finally {
-            unlockGame();
+
         }
 
-        return null;
+        return slimeSet;
 
+    }
+
+    @Recover
+    public Map<String, SlimeDTO> recover(LockAcquisitionException e) {
+
+        log.error("[FindAllSlimes] 재요청 모두 실패.");
+
+        return null;
     }
 
     private boolean checkUserTableEmpty(GameEntity game) {
@@ -305,7 +302,7 @@ public class GameService {
 
     }
 
-    @Transactional
+    @DistributedLock(key = "lock:game")
     public void scanQueue() {
 
         GameEntity game;
@@ -328,7 +325,7 @@ public class GameService {
                         String position = cubeService.getCubeNickname(cube.getKey());
 
                         // 참가하기 전, 기존 슬라임이 존재한다면 삭제.
-                        if (isInGame(userInQueue.sessionId)) {
+                        if (isInGame(userInQueue.sessionId) != null) {
                             deletePlayer(userInQueue.sessionId);
                         }
 
@@ -339,7 +336,6 @@ public class GameService {
                         addOnly(game, userInQueue.sessionId, cube.getKey());
 
                         Set<String> clickable = cubeService.getClickableCubes(cube.getKey());
-                        Set<String> conqueredCubes = player.conqueredCubes;
 
                         SlimeDTO slime = SlimeDTO.builder()
                                 .playerId(player.playerId)
@@ -384,13 +380,11 @@ public class GameService {
      * @param direction
      * @return MoveData형식으로 슬라임 닉네임, 위치 리턴. 실패시 null
      */
-    @Transactional
+    @Retryable(value = { LockAcquisitionException.class }, maxAttempts = 10, backoff = @Backoff(delay = 100))
+    @DistributedLock(key = "lock:game")
     public ActionData updateMove(String sessionId, String direction) {
 
         UserEntity player = userSerivce.findBySessionId(sessionId);
-
-        if (player == null)
-            return null;
 
         if (actionSystem.isLocked(sessionId)) {
             return ActionData.builder()
@@ -400,152 +394,91 @@ public class GameService {
                     .build();
         }
 
-        try {
-            String lockKey = "lock:game";
+        GameEntity game = gameRepo.findById(GAME_ID)
+                .orElseThrow(() -> new NullPointerException("[updateMove] Game Entity not found with id"));
 
-            Boolean isGameLocked = lockGame();
+        ActionData action = processMove(game, player, direction);
 
-            if (isGameLocked != null && isGameLocked) {
+        gameRepo.save(game);
 
-                GameEntity game = gameRepo.findById(GAME_ID)
-                        .orElseThrow(() -> new NullPointerException("[updateMove] Game Entity not found with id"));
+        return action;
 
-                ActionData action = processMove(game, sessionId, direction);
+    }
 
-                gameRepo.save(game);
+    @Recover
+    public ActionData recoverMove(LockAcquisitionException e, String sessionId, String direction) {
 
-                return action;
-
-            }
-        } catch (NullPointerException e) {
-            log.error("[updateMove] {}", e.getMessage());
-        } finally {
-            unlockGame();
-        }
+        log.error("{}의 moving 메소드가 모두 실패", sessionId);
 
         return null;
-
     }
 
-    private Boolean lockGame() {
-        return redisTemplate.opsForValue().setIfAbsent(lockKey, "locked", 1, TimeUnit.SECONDS);
-    }
+    /**
+     * 
+     * @param game
+     * @param sessionId
+     * @param direction
+     * @return ActionData
+     */
+    private ActionData processMove(GameEntity game, UserEntity player, String direction) {
 
-    private void unlockGame() {
-        redisTemplate.delete(lockKey);
-    }
+        String departCubeId = game.userTable.get(player.sessionId);
 
-    private ActionData processMove(GameEntity game, String sessionId, String direction) {
+        CubeEntity target = cubeService.getNextCube(departCubeId, direction);
+        UserEntity enemy = searchEnemy(game, target.id);
+        long lockTime = actionSystem.lock(player, target);
 
-        UserEntity player;
-        String departCubeId;
+        String actionType;
 
-        try {
-            player = userSerivce.findBySessionId(sessionId);
-            departCubeId = game.userTable.get(sessionId);
-        } catch (Exception e) {
-            log.error("Exception [Error location] : {}", e.getStackTrace()[0]);
-            throw new NullPointerException("userTable");
-        }
+        // 이동 위치가 같은 큐브일 때, 플레이어 스스로가 적이 되는 것 방지
+        if (departCubeId.equals(target.id))
+            enemy = null;
 
-        // 이동 가능한지 판별
-        CubeEntity arrivalCube = movementSystem.move(game, player, direction);
+        // 플레이어를 필드에서 제거.
+        removeOnly(game, player.sessionId);
 
-        if (arrivalCube == null) {
-            CubeEntity departCube = cubeService.findById(departCubeId);
+        // 적이 존재하지 않을시 MOVE.
+        // 승리했다면 ATTACK
+        // 졌다면 DIED
+        if (battleSystem.attrJudgment(player, enemy)) {
 
-            return ActionData.builder()
-                    .actionType("MOVE")
-                    .playerId(player.playerId)
-                    .direction(direction)
-                    .target(departCube.name)
-                    .build();
-        }
+            actionType = "MOVE";
 
-        // 적이 있는지 판별
-        UserEntity enemy = searchEnemy(game, arrivalCube.id);
-
-        if (enemy == null) {
-
-            try {
-                removeOnly(game, sessionId);
-                addOnly(game, sessionId, arrivalCube.id);
-            } catch (Exception e) {
-                log.error("[processMove-remove and add] {}", e.getMessage());
+            if (enemy != null) {
+                actionType = "ATTACK";
             }
 
-            long locktime = actionSystem.lock(player, arrivalCube);
-
-            return ActionData.builder()
-                    .actionType("MOVE")
-                    .playerId(player.playerId)
-                    .direction(direction)
-                    .target(arrivalCube.name)
-                    .lockTime(locktime)
-                    .build();
+        } else {
+            actionType = "DIED";
         }
 
-        // 적이 있다면 승패 유무 가리기
-        try {
+        // 전투가 일어났을 때만 반영
+        if (actionType.equals("ATTACK") || actionType.equals("DIED")) {
 
-            String judgementMsg;
-            long locktime;
+            UserEntity winner = actionType.equals("ATTACK") ? player : enemy;
+            UserEntity loser = actionType.equals("ATTACK") ? enemy : player;
 
-            // 승리시
-            if (battleSystem.attrJudgment(player.attr, enemy.attr)) {
+            removeOnly(game, loser.sessionId);
+            rankerService.save(playerService.addKillCount(winner.sessionId));
 
-                removeOnly(game, sessionId);
-                addOnly(game, sessionId, arrivalCube.id);
-
-                removeOnly(game, enemy.sessionId);
-                userSerivce.deleteById(enemy.sessionId);
-
-                UserEntity winner = playerService.addKillCount(sessionId);
-
-                rankerService.save(winner);
-
-                locktime = actionSystem.lock(player, arrivalCube);
-
-                judgementMsg = player.nickname + "이(가)" + enemy.nickname + "을(를) 사냥했습니다!";
-
-                simpMessagingTemplate.convertAndSend("/topic/game/deleteSlime", enemy.playerId);
-                simpMessagingTemplate.convertAndSend("/topic/game/ranker", rankerService.getRankerList());
-
-                // 패배시
-            } else {
-
-                removeOnly(game, sessionId);
-                userSerivce.deleteById(sessionId);
-
-                UserEntity winner = playerService.addKillCount(enemy.sessionId);
-
-                rankerService.save(winner);
-
-                judgementMsg = enemy.nickname + "이(가)" + player.nickname + "을(를) 사냥했습니다!";
-
-                simpMessagingTemplate.convertAndSend("/topic/game/deleteSlime", player.playerId);
-                simpMessagingTemplate.convertAndSend("/topic/game/ranker", rankerService.getRankerList());
-
-                return null;
-            }
-
-            ActionData moveData = ActionData.builder()
-                    .actionType("ATTACK")
-                    .playerId(player.playerId)
-                    .target(arrivalCube.name)
-                    .direction(direction)
-                    .lockTime(locktime)
-                    .build();
-
-            simpMessagingTemplate.convertAndSend("/topic/game/chat", judgementMsg);
-
-            return moveData;
-
-        } catch (Exception e) {
-            log.error("[processMove-judgement] {}", e.getMessage());
-            return null;
+            simpMessagingTemplate.convertAndSend("/topic/game/deleteSlime",
+                    loser.playerId);
+            simpMessagingTemplate.convertAndSend("/topic/game/ranker",
+                    rankerService.getRankerList());
         }
 
+        // 승리하거나, 이동했을 때만.
+        if (actionType.equals("ATTACK") || actionType.equals("MOVE")) {
+            addOnly(game, player.sessionId,target.id);
+        }
+
+        return ActionData.builder()
+                .actionType(actionType)
+                .playerId(player.playerId)
+                .direction(direction)
+                .target(target.name)
+                .lockTime(lockTime)
+                .build();
     }
 
     /**
@@ -555,13 +488,13 @@ public class GameService {
      * @param targetCube
      * @return 적이 있다면 UserEntity를 반환. 없다면 Null을 반환.
      */
-    private UserEntity searchEnemy(GameEntity game, String targetCube) throws ClassCastException, NullPointerException {
+    private UserEntity searchEnemy(GameEntity game, String targetCube) {
 
         Map<String, String> cubeTable = game.cubeTable;
 
         String enemyId = cubeTable.get(targetCube);
 
-        return userSerivce.findBySessionId(enemyId);
+        return enemyId.equals("null") ? null : userSerivce.findBySessionId(enemyId);
 
     }
 

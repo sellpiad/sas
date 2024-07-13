@@ -2,6 +2,8 @@ package com.sas.server.service.user;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,14 +56,17 @@ public class UserSerivce {
     /**
      * sessionID로 유저 조회.
      * 
-     * @param sessionId 유저의 세션 아이디.
-     * @return UserEntity를 반환한다. 없다면 null을 반환.
-     * 
+     * @param sessionId 
+     * @return UserEntity 
+     * @throws NullPointerException
      */
     public UserEntity findBySessionId(String sessionId) {
 
+        Objects.requireNonNull(sessionId,"[findBySessiondID] sessionId is null.");
+
         return userRepo.findById(sessionId)
-                .orElse(null);
+                .orElseThrow(() -> new NullPointerException(
+                        "[findBySessionId] UserEntity not found with sessionId " + sessionId));
 
     }
 

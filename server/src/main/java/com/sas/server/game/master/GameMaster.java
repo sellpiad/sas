@@ -19,6 +19,7 @@ import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
+import com.sas.server.Exception.LockAcquisitionException;
 import com.sas.server.dto.Game.SlimeDTO;
 import com.sas.server.entity.CubeEntity;
 import com.sas.server.entity.GameEntity;
@@ -58,7 +59,7 @@ public class GameMaster {
         clear();
         setting();
 
-        aiDeploymentRun(0, 500, TimeUnit.MILLISECONDS, 0.95);
+        aiDeploymentRun(0, 500, TimeUnit.MILLISECONDS, 0.7);
         queueRun(0, 1000, TimeUnit.MILLISECONDS);
     }
 
@@ -89,6 +90,7 @@ public class GameMaster {
                 gameService.scanQueue();
             } catch (NullPointerException | MessagingException e) {
                 log.error("[scanQueue] {}", e.getMessage());
+            } catch (LockAcquisitionException e) {
             }
 
         }, initialDelay, period, unit);
@@ -98,35 +100,34 @@ public class GameMaster {
     private void aiDeploymentRun(long initialDelay, long period, TimeUnit unit, double percentage) {
         scheduledPlaceRandomAI = scheduler.scheduleAtFixedRate(() -> {
 
-            String sessionId = aiController.placeRandomAI(percentage);
-
             try {
 
-                if (sessionId == null)
+                UserEntity ai = aiController.placeRandomAI(percentage);
+
+                if (ai == null)
                     return;
 
-                UserEntity ai = userSerivce.findBySessionId(sessionId);
+                String startPos = gameService.isInGame(ai.sessionId);
 
-                if (gameService.isInGame(sessionId)) {
+                if (startPos != null) {
+
                     SlimeDTO slime = SlimeDTO.builder()
                             .playerId(ai.playerId)
                             .attr(ai.attr)
                             .direction("down")
-                            .target(ai.conqueredCubes.iterator().next())
+                            .target(startPos)
                             .build();
 
                     String msg = slime.playerId + "가 플레이를 시작합니다.";
 
-                    try {
-                        messagingTemplate.convertAndSend("/topic/game/addSlime", slime);
-                        messagingTemplate.convertAndSend("/topic/game/chat", msg);
-                    } catch (MessagingException e) {
-                        log.error("[aiDeploymentRun] {}", e.getMessage());
-                    }
+                    messagingTemplate.convertAndSend("/topic/game/addSlime", slime);
+                    messagingTemplate.convertAndSend("/topic/game/chat", msg);
 
                 }
-            } catch (Exception e) {
-                log.error(e.getMessage());
+            } catch (IllegalArgumentException | NullPointerException | MessagingException e) {
+                log.error("[aiDeploymentRun] {}", e.getMessage());
+            } catch (LockAcquisitionException e) {
+
             }
 
         }, initialDelay, period, unit);

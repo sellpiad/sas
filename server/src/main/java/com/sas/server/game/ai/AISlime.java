@@ -1,18 +1,18 @@
 package com.sas.server.game.ai;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.context.annotation.Scope;
-import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
+import com.sas.server.Exception.LockAcquisitionException;
 import com.sas.server.dto.Game.ActionData;
-import com.sas.server.dto.Game.MoveData;
 import com.sas.server.service.game.GameService;
 
 import lombok.RequiredArgsConstructor;
@@ -38,8 +38,12 @@ public class AISlime implements Serializable {
      * 
      * @param sessionId
      * @param afterStop
+     * @throws NullPoniterException
      */
     public void run(String sessionId, Runnable afterStop) {
+
+        Objects.requireNonNull(sessionId, "[run] sessionId is null");
+        Objects.requireNonNull(afterStop, "[afterStop] afterStop is null");
 
         this.sessionId = sessionId;
         this.remove = afterStop;
@@ -48,12 +52,25 @@ public class AISlime implements Serializable {
         int initialDelay = (int) (Math.random() * 1000); // 0~1000ms 사이의 랜덤 초기 딜레이
         int moveInterval = (int) (Math.random() * 500) + 1000; // 500~1000ms 사이의 랜덤 이동 간격
 
-        scheduler.scheduleAtFixedRate(this::moving, initialDelay, moveInterval, TimeUnit.MILLISECONDS);
+        try {
+            scheduler.scheduleAtFixedRate(() -> {
+                try {
+                    moving();
+                } catch (LockAcquisitionException e) {
+                } catch (Exception e) {
+                    log.error("[moving-{}] {}", sessionId, e.getMessage());
+                }
+
+            }, initialDelay, moveInterval, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            log.error("[moving-scheduler-{}] {}", sessionId, e.getMessage());
+        }
     }
 
     public void stop() {
-        if (scheduler != null && !scheduler.isShutdown())
+        if (scheduler != null && !scheduler.isShutdown()) {
             scheduler.shutdown();
+        }
     }
 
     private void moving() {
@@ -62,7 +79,7 @@ public class AISlime implements Serializable {
             return;
         }
 
-        if (!gameService.isInGame(sessionId)) {
+        if (gameService.isInGame(sessionId) == null) {
             stop();
             remove.run();
             return;
@@ -76,9 +93,8 @@ public class AISlime implements Serializable {
             this.movable = true;
         }, 500, TimeUnit.MILLISECONDS);
 
-        if(action != null)
+        if (action != null)
             simpMessagingTemplate.convertAndSend("/topic/game/move", action);
-
 
     }
 

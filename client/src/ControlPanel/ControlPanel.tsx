@@ -44,8 +44,10 @@ export default function ControlPanel({ client }: Props) {
     }
 
     useEffect(() => {
-        if (direction !== '')
+        if (direction !== undefined && direction !== ''){
+            console.dir(direction)
             client?.publish({ destination: '/app/game/move', body: direction })
+        }
     }, [direction])
 
     useEffect(() => {
