@@ -9,6 +9,10 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -36,18 +40,15 @@ import lombok.extern.slf4j.Slf4j;
 public class AIController {
 
     private final CubeService cubeService;
-
     private final PlayerService playerService;
     private final GameService gameService;
     private final UserSerivce userSerivce;
 
-    private final SimpMessagingTemplate messagingTemplate;
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(20);
+    private Map<String, ScheduledFuture<?>> actionTasks = new ConcurrentHashMap<>();
 
-    private final ObjectProvider<AISlime> aiSlimeProvider;
+    private final AISlime aiSlime;
 
-    private final StringRedisTemplate redisTemplate;
-
-    private Map<String, AISlime> slimeController = new HashMap<>();
 
     /**
      * 현재 플레이어 숫자가 전체 큐브 수의 playerPercentage 보다 작다면 AI 투입.
@@ -90,10 +91,6 @@ public class AIController {
 
             gameService.saveGame(game);
 
-            CompletableFuture.runAsync(() -> {
-                runAI(ai.sessionId);
-            });
-
             return userSerivce.findBySessionId(ai.sessionId);
         }
 
@@ -101,12 +98,31 @@ public class AIController {
 
     }
 
-    public void runAI(String sessionId) {
+    public void action(String sessionId) {
 
-        slimeController.get(sessionId).run(sessionId, () -> {
-            slimeController.remove(sessionId);
-        });
+        int initialDelay = (int) (Math.random() * 1000); // 0~1000ms 사이의 랜덤 초기 딜레이
+        int moveInterval = (int) (Math.random() * 500) + 1000; // 500~1000ms 사이의 랜덤 이동 간격
 
+        ScheduledFuture<?> future = scheduler.scheduleWithFixedDelay(() -> {
+
+            CompletableFuture.supplyAsync(() -> aiSlime.move(sessionId))
+                    .thenAccept(isAlive -> {
+                        if (!isAlive) {
+                            stop(sessionId);
+                        }
+                    });
+
+        }, initialDelay, moveInterval, TimeUnit.MILLISECONDS);
+
+        actionTasks.put(sessionId, future);
+    }
+
+    private void stop(String sessionId) {
+        ScheduledFuture<?> future = actionTasks.remove(sessionId);
+
+        if(future != null && !future.isCancelled()){
+            future.cancel(true);
+        }
     }
 
     private UserEntity createAI() {
@@ -118,11 +134,7 @@ public class AIController {
                 .nickname(randNickname())
                 .attr(getRandAttr())
                 .build();
-
-        AISlime aiSlime = aiSlimeProvider.getObject();
-
-        slimeController.put(ai.sessionId, aiSlime);
-
+                
         return ai;
 
     }
