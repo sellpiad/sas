@@ -123,6 +123,8 @@ public class GameMaster {
                     messagingTemplate.convertAndSend("/topic/game/addSlime", slime);
                     messagingTemplate.convertAndSend("/topic/game/chat", msg);
 
+                    aiController.action(ai.sessionId);
+
                 }
             } catch (IllegalArgumentException | NullPointerException | MessagingException e) {
                 log.error("[aiDeploymentRun] {}", e.getMessage());
