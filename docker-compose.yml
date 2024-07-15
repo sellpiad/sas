@@ -1,0 +1,21 @@
+version: '3'
+services: 
+  frontend:
+    build: ./client
+    container_name: frontend
+    ports:
+      - "3000:3000"
+
+  backend:
+    build: ./server
+    container_name: backend
+    ports: 
+      - "8080:8080"
+
+  redis: 
+    image: redis:alpine
+    container_name: redis
+    command: redis-server --port 6379
+    hostname: redis
+    ports:
+      - "6379:6379"
