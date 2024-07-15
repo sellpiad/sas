@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import com.sas.server.entity.UserEntity;
 import com.sas.server.repository.UserRepository;
-import com.sas.server.util.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 public class QueueService {
 
     private final UserRepository userRepo;
-    private final JwtUtil jwtUtil;
 
     public void registerInQueue(String sessionId, String nickName, String attr) {
 
