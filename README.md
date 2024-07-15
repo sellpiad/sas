@@ -35,6 +35,16 @@
 - HTML
 - React
 
+### 설치(Docker 이용시)
+
+1. **클론 및 실행** 리포지토리:
+
+    ```bash
+    git clone https://github.com/sellpiad/sas.git
+    cd sas
+    docker-compose up
+    ```
+
 ### 설치
 
 1. **클론** 리포지토리:
