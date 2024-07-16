@@ -57,7 +57,7 @@ function App() {
         setIsConn(true)
       },
       onStompError: (error) => {
-        console.log(error)
+        console.log("Address Error "+error)
       },
       onDisconnect: (error) => {
         console.log("Disconnetd! " + error)
@@ -125,14 +125,9 @@ function App() {
                 <Col xs={3} sm={2}>
                   <Button variant="outline-light" onClick={showCreateModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%", color:"black", background:"#f8f9fa" }}>PLAY</Button>
                 </Col>
-                <Col xs={3} sm={2}>
-                  <Button variant="outline-light" onClick={showCreateModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%", color:"black", background:"#f8f9fa" }}>CHAT</Button>
-                </Col>
+               
                 <Col xs={3} sm={2}>
                   <Button variant="outline-light" onClick={showRankingModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%", color:"black", background:"#f8f9fa" }}>RANK</Button>
-                </Col>
-                <Col xs={3} sm={2}>
-                  <Button variant="outline-light" onClick={showCreateModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%", color:"black", background:"#f8f9fa" }}>BOARD</Button>
                 </Col>
 
               </Row>
