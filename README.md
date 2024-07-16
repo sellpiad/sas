@@ -35,7 +35,19 @@
 - HTML
 - React
 
-### 설치
+### 설치 및 실행(With Docker)
+
+1. **클론 및 실행** 리포지토리:
+
+    ```bash
+    git clone https://github.com/sellpiad/sas.git
+    cd sas
+    docker-compose up
+    ```
+
+2. localhost:3000 접속 후 플레이.
+
+### 설치(Without Docker)
 
 1. **클론** 리포지토리:
 
@@ -83,6 +95,8 @@
    ```
 
    혹은 그냥 Run 클릭.
+
+6. localhost:3000 접속 후 플레이.
 
 
 
