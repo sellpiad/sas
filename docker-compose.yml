@@ -1,13 +1,13 @@
 version: '3'
 services: 
   frontend:
-    build: ./client
+    image: devsunriver/sas_client:test
     container_name: frontend
     ports:
       - "3000:3000"
 
   backend:
-    build: ./server
+    image: devsunriver/sas_server:test
     container_name: backend
     ports: 
       - "8080:8080"

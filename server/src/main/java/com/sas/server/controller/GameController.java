@@ -9,21 +9,15 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
-import com.sas.server.Exception.LockAcquisitionException;
 import com.sas.server.dto.Game.ActionData;
-import com.sas.server.dto.Game.MoveData;
 import com.sas.server.dto.Game.RankerDTO;
 import com.sas.server.dto.Game.SlimeDTO;
-import com.sas.server.game.rule.ActionSystem;
-import com.sas.server.service.Ranker.RankerService;
 import com.sas.server.service.game.GameService;
+import com.sas.server.service.ranker.RankerService;
 import com.sas.server.service.user.UserSerivce;
 
 import lombok.RequiredArgsConstructor;

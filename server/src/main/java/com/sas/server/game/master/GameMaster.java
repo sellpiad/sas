@@ -8,22 +8,19 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.DefaultStringRedisConnection;
 import org.springframework.data.redis.connection.RedisConnection;
-import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
-import org.springframework.lang.Nullable;
 import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
-import com.sas.server.Exception.LockAcquisitionException;
 import com.sas.server.dto.Game.SlimeDTO;
 import com.sas.server.entity.CubeEntity;
 import com.sas.server.entity.GameEntity;
 import com.sas.server.entity.UserEntity;
+import com.sas.server.exception.LockAcquisitionException;
 import com.sas.server.game.ai.AIController;
 import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.game.GameService;
@@ -59,7 +56,7 @@ public class GameMaster {
         clear();
         setting();
 
-        aiDeploymentRun(0, 500, TimeUnit.MILLISECONDS, 0.7);
+        aiDeploymentRun(0, 500, TimeUnit.MILLISECONDS, 0.3);
         queueRun(0, 1000, TimeUnit.MILLISECONDS);
     }
 
@@ -129,7 +126,9 @@ public class GameMaster {
             } catch (IllegalArgumentException | NullPointerException | MessagingException e) {
                 log.error("[aiDeploymentRun] {}", e.getMessage());
             } catch (LockAcquisitionException e) {
-
+ 
+            } catch (Exception e){
+                log.error("[aiDeploymentRun] {}", e.getMessage());
             }
 
         }, initialDelay, period, unit);

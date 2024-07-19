@@ -1,9 +1,9 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit"
 import persistReducer from "redux-persist/es/persistReducer"
 import storage from "redux-persist/lib/storage"
-import cubeSlice from "./cubeSlice.tsx"
-import gameSlice from "./gameSlice.tsx"
-import userSlice from "./userSlice.tsx"
+import cubeSlice from "./CubeSlice.tsx"
+import gameSlice from "./GameSlice.tsx"
+import userSlice from "./UserSlice.tsx"
 
 const reducers = combineReducers({
     user:userSlice,

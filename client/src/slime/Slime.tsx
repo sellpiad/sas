@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
+import { RootState } from "../Redux/Store";
 
 
 /**
@@ -155,6 +155,7 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
 
         requestAnimationFrame(updateAnimation)
     }
+
 
 
     // 초기화

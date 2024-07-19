@@ -34,11 +34,11 @@ public class AISlime implements Serializable {
 
         ActionData action = gameService.updateMove(sessionId, randDirection());
 
-        if (action != null){
+        if (action != null) {
             simpMessagingTemplate.convertAndSend("/topic/game/move", action);
             return true;
         }
-        
+
         return false;
     }
 

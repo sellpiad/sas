@@ -2,10 +2,10 @@ import { Client, IMessage } from "@stomp/stompjs";
 import React, { useEffect, useState } from "react";
 import { Stack } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { updateRenderingState, updateSize } from "../redux/cubeSlice.tsx";
-import { changeGameSize } from "../redux/gameSlice.tsx";
-import { RootState } from "../redux/store.tsx";
-import { updatePlayerId } from "../redux/userSlice.tsx";
+import { updateRenderingState, updateSize } from "../Redux/CubeSlice.tsx";
+import { changeGameSize } from "../Redux/GameSlice.tsx";
+import { RootState } from "../Redux/Store.tsx";
+import { updatePlayerId } from "../Redux/UserSlice.tsx";
 import CubeObj from "./CubeObj.tsx";
 import './CubeSet.css'
 

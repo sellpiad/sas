@@ -1,4 +1,4 @@
-package com.sas.server.service.Ranker;
+package com.sas.server.service.ranker;
 
 import java.util.ArrayList;
 import java.util.Comparator;

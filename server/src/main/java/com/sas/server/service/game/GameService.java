@@ -10,7 +10,6 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.MessagingException;
@@ -19,24 +18,23 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.sas.server.Annotation.DistributedLock;
-import com.sas.server.Exception.LockAcquisitionException;
+import com.sas.server.annotation.DistributedLock;
 import com.sas.server.dto.Game.ActionData;
 import com.sas.server.dto.Game.SlimeDTO;
 import com.sas.server.entity.CubeEntity;
 import com.sas.server.entity.GameEntity;
 import com.sas.server.entity.UserEntity;
+import com.sas.server.exception.LockAcquisitionException;
 import com.sas.server.game.message.MessengerBroker;
 import com.sas.server.game.rule.ActionSystem;
 import com.sas.server.game.rule.BattleSystem;
 import com.sas.server.game.rule.MovementSystem;
 import com.sas.server.repository.GameRepository;
-import com.sas.server.service.Ranker.RankerService;
 import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.player.PlayerService;
 import com.sas.server.service.queue.QueueService;
+import com.sas.server.service.ranker.RankerService;
 import com.sas.server.service.user.UserSerivce;
 
 import lombok.RequiredArgsConstructor;
@@ -136,7 +134,9 @@ public class GameService {
 
     @Recover
     public String recoverIngame(LockAcquisitionException e, String sessionId) {
+        
         throw e;
+
     }
 
     public void createCubeTable(List<CubeEntity> cubeSet) {
@@ -410,7 +410,13 @@ public class GameService {
 
         log.error("{}의 moving 메소드가 모두 실패", sessionId);
 
-        return null;
+        UserEntity player = userSerivce.findBySessionId(sessionId);
+
+        return ActionData.builder()
+                    .actionType("LOCKED")
+                    .direction(direction)
+                    .playerId(player.playerId)
+                    .build();
     }
 
     /**
@@ -465,6 +471,8 @@ public class GameService {
                     loser.playerId);
             simpMessagingTemplate.convertAndSend("/topic/game/ranker",
                     rankerService.getRankerList());
+
+            log.info("{} has died",loser.sessionId);
         }
 
         // 승리하거나, 이동했을 때만.

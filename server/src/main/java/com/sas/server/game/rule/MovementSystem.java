@@ -1,11 +1,7 @@
 package com.sas.server.game.rule;
 
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.concurrent.TimeUnit;
 
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import com.sas.server.entity.CubeEntity;

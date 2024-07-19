@@ -1,10 +1,10 @@
 import { Client, IMessage } from "@stomp/stompjs";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../redux/store.tsx";
-import { updatePlayerId, updatePosition } from "../redux/userSlice.tsx";
-import Slime from "../slime/Slime.tsx";
-import { updateCubeNickname } from "../redux/cubeSlice.tsx";
+import { RootState } from "../Redux/Store.tsx";
+import { updatePlayerId, updatePosition } from "../Redux/UserSlice.tsx";
+import Slime from "../Slime/Slime.tsx";
+import { updateCubeNickname } from "../Redux/CubeSlice.tsx";
 
 interface Props {
     client: Client | undefined

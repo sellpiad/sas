@@ -1,4 +1,4 @@
-package com.votewar.server;
+package com.sas.server;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

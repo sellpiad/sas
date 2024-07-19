@@ -4,14 +4,15 @@ import { Button, Col, Container, Navbar, Row, Stack } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import SockJS from 'sockjs-client';
 import './App.css';
-import CreateModal from './createModal/CreateModal.tsx';
-import PlayBody from './playboard/PlayBody.tsx';
-import { resize } from './redux/gameSlice.tsx';
-import { RootState } from './redux/store.tsx';
-import { changeLogin } from './redux/userSlice.tsx';
-import Slime from './slime/Slime.tsx';
+import CreateModal from './CreateModal/CreateModal.tsx';
+import PlayBody from './Playboard/PlayBody.tsx';
+import { resize } from './Redux/GameSlice.tsx';
+import { RootState } from './Redux/Store.tsx';
+import { changeLogin } from './Redux/UserSlice.tsx';
+import Slime from './Slime/Slime.tsx';
 import RankingBoard from './Ranker/RankingBoard.tsx';
 import ControlPanel from './ControlPanel/ControlPanel.tsx';
+import Board from './Board/Board.tsx';
 
 function App() {
 
@@ -28,6 +29,7 @@ function App() {
 
   const [createModal, setCreateModal] = useState(false)
   const [rankingModal, setRankingModal] = useState(false)
+  const [boardModal, setBoardModal] = useState(false)
 
   const showCreateModal = () => {
     setCreateModal(true)
@@ -35,6 +37,10 @@ function App() {
 
   const showRankingModal = () => {
     setRankingModal(true)
+  }
+
+  const showBoardModal = () =>{
+    setBoardModal(true)
   }
 
   const windowResize = () => {
@@ -130,6 +136,10 @@ function App() {
                   <Button variant="outline-light" onClick={showRankingModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%", color:"black", background:"#f8f9fa" }}>RANK</Button>
                 </Col>
 
+                <Col xs={3} sm={2}>
+                  <Button variant="outline-light" onClick={showBoardModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%", color:"black", background:"#f8f9fa" }}>BOARD</Button>
+                </Col>
+
               </Row>
             </Col>
           </Row>
@@ -153,6 +163,7 @@ function App() {
 
       <CreateModal show={createModal} onHide={() => setCreateModal(false)} client={ws.current}></CreateModal>
       <RankingBoard show={rankingModal} onHide={() => setRankingModal(false)} client={ws.current}></RankingBoard>
+      <Board show={boardModal} onHide={() => setRankingModal(false)} client={ws.current} ></Board>
     </div>
   );
 }
