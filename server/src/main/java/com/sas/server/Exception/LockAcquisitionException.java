@@ -1,4 +1,4 @@
-package com.sas.server.Exception;
+package com.sas.server.exception;
 
 public class LockAcquisitionException extends RuntimeException {
     public LockAcquisitionException(String message) {

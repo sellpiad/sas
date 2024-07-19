@@ -1,17 +1,15 @@
-package com.sas.server.Aspect;
+package com.sas.server.aspect;
 
 import java.util.concurrent.TimeUnit;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.retry.annotation.Recover;
 import org.springframework.stereotype.Component;
 
-import com.sas.server.Annotation.DistributedLock;
-import com.sas.server.Exception.LockAcquisitionException;
+import com.sas.server.annotation.DistributedLock;
+import com.sas.server.exception.LockAcquisitionException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

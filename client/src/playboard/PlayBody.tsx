@@ -5,9 +5,9 @@ import { useDispatch, useSelector } from "react-redux";
 import CubeSet from "../Cube/CubeSet.tsx";
 import SlimeField from "../Cube/SlimeField.tsx";
 import { persistor } from "../index.js";
-import { updateObserve, updateScale } from "../redux/gameSlice.tsx";
-import { RootState } from "../redux/store.tsx";
-import { updateSize } from "../redux/cubeSlice.tsx";
+import { updateObserve, updateScale } from "../Redux/GameSlice.tsx";
+import { RootState } from "../Redux/Store.tsx";
+import { updateSize } from "../Redux/CubeSlice.tsx";
 
 
 /**

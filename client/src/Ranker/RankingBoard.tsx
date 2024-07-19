@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Col, ListGroup, ListGroupItem, Modal, ModalBody, Row } from "react-bootstrap";
 import './RankingBoard.css'
 import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
+import { RootState } from "../Redux/Store";
 
 interface Props {
     client: Client | undefined
@@ -50,7 +50,7 @@ export default function RankingBoard({ client, show, onHide }: Props) {
 
     return (
         <Modal show={show} onHide={onHide} size="sm" centered >
-            <ModalBody style={{ height: "40vh" }}>
+            <ModalBody style={{ height: "40vh",  fontFamily:"DNFBitBitv2", fontSize:"0.9rem"}}>
                 <div style={{ height: "15%" }}>
                     <strong>실시간 플레이어 랭킹</strong>
                     <div style={{ display: "flex", justifyContent: "space-between", padding: "0 3px" }}>

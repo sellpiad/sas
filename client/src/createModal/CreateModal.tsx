@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Button, Carousel, Form, InputGroup, Modal, ModalBody } from "react-bootstrap";
-import Slime from "../slime/Slime.tsx";
+import Slime from "../Slime/Slime.tsx";
 import { Client } from "@stomp/stompjs";
 import { useDispatch } from "react-redux";
-import { updateAttr } from "../redux/userSlice.tsx";
+import { updateAttr } from "../Redux/UserSlice.tsx";
 import './CreateModal.css'
 
 interface Props {

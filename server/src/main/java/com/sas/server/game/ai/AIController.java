@@ -1,14 +1,12 @@
 package com.sas.server.game.ai;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -16,16 +14,13 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.sas.server.Annotation.DistributedLock;
+import com.sas.server.annotation.DistributedLock;
 import com.sas.server.entity.GameEntity;
 import com.sas.server.entity.UserEntity;
+import com.sas.server.exception.LockAcquisitionException;
 import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.game.GameService;
 import com.sas.server.service.player.PlayerService;
@@ -48,7 +43,6 @@ public class AIController {
     private Map<String, ScheduledFuture<?>> actionTasks = new ConcurrentHashMap<>();
 
     private final AISlime aiSlime;
-
 
     /**
      * 현재 플레이어 숫자가 전체 큐브 수의 playerPercentage 보다 작다면 AI 투입.
@@ -101,13 +95,33 @@ public class AIController {
     public void action(String sessionId) {
 
         int initialDelay = (int) (Math.random() * 1000); // 0~1000ms 사이의 랜덤 초기 딜레이
-        int moveInterval = (int) (Math.random() * 500) + 1000; // 500~1000ms 사이의 랜덤 이동 간격
+        int moveInterval = (int) (Math.random() * 500) + 500; // 500~1000ms 사이의 랜덤 이동 간격
 
         ScheduledFuture<?> future = scheduler.scheduleWithFixedDelay(() -> {
 
             CompletableFuture.supplyAsync(() -> aiSlime.move(sessionId))
+                    .handle((result, ex) -> {
+                        if (ex != null) {
+                            Throwable cause = ex instanceof CompletionException ? ex.getCause() : ex;
+                            if (cause instanceof LockAcquisitionException || cause instanceof ExhaustedRetryException) {
+                            } else {
+                                
+                                throw new CompletionException(cause);
+                            }
+                        }
+                        return result;
+                    })
+                    .exceptionally(ex -> {
+                        // 예외가 발생한 경우 처리 로직
+
+                        log.error("[슬라임 스케줄러] {}", ex.getMessage());
+
+                        return false;
+
+                    })
                     .thenAccept(isAlive -> {
                         if (!isAlive) {
+                            log.info("{} has stopped",sessionId);
                             stop(sessionId);
                         }
                     });
@@ -120,7 +134,7 @@ public class AIController {
     private void stop(String sessionId) {
         ScheduledFuture<?> future = actionTasks.remove(sessionId);
 
-        if(future != null && !future.isCancelled()){
+        if (future != null && !future.isCancelled()) {
             future.cancel(true);
         }
     }
@@ -134,7 +148,7 @@ public class AIController {
                 .nickname(randNickname())
                 .attr(getRandAttr())
                 .build();
-                
+
         return ai;
 
     }
