@@ -472,7 +472,6 @@ public class GameService {
             simpMessagingTemplate.convertAndSend("/topic/game/ranker",
                     rankerService.getRankerList());
 
-            log.info("{} has died",loser.sessionId);
         }
 
         // 승리하거나, 이동했을 때만.

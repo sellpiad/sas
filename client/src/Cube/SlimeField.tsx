@@ -1,10 +1,10 @@
 import { Client, IMessage } from "@stomp/stompjs";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../Redux/Store.tsx";
-import { updatePlayerId, updatePosition } from "../Redux/UserSlice.tsx";
-import Slime from "../Slime/Slime.tsx";
-import { updateCubeNickname } from "../Redux/CubeSlice.tsx";
+import { updateCubeNickname } from "../redux/CubeSlice.tsx";
+import { RootState } from "../redux/Store.tsx";
+import { updatePlayerId, updatePosition } from "../redux/UserSlice.tsx";
+import Slime from "../slime/Slime.tsx";
 
 interface Props {
     client: Client | undefined
@@ -94,7 +94,6 @@ export default function SlimeField({ client, left, top, right, down }: Props) {
             })
 
             client.subscribe("/topic/game/chat",(msg:IMessage) => {
-                console.log(msg.body)
             })
 
 

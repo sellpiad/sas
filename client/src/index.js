@@ -5,7 +5,7 @@ import './index.css';
 
 // Redux
 import { Provider } from 'react-redux';
-import store from './Redux/Store.tsx';
+import store from './redux/Store.tsx';
 
 // Redux-persist
 import { persistStore } from 'redux-persist';

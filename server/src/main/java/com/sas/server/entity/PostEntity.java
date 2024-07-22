@@ -12,6 +12,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,7 +35,7 @@ public class PostEntity {
     @Column(name="author", nullable = false)
     public String author;
 
-    @Column(name="content", nullable = false)
+    @Column(name="content", nullable = false, length = 2000)
     public String content;
 
     @Column(name="created_time",nullable = false)
