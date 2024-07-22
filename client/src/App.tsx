@@ -4,15 +4,16 @@ import { Button, Col, Container, Navbar, Row, Stack } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import SockJS from 'sockjs-client';
 import './App.css';
-import CreateModal from './CreateModal/CreateModal.tsx';
-import PlayBody from './Playboard/PlayBody.tsx';
-import { resize } from './Redux/GameSlice.tsx';
-import { RootState } from './Redux/Store.tsx';
-import { changeLogin } from './Redux/UserSlice.tsx';
-import Slime from './Slime/Slime.tsx';
-import RankingBoard from './Ranker/RankingBoard.tsx';
-import ControlPanel from './ControlPanel/ControlPanel.tsx';
-import Board from './Board/Board.tsx';
+import Board from './board/Board.tsx';
+import ControlPanel from './controlPanel/ControlPanel.tsx';
+import CreateModal from './createModal/CreateModal.tsx';
+import PlayBody from './playboard/Playboard.tsx';
+import RankingBoard from './ranker/RankingBoard.tsx';
+import { resize } from './redux/GameSlice.tsx';
+import { RootState } from './redux/Store.tsx';
+import { changeLogin } from './redux/UserSlice.tsx';
+import Slime from './slime/Slime.tsx';
+import PlayerInfo from './player/PlayerInfo.tsx';
 
 function App() {
 
@@ -30,6 +31,7 @@ function App() {
   const [createModal, setCreateModal] = useState(false)
   const [rankingModal, setRankingModal] = useState(false)
   const [boardModal, setBoardModal] = useState(false)
+  const [playerModal, setPlayerModal] = useState(false)
 
   const showCreateModal = () => {
     setCreateModal(true)
@@ -39,8 +41,12 @@ function App() {
     setRankingModal(true)
   }
 
-  const showBoardModal = () =>{
+  const showBoardModal = () => {
     setBoardModal(true)
+  }
+
+  const showPlayerModal = () => {
+    setPlayerModal(true)
   }
 
   const windowResize = () => {
@@ -63,7 +69,7 @@ function App() {
         setIsConn(true)
       },
       onStompError: (error) => {
-        console.log("Address Error "+error)
+        console.log("Address Error " + error)
       },
       onDisconnect: (error) => {
         console.log("Disconnetd! " + error)
@@ -109,9 +115,9 @@ function App() {
   return (
     <div className="App" ref={app}>
       <Navbar>
-        <Container style={{justifyContent:"center"}}>
+        <Container style={{ justifyContent: "center" }}>
           <Row className='w-100 justify-content-between'>
-            <Col xs={12} sm={6} style={{paddingLeft:0}}>
+            <Col xs={12} sm={6} style={{ paddingLeft: 0 }}>
               <Navbar.Brand>
                 <Slime playerId={"navbarSlime"} direction="down" width={"96"} height={"96"} isAbsolute={false}></Slime>
                 <svg width="100%" height="100%" viewBox="-5 -30 200 50">
@@ -129,17 +135,20 @@ function App() {
             <Col className="d-flex flex-column justify-content-lg-center" xs={12} sm={6}>
               <Row className="justify-content-end justify-content-lg-end">
                 <Col xs={3} sm={2}>
-                  <Button variant="outline-light" onClick={showCreateModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%", color:"black", background:"#f8f9fa" }}>PLAY</Button>
-                </Col>
-               
-                <Col xs={3} sm={2}>
-                  <Button variant="outline-light" onClick={showRankingModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%", color:"black", background:"#f8f9fa" }}>RANK</Button>
+                  <Button className="Menu-Btn" variant="outline-light" onClick={showCreateModal}>플레이</Button>
                 </Col>
 
                 <Col xs={3} sm={2}>
-                  <Button variant="outline-light" onClick={showBoardModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%", color:"black", background:"#f8f9fa" }}>BOARD</Button>
+                  <Button className="Menu-Btn" variant="outline-light" onClick={showRankingModal}>랭킹</Button>
                 </Col>
 
+                <Col xs={3} sm={2}>
+                  <Button className="Menu-Btn" variant="outline-light" onClick={showBoardModal}>게시판</Button>
+                </Col>
+
+                <Col xs={3} sm={2}>
+                  <Button className="Menu-Btn" variant="outline-light" onClick={showPlayerModal}>플레이어</Button>
+                </Col>
               </Row>
             </Col>
           </Row>
@@ -163,7 +172,8 @@ function App() {
 
       <CreateModal show={createModal} onHide={() => setCreateModal(false)} client={ws.current}></CreateModal>
       <RankingBoard show={rankingModal} onHide={() => setRankingModal(false)} client={ws.current}></RankingBoard>
-      <Board show={boardModal} onHide={() => setRankingModal(false)} client={ws.current} ></Board>
+      <Board show={boardModal} onHide={() => setBoardModal(false)}></Board>
+      <PlayerInfo show={playerModal} onHide={() => setPlayerModal(false)}></PlayerInfo>
     </div>
   );
 }

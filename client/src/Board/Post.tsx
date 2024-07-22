@@ -1,31 +1,52 @@
-import React from "react";
-import { Button, Col, Container, Form, InputGroup, Row } from "react-bootstrap";
+import axios from "axios"
+import React from "react"
+import { useEffect, useState } from "react"
+import { Button, Col, Container, Row, Stack } from "react-bootstrap"
+import './Post.css'
 
-export default function Post() {
+export default function Post({ onMode, id }) {
+
+    // 제목 및 내용
+    const [title, setTitle] = useState<string>('')
+    const [content, setContent] = useState<string>('')
+    const [author, setAuthor] = useState<string>('')
+
+    useEffect(() => {
+
+        axios.get('/api/getPost', {
+            params: {
+                id: id
+            }
+        }).then((res) => {
+            setTitle(res.data.title)
+            setContent(res.data.content)
+            setAuthor(res.data.author)
+        }).catch((err) => {
+            console.log(err)
+        })
+
+    }, [])
+
     return (
         <Container>
-            <Row>
-                <Col>
-                    <InputGroup className="mb-3">
-                        <InputGroup.Text id="basic-addon1">제목</InputGroup.Text>
-                        <Form.Control
-                            placeholder="제목"
-                            aria-label="제목"
-                            aria-describedby="basic-addon1"
-                        />
-                        <InputGroup.Text id="basic-addon1">작성자</InputGroup.Text>
-                    </InputGroup>
-                </Col>
-            </Row>
-            <Row>
-                <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
-                    <Form.Label>내용</Form.Label>
-                    <Form.Control as="textarea" rows={8} />
-                </Form.Group>
-            </Row>
-            <Row>
-                <Button variant="outline-primary">등록</Button>
-            </Row>
+            <Stack gap={2}>
+                <Row>
+                    <Col>
+                        <h3>{title}</h3> <h6>By</h6> <h6 style={{color:"blue"}}>{author}</h6>
+                    </Col>
+                </Row>
+                <div className="scroll-content">
+                    <p>{content}</p>
+                </div>
+                <Row>
+                    <Button variant="outline-primary" onClick={() => onMode('LIST')}>뒤로가기</Button>
+                </Row>
+                <Row>
+                    <Button variant="outline-primary" onClick={() => onMode('EDIT')}>수정</Button>
+                </Row>
+            </Stack>
         </Container>
     )
+
+
 }

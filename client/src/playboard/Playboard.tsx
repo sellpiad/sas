@@ -2,12 +2,11 @@ import { Client } from "@stomp/stompjs";
 import React, { useEffect, useState } from "react";
 import { Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import CubeSet from "../Cube/CubeSet.tsx";
-import SlimeField from "../Cube/SlimeField.tsx";
+import CubeSet from "../cube/CubeSet.tsx";
+import SlimeField from "../cube/SlimeField.tsx";
 import { persistor } from "../index.js";
-import { updateObserve, updateScale } from "../Redux/GameSlice.tsx";
-import { RootState } from "../Redux/Store.tsx";
-import { updateSize } from "../Redux/CubeSlice.tsx";
+import { updateObserve, updateScale } from '../redux/GameSlice.tsx';
+import { RootState } from "../redux/Store.tsx";
 
 
 /**

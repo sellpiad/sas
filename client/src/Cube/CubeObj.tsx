@@ -1,6 +1,6 @@
 import React from "react"
 import { useSelector } from "react-redux"
-import { RootState } from "../Redux/Store"
+import { RootState } from "../redux/Store"
 import './CubeObj.css'
 
 interface Props {

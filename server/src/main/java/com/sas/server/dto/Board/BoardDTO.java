@@ -1,9 +1,11 @@
 package com.sas.server.dto.Board;
 
 import io.micrometer.common.lang.NonNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 @Builder
+@AllArgsConstructor
 public class BoardDTO {
     
     @NonNull

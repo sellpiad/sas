@@ -3,6 +3,9 @@ package com.sas.server.service.board;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.sas.server.dto.Board.BoardDTO;
@@ -32,6 +35,17 @@ public class BoardService {
                 .orElseThrow(() -> new NullPointerException("Post not found with id"));
     }
 
+    public Page<BoardDTO> findByRange(int page, int pageSize){
+
+        if(page > 0 ) 
+            page -= 1;
+
+        Pageable pageable = PageRequest.of(page, pageSize);
+        Page<BoardDTO> postList = boardRepo.findList(pageable);
+
+        return postList;
+    }
+
     public List<BoardDTO> findAll() {
 
         List<PostEntity> postList = boardRepo.findAll();
@@ -52,7 +66,7 @@ public class BoardService {
 
     }
 
-    public void udpate(Long id, String title, String content, String author) {
+    public void update(Long id, String title, String content, String author) {
 
         PostEntity post = boardRepo.findById(id)
                 .orElseThrow(() -> new NullPointerException("Post not found with id"));

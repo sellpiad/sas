@@ -121,7 +121,6 @@ public class AIController {
                     })
                     .thenAccept(isAlive -> {
                         if (!isAlive) {
-                            log.info("{} has stopped",sessionId);
                             stop(sessionId);
                         }
                     });

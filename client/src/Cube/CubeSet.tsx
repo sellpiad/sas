@@ -2,12 +2,12 @@ import { Client, IMessage } from "@stomp/stompjs";
 import React, { useEffect, useState } from "react";
 import { Stack } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { updateRenderingState, updateSize } from "../Redux/CubeSlice.tsx";
-import { changeGameSize } from "../Redux/GameSlice.tsx";
-import { RootState } from "../Redux/Store.tsx";
-import { updatePlayerId } from "../Redux/UserSlice.tsx";
+import { updateRenderingState, updateSize } from "../redux/CubeSlice.tsx";
+import { changeGameSize } from "../redux/GameSlice.tsx";
+import { RootState } from "../redux/Store.tsx";
+import { updatePlayerId } from "../redux/UserSlice.tsx";
 import CubeObj from "./CubeObj.tsx";
-import './CubeSet.css'
+import './CubeSet.css';
 
 interface Props {
     client: Client | undefined;

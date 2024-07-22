@@ -1,10 +1,10 @@
+import { Client } from "@stomp/stompjs";
 import React, { useEffect, useState } from "react";
 import { Button, Carousel, Form, InputGroup, Modal, ModalBody } from "react-bootstrap";
-import Slime from "../Slime/Slime.tsx";
-import { Client } from "@stomp/stompjs";
 import { useDispatch } from "react-redux";
-import { updateAttr } from "../Redux/UserSlice.tsx";
-import './CreateModal.css'
+import { updateAttr } from "../redux/UserSlice.tsx";
+import Slime from "../slime/Slime.tsx";
+import './CreateModal.css';
 
 interface Props {
     client: Client | undefined
