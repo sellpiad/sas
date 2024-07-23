@@ -5,6 +5,7 @@ import java.util.Date;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.redis.core.index.Indexed;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,13 +22,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Table(name = "member_table")
 @Entity
-public class MemberEntity {
+public class MemberEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public long memberNumber;
 
-    @Column(name = "id", nullable = false)
+    @Column(name = "id", nullable = false, unique = true)
     @Indexed
     public String id;
 

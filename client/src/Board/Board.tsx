@@ -70,7 +70,6 @@ export default function Board({ show, onHide }: Props) {
 
                 setPosts(res.data.content)
                 setTotal(res.data.totalPages)
-                console.log(res.data)
             })
             .catch((err) => { console.log(err) })
 
