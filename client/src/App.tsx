@@ -7,13 +7,14 @@ import './App.css';
 import Board from './board/Board.tsx';
 import ControlPanel from './controlPanel/ControlPanel.tsx';
 import CreateModal from './createModal/CreateModal.tsx';
-import PlayBody from './playboard/Playboard.tsx';
+import PlayBody from './playboard/PlayBoard.tsx';
 import RankingBoard from './ranker/RankingBoard.tsx';
 import { resize } from './redux/GameSlice.tsx';
 import { RootState } from './redux/Store.tsx';
 import { changeLogin } from './redux/UserSlice.tsx';
 import Slime from './slime/Slime.tsx';
 import PlayerInfo from './player/PlayerInfo.tsx';
+import Login from './login/Login.tsx';
 
 function App() {
 
@@ -33,6 +34,7 @@ function App() {
   const [boardModal, setBoardModal] = useState(false)
   const [playerModal, setPlayerModal] = useState(false)
 
+  // 모달 관리 메소드들
   const showCreateModal = () => {
     setCreateModal(true)
   }
@@ -49,6 +51,7 @@ function App() {
     setPlayerModal(true)
   }
 
+  // 윈도우 사이즈 변할때
   const windowResize = () => {
     dispatch(resize({ width: app.current?.offsetWidth, height: app.current?.offsetHeight }))
   }
@@ -132,21 +135,21 @@ function App() {
 
               </Navbar.Brand>
             </Col>
-            <Col className="d-flex flex-column justify-content-lg-center" xs={12} sm={6}>
-              <Row className="justify-content-end justify-content-lg-end">
-                <Col xs={3} sm={2}>
+            <Col xs={12} sm={6} style={{alignContent:"center"}}>
+              <Row>
+                <Col style={{width:"25%"}}>
                   <Button className="Menu-Btn" variant="outline-light" onClick={showCreateModal}>플레이</Button>
                 </Col>
 
-                <Col xs={3} sm={2}>
+                <Col style={{width:"25%"}}>
                   <Button className="Menu-Btn" variant="outline-light" onClick={showRankingModal}>랭킹</Button>
                 </Col>
 
-                <Col xs={3} sm={2}>
+                <Col style={{width:"25%"}}>
                   <Button className="Menu-Btn" variant="outline-light" onClick={showBoardModal}>게시판</Button>
                 </Col>
 
-                <Col xs={3} sm={2}>
+                <Col style={{width:"25%"}}>
                   <Button className="Menu-Btn" variant="outline-light" onClick={showPlayerModal}>플레이어</Button>
                 </Col>
               </Row>
@@ -174,6 +177,8 @@ function App() {
       <RankingBoard show={rankingModal} onHide={() => setRankingModal(false)} client={ws.current}></RankingBoard>
       <Board show={boardModal} onHide={() => setBoardModal(false)}></Board>
       <PlayerInfo show={playerModal} onHide={() => setPlayerModal(false)}></PlayerInfo>
+
+      <Login></Login>
     </div>
   );
 }

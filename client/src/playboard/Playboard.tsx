@@ -7,6 +7,7 @@ import SlimeField from "../cube/SlimeField.tsx";
 import { persistor } from "../index.js";
 import { updateObserve, updateScale } from '../redux/GameSlice.tsx';
 import { RootState } from "../redux/Store.tsx";
+import './PlayBoard.css'
 
 
 /**
@@ -22,7 +23,7 @@ interface Props {
     client: Client | undefined
 }
 
-export default function PlayBody({ client }: Props) {
+export default function PlayBoard({ client }: Props) {
 
     // 게임 스케일 및 게임 시점용 state
     const scale = useSelector((state: RootState) => state.game.scale)
@@ -148,7 +149,7 @@ export default function PlayBody({ client }: Props) {
 
 
     return (
-        <div id="observer-window" style={{ overflow: "hidden", width: "100%", height: height }}>
+        <div id="observer-window" className="observer-window">
             <Row id="field-parent" style={{ width: "100%", height: height, position: "relative", transform: `scale(${scale}) translate(${observeX}px, ${observeY}px)`, transition: 'transform 0.5s ease' }} onWheel={wheelHandler}>
                 <CubeSet client={client} left={left} top={top} right={right} down={down}></CubeSet>
                 <SlimeField client={client} left={left} top={top} right={right} down={down}></SlimeField>
