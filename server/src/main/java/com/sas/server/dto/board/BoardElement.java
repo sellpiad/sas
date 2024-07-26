@@ -1,4 +1,4 @@
-package com.sas.server.dto.Board;
+package com.sas.server.dto.board;
 
 import io.micrometer.common.lang.NonNull;
 import lombok.AllArgsConstructor;
@@ -6,7 +6,7 @@ import lombok.Builder;
 
 @Builder
 @AllArgsConstructor
-public class BoardDTO {
+public class BoardElement {
     
     @NonNull
     public Long id;

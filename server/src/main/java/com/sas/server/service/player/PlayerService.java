@@ -1,5 +1,6 @@
 package com.sas.server.service.player;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -8,6 +9,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.sas.server.dto.game.ObserverData;
+import com.sas.server.dto.game.UserData;
 import com.sas.server.entity.UserEntity;
 import com.sas.server.repository.UserRepository;
 
@@ -75,6 +78,30 @@ public class PlayerService {
 
         return list.isEmpty() ? null : list;
 
+    }
+
+    /**
+     * 현재 플레이 중인 유저들의 정보를 리턴.
+     * 
+     * @return
+     */
+    public List<ObserverData> findAllPlayer() {
+
+        List<UserEntity> list = repo.findAllByState("PLAYER");
+        List<ObserverData> userList = new ArrayList<>();
+
+        for (UserEntity user : list) {
+            userList.add(ObserverData
+                    .builder()
+                    .username(user.nickname)
+                    .playerId(user.playerId)
+                    .attr(user.attr)
+                    .kill(user.kill)
+                    .conquer(0)
+                    .build());
+        }
+
+        return userList;
     }
 
     public List<UserEntity> findAllAi() {

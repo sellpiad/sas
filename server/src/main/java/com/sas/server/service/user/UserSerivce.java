@@ -7,7 +7,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.sas.server.dto.Game.RankerDTO;
+import com.sas.server.dto.game.RankerDTO;
 import com.sas.server.entity.UserEntity;
 import com.sas.server.repository.UserRepository;
 

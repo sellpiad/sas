@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import com.sas.server.dto.Cube.CubeDAO;
+import com.sas.server.dto.cube.CubeDAO;
 import com.sas.server.entity.CubeEntity;
 import com.sas.server.repository.CubeRepository;
 

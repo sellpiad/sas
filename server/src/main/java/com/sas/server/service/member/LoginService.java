@@ -1,5 +1,10 @@
 package com.sas.server.service.member;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -23,10 +28,14 @@ public class LoginService implements UserDetailsService {
         if(member == null)
             throw new UsernameNotFoundException("해당하는 사용자가 존재하지 않습니다.");
 
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        
+        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
 
         CustomUserDetails details = CustomUserDetails.builder()
                 .username(member.id)
                 .password(member.password)
+                .authorities(authorities)
                 .build();
 
         return details;

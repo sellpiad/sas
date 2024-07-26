@@ -7,32 +7,33 @@ import './App.css';
 import Board from './board/Board.tsx';
 import ControlPanel from './controlPanel/ControlPanel.tsx';
 import CreateModal from './createModal/CreateModal.tsx';
+import Login from './login/Login.tsx';
 import PlayBody from './playboard/PlayBoard.tsx';
+import PlayerInfo from './player/PlayerInfo.tsx';
 import RankingBoard from './ranker/RankingBoard.tsx';
 import { resize } from './redux/GameSlice.tsx';
-import { RootState } from './redux/Store.tsx';
 import { changeLogin } from './redux/UserSlice.tsx';
 import Slime from './slime/Slime.tsx';
-import PlayerInfo from './player/PlayerInfo.tsx';
-import Login from './login/Login.tsx';
+import { RootState } from './redux/Store.tsx';
+import { persistor } from './index.js';
+import ObserverControl from './playboard/ObserverControl.tsx';
 
 function App() {
 
   const [isConn, setIsConn] = useState<boolean>(false)
-  const [text, setText] = useState<string>()
 
   const ws = useRef<Client>()
   const app = useRef<HTMLDivElement>(null)
 
-
+  // Redux state 업데이트용
   const dispatch = useDispatch()
-
-  const isLogined = useSelector((state: RootState) => state.user.isLogined)
 
   const [createModal, setCreateModal] = useState(false)
   const [rankingModal, setRankingModal] = useState(false)
   const [boardModal, setBoardModal] = useState(false)
   const [playerModal, setPlayerModal] = useState(false)
+
+  const isLogined = useSelector((state: RootState) => state.user.isLogined)
 
   // 모달 관리 메소드들
   const showCreateModal = () => {
@@ -51,14 +52,15 @@ function App() {
     setPlayerModal(true)
   }
 
+  const handleLogout = () => {
+    persistor.purge()
+  }
+
   // 윈도우 사이즈 변할때
   const windowResize = () => {
     dispatch(resize({ width: app.current?.offsetWidth, height: app.current?.offsetHeight }))
   }
 
-  const enterBtnHandler = () => {
-    ws.current?.publish({ destination: "/app/user/newbie" })
-  }
 
 
   useEffect(() => {
@@ -66,7 +68,7 @@ function App() {
     dispatch(resize({ width: app.current?.offsetWidth, height: app.current?.offsetHeight }))
 
     const client = new Client({
-      webSocketFactory: () => new SockJS('http://192.168.0.47:8080/ws'),
+      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
       onConnect: () => {
         console.log("Conneted!")
         setIsConn(true)
@@ -77,6 +79,10 @@ function App() {
       onDisconnect: (error) => {
         console.log("Disconnetd! " + error)
         setIsConn(false)
+      },
+      onWebSocketClose: (error) => {
+        console.log("WebSocketError! " + error)
+        dispatch(changeLogin({ isLogined: false }))
       }
     })
 
@@ -99,7 +105,7 @@ function App() {
     if (ws.current?.connected) {
 
       ws.current.subscribe("/user/queue/user/newbie", (msg: IMessage) => {
-        dispatch(changeLogin({ isLogined: msg.body }))
+
       })
 
       ws.current.publish({ destination: "/app/user/newbie" })
@@ -113,8 +119,6 @@ function App() {
   }, [ws.current])
 
 
-
-
   return (
     <div className="App" ref={app}>
       <Navbar>
@@ -122,7 +126,7 @@ function App() {
           <Row className='w-100 justify-content-between'>
             <Col xs={12} sm={6} style={{ paddingLeft: 0 }}>
               <Navbar.Brand>
-                <Slime playerId={"navbarSlime"} direction="down" width={"96"} height={"96"} isAbsolute={false}></Slime>
+                <Slime playerId={"navbarSlime"} direction={"down"} width={"96"} height={"96"} isAbsolute={false}></Slime>
                 <svg width="100%" height="100%" viewBox="-5 -30 200 50">
                   <text
                     x="0" y="0" fill="#3678ce"
@@ -135,23 +139,13 @@ function App() {
 
               </Navbar.Brand>
             </Col>
-            <Col xs={12} sm={6} style={{alignContent:"center"}}>
-              <Row>
-                <Col style={{width:"25%"}}>
-                  <Button className="Menu-Btn" variant="outline-light" onClick={showCreateModal}>플레이</Button>
-                </Col>
-
-                <Col style={{width:"25%"}}>
-                  <Button className="Menu-Btn" variant="outline-light" onClick={showRankingModal}>랭킹</Button>
-                </Col>
-
-                <Col style={{width:"25%"}}>
-                  <Button className="Menu-Btn" variant="outline-light" onClick={showBoardModal}>게시판</Button>
-                </Col>
-
-                <Col style={{width:"25%"}}>
-                  <Button className="Menu-Btn" variant="outline-light" onClick={showPlayerModal}>플레이어</Button>
-                </Col>
+            <Col xs={12} sm={6} style={{ alignContent: "center" }}>
+              <Row className='Btn-Container'>
+                <Button className="Menu-Btn" variant="outline-light" onClick={showCreateModal}>플레이</Button>
+                <Button className="Menu-Btn" variant="outline-light" onClick={showRankingModal}>랭킹</Button>
+                <Button className="Menu-Btn" variant="outline-light" onClick={showBoardModal}>게시판</Button>
+                <Button className="Menu-Btn" variant="outline-light" onClick={showPlayerModal}>플레이어</Button>
+                {isLogined && <Button className="Menu-Btn" variant="outline-light" onClick={handleLogout}>로그아웃</Button>}
               </Row>
             </Col>
           </Row>
@@ -161,16 +155,19 @@ function App() {
       <Container>
         <Row >
           {
-            isConn &&
-            <Col xs={12} sm={9} xxl={{ span: 6, offset: 3 }}>
-              <Stack gap={4} style={{ alignItems: "center" }}>
-                <PlayBody client={ws.current}></PlayBody>
-                <ControlPanel client={ws.current}></ControlPanel>
-              </Stack>
-            </Col>
+            isConn && <>
+              <Col xs={12} sm={3}>
+                <ObserverControl client={ws.current}></ObserverControl>
+              </Col>
+              <Col xs={12} sm={9}>
+                <Stack gap={4} style={{ alignItems: "center" }}>
+                  <PlayBody client={ws.current}></PlayBody>
+                  <ControlPanel client={ws.current}></ControlPanel>
+                </Stack>
+              </Col>
+            </>
           }
         </Row>
-
       </Container>
 
       <CreateModal show={createModal} onHide={() => setCreateModal(false)} client={ws.current}></CreateModal>

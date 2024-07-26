@@ -36,11 +36,13 @@ public class WebSecureConfig {
                 .cors((cors) -> cors.disable())
                 .formLogin((formLogin) -> formLogin.successForwardUrl("/signin").failureForwardUrl("/failed"))
                 .authorizeHttpRequests(
-                        (authorizeHttpRequests) -> authorizeHttpRequests.anyRequest().permitAll());
+                        (authorizeHttpRequests) -> authorizeHttpRequests
+                                .requestMatchers("/ws/**").permitAll()
+                                .requestMatchers("/signin/**").permitAll()
+                                .anyRequest().hasRole("USER"));
 
         return http.build();
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {

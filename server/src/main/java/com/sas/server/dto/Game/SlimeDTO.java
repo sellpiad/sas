@@ -1,4 +1,4 @@
-package com.sas.server.dto.Game;
+package com.sas.server.dto.game;
 
 import java.util.UUID;
 

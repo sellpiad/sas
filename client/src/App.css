@@ -10,9 +10,17 @@
 .Menu-Btn {
   font-family: DNFBitBitv2;
   font-size: 1rem;
-  width: 100%;
+  width: 15%;
   color: black;
   background: #f8f9fa;
+  padding-left: 1px;
+  padding-right: 1px;
+  margin-right: 2%;
+  margin-left: 2%;
+}
+
+.Btn-Container {
+  justify-content: center;
 }
 
 @media (max-width: 600px) {

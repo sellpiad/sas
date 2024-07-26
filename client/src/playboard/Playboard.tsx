@@ -7,7 +7,7 @@ import SlimeField from "../cube/SlimeField.tsx";
 import { persistor } from "../index.js";
 import { updateObserve, updateScale } from '../redux/GameSlice.tsx';
 import { RootState } from "../redux/Store.tsx";
-import './PlayBoard.css'
+import './PlayBoard.css';
 
 
 /**
@@ -51,7 +51,6 @@ export default function PlayBoard({ client }: Props) {
 
     const disconnect = () => {
         client?.deactivate()
-        persistor.purge()
     }
 
 
@@ -141,7 +140,7 @@ export default function PlayBoard({ client }: Props) {
         
         setObserveCenter()
 
-        if(playerPos.length > 1)
+        if(playerPos)
             dispatch(updateScale({scale:3}))
 
     }, [scale, playerPos, limitXY])
@@ -150,7 +149,7 @@ export default function PlayBoard({ client }: Props) {
 
     return (
         <div id="observer-window" className="observer-window">
-            <Row id="field-parent" style={{ width: "100%", height: height, position: "relative", transform: `scale(${scale}) translate(${observeX}px, ${observeY}px)`, transition: 'transform 0.5s ease' }} onWheel={wheelHandler}>
+            <Row id="field-parent" className="field-parent" style={{height: height, transform: `scale(${scale}) translate(${observeX}px, ${observeY}px)`, transition: 'transform 0.5s ease' }} onWheel={wheelHandler}>
                 <CubeSet client={client} left={left} top={top} right={right} down={down}></CubeSet>
                 <SlimeField client={client} left={left} top={top} right={right} down={down}></SlimeField>
             </Row>

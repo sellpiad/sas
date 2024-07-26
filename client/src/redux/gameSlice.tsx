@@ -8,8 +8,8 @@ const initialState = {
     width: 0,
     height: 0,
     scale: 1, // 게임 스케일
-    observeX: 3, // 게임 시점용 좌표 x
-    observeY: 3 // 게임 시점용 좌표 y
+    observeX: 0, // 게임 시점용 좌표 x
+    observeY: 0 // 게임 시점용 좌표 y
 }
 
 export const cube = createSlice({

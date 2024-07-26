@@ -1,6 +1,12 @@
 .observer-window {
     overflow: hidden;
     width: 100%;
-    border: 1px solid white;
+    border: 2px dashed white;
     border-radius: 1rem;
+}
+
+.field-parent {
+    width: 100%;
+    position: relative;
+    margin: 0;
 }

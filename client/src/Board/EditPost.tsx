@@ -1,5 +1,5 @@
 import React, { EventHandler, useEffect, useState } from "react";
-import { Button, Col, Container, Form, FormControlProps, InputGroup, Row, Spinner, Toast, ToastContainer } from "react-bootstrap";
+import { Button, Col, Container, Form, FormControlProps, InputGroup, Row, Spinner, Stack, Toast, ToastContainer } from "react-bootstrap";
 import axios from 'axios'
 
 export default function EditPost({ onMode, id }) {
@@ -72,30 +72,35 @@ export default function EditPost({ onMode, id }) {
 
     return (
         <Container>
-            <Row>
-                <Col>
-                    <InputGroup className="mb-3">
-                        <InputGroup.Text id="basic-addon1">제목</InputGroup.Text>
-                        <Form.Control
-                            value={title}
-                            aria-label="title"
-                            aria-describedby="basic-addon1"
-                            onChange={titleHandler}
-                            maxLength={15}
-                        />
-                        <InputGroup.Text id="basic-addon1">{author}</InputGroup.Text>
-                    </InputGroup>
-                </Col>
-            </Row>
-            <Row>
-                <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
-                    <Form.Label>내용</Form.Label>
-                    <Form.Control as="textarea" rows={8} onChange={contentHandler} value={content} maxLength={1000} />
-                </Form.Group>
-            </Row>
-            <Row>
-                <Button variant="outline-primary" onClick={save}>등록</Button>
-            </Row>
+            <Stack gap={2}>
+                <Row>
+                    <Col>
+                        <InputGroup className="mb-3">
+                            <InputGroup.Text id="basic-addon1">제목</InputGroup.Text>
+                            <Form.Control
+                                value={title}
+                                aria-label="title"
+                                aria-describedby="basic-addon1"
+                                onChange={titleHandler}
+                                maxLength={15}
+                            />
+                            <InputGroup.Text id="basic-addon1">{author}</InputGroup.Text>
+                        </InputGroup>
+                    </Col>
+                </Row>
+                <Row>
+                    <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
+                        <Form.Label>내용</Form.Label>
+                        <Form.Control as="textarea" rows={8} onChange={contentHandler} value={content} maxLength={1000} />
+                    </Form.Group>
+                </Row>
+                <Row>
+                    <Button variant="outline-primary" onClick={save}>등록</Button>
+                </Row>
+                <Row>
+                    <Button variant="outline-primary" onClick={() => onMode('POST')}>뒤로가기</Button>
+                </Row>
+            </Stack>
             {toast === true && <CustomToast></CustomToast>}
         </Container>
     )

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { Container, Modal, ModalBody, Row } from "react-bootstrap";
 
 interface Props {
@@ -6,23 +7,47 @@ interface Props {
     onHide: () => void
 }
 
-export default function PlayerInfo({show,onHide}) {
+export default function PlayerInfo({ show, onHide }) {
 
     const [id, setId] = useState<string>('')
+    const [killMax, setKillMax] = useState<number>()
+    const [conquerMax, setConquerMax] = useState<number>();
+    const [mainAttr, setMainAttr] = useState<string>()
 
     const [log, setLog] = useState([])
 
+    useEffect(() => {
+
+        if (show) {
+            axios.get('/api/userInfo')
+                .then((res) => {
+                    setId(res.data.username)
+                    setKillMax(res.data.killMax)
+                    setConquerMax(res.data.conquerMax)
+                    setMainAttr(res.data.mainAttr)
+                }).catch((err) => {
+                    console.error(err)
+                })
+
+        }
+
+    }, [show])
+
     return (
-        <Modal show={show} onHide={onHide} style={{ fontFamily: "DNFBitBitv2", fontSize: "0.9rem" }}>
+        <Modal show={show} onHide={onHide} centered style={{ fontFamily: "DNFBitBitv2", fontSize: "0.9rem" }}>
             <ModalBody>
                 <Container>
                     <Row>
-                        <h6>{id}</h6>
+                        <h3>{id}</h3>
                     </Row>
                     <Row>
-                        <p>최다킬</p>
-                        <p>최다정복</p>
-                        <p>주속성</p>
+                        <p />
+                        <span style={{ width: "20%"}}>주속성 </span> <span style={{ width: "20%", paddingRight: 0 }}>{mainAttr}</span>
+                        <p />
+                        <span style={{ width: "20%"}}>최다킬 </span> <span style={{ width: "20%", paddingRight: 0 }}>{killMax}</span>
+                        <p />
+                        <span style={{ width: "20%"}}>최다정복 </span> <span style={{ width: "20%", paddingRight: 0 }}>{conquerMax}</span>
+                        <p />
                     </Row>
                     <Row>
                         <hr />

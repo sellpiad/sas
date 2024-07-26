@@ -38,8 +38,8 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
     // 슬라임 넓이와 높이
     // 이 컴포넌트는 여러 곳에서 쓰기 때문에 props에서 따로 width와 height이 들어오거나,
     // 슬라임 박스 내에 위치 시키거나 하는 경우 때문에 어댑터 역할로 따로 state를 선언.
-    const [width, setWidth] = useState<string>('0')
-    const [height, setHeight] = useState<string>('0')
+    const [width, setWidth] = useState<number>(0)
+    const [height, setHeight] = useState<number>(0)
 
     const scale = useSelector((state: RootState) => state.game.scale)
     const boxWidth = useSelector((state: RootState) => state.cube.width)
@@ -74,16 +74,18 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
         }
     }
 
+    const getWidth = () => {
+        return props.width === undefined ? width : props.width
+    }
+
+    const getHeight = () => {
+        return props.height === undefined ? height : props.height
+    }
+
     // 슬라임이 속한 큐브의 정보 업데이트 메소드
     const updateSlimeBox = () => {
-
-        if (props.width !== undefined && props.height !== undefined) {
-            setWidth(props.width)
-            setHeight(props.height)
-        } else {
-            setWidth(boxWidth + '')
-            setHeight(boxHeight + '')
-        }
+        setWidth(boxWidth)
+        setHeight(boxHeight)
     }
 
     // 위치 업데이트 메소드
@@ -157,9 +159,11 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
     }
 
 
-
     // 초기화
     useEffect(() => {
+
+        updateTarget()
+        updateSlimeBox()
 
         setTimeout(() => { setSpeed(0.5) }, 10)
         const animation = requestAnimationFrame(updateAnimation)
@@ -190,26 +194,23 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
     }, [action, direction, frame])
 
 
-    // 박스 사이즈, 혹은 스케일 변경시
-    useEffect(() => {
-
-        updateSlimeBox()
-        updateTarget()
-
-    }, [boxWidth, boxHeight, width, height, scale])
-
-
     // 포지션 업데이트
     useEffect(() => {
         targetRef.current = target
     }, [target])
 
 
+    // 박스 크기 변할 때 슬라임 크기 변화
+    useEffect(() => {
+        updateSlimeBox()
+    }, [boxWidth, boxHeight])
+
+
 
 
     return (
         speed > 0 &&
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={width} height={height} preserveAspectRatio="xMidYMid meet" style={{ position: isAbsolute ? "absolute" : "relative", transform: "translate(" + moveX + "px," + moveY + "px)", transition: "transform " + speed + "s ease" }}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={getWidth()} height={getHeight()} preserveAspectRatio="xMidYMid meet" style={{ position: isAbsolute ? "absolute" : "relative", transform: "translate(" + moveX + "px," + moveY + "px)", transition: "transform " + speed + "s ease" }}>
 
             <use xlinkHref={motion} x={11} y={25} width={150} height={150} />
 
