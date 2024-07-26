@@ -1,5 +1,6 @@
 .cube-set {
-    gap: 5px
+    gap: 5px;
+    padding: 0
 }
 
 .cube-row {

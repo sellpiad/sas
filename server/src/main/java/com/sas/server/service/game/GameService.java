@@ -20,8 +20,8 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import com.sas.server.annotation.DistributedLock;
-import com.sas.server.dto.Game.ActionData;
-import com.sas.server.dto.Game.SlimeDTO;
+import com.sas.server.dto.game.ActionData;
+import com.sas.server.dto.game.SlimeDTO;
 import com.sas.server.entity.CubeEntity;
 import com.sas.server.entity.GameEntity;
 import com.sas.server.entity.UserEntity;

@@ -20,7 +20,7 @@ interface Props {
 export default function CubeSet({ client, left, top, right, down }: Props) {
 
     const [conqueredCubes, setConqueredCubes] = useState<Set<string>>(new Set<string>())
-    
+
     const [hasPlayer, setHasPlayer] = useState<string>()
 
     const [cubeSet, setCubeSet] = useState(new Array)
@@ -33,7 +33,7 @@ export default function CubeSet({ client, left, top, right, down }: Props) {
     const playerPos = useSelector((state: RootState) => state.user.position)
     const observeX = useSelector((state: RootState) => state.game.observeX)
     const observeY = useSelector((state: RootState) => state.game.observeY)
-   
+
 
     const isConquered = (cubeNickname: string) => {
         return conqueredCubes.has(cubeNickname)
@@ -46,6 +46,7 @@ export default function CubeSet({ client, left, top, right, down }: Props) {
     const isDominating = (cubeNickname: string) => {
         return targetCube === cubeNickname ? true : false
     }
+
 
 
     useEffect(() => {
@@ -89,7 +90,7 @@ export default function CubeSet({ client, left, top, right, down }: Props) {
 
         window.addEventListener('resize',updateCubeSize)
 
-
+    
         return () => {
 
             if (client != undefined) {
@@ -105,12 +106,25 @@ export default function CubeSet({ client, left, top, right, down }: Props) {
 
 
 
+    // 큐브 사이즈가 변할 때, redux용 state를 업데이트.
     const updateCubeSize = () => {
 
-        const slimeBox = document.getElementById('slimebox' + observeX + "" + observeY)?.getBoundingClientRect()
+        const slimeBox = document.getElementById('slimebox0')
 
         if (slimeBox) {
-            dispatch(updateSize({ width: slimeBox?.width, height: slimeBox?.height }))
+            const resizeObserver = new ResizeObserver((entries) => {
+                for (let entry of entries) {
+                    const { width, height } = entry.contentRect;
+                    dispatch(updateSize({ width: slimeBox.offsetWidth, height: slimeBox.offsetHeight }));
+                }
+            });
+
+            resizeObserver.observe(slimeBox);
+
+            // Clean up the observer on component unmount
+            return () => {
+                resizeObserver.unobserve(slimeBox);
+            };
         }
 
     }
@@ -129,9 +143,6 @@ export default function CubeSet({ client, left, top, right, down }: Props) {
 
     }, [cubeSet])
 
-    useEffect(() => {
-        updateCubeSize()
-    }, [left, top, right, down])
 
     useEffect(() => {
 
@@ -148,14 +159,14 @@ export default function CubeSet({ client, left, top, right, down }: Props) {
             {
                 Object.keys(cubeSet).map((rowNum, index) => {
                     return <div key={'row-' + rowNum} className="cube-row">
-                            {
-                                cubeSet[rowNum].map((cube, index) => {
-                                    return <div key={'col-' + cube.posX + cube.posY} style={{ width: "100%", height: "100%" }}>
-                                            <CubeObj name={cube.name} isConquest={isConquered(cube.name)} isClickable={isClickable(cube.name)} isDominating={isDominating(cube.name)} />
-                                        </div>
-                                })
-                            }
-                        </div>
+                        {
+                            cubeSet[rowNum].map((cube, index) => {
+                                return <div key={'col-' + cube.posX + cube.posY} style={{ width: "100%", height: "100%" }}>
+                                    <CubeObj name={cube.name} isConquest={isConquered(cube.name)} isClickable={isClickable(cube.name)} isDominating={isDominating(cube.name)} />
+                                </div>
+                            })
+                        }
+                    </div>
                 })
 
             }

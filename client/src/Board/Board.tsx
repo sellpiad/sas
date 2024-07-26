@@ -1,10 +1,9 @@
-import { Client } from '@stomp/stompjs';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { Button, Col, Container, Modal, ModalBody, ModalHeader, ModalTitle, Pagination, Row, Table } from 'react-bootstrap';
+import { Button, Container, Modal, ModalBody, ModalHeader, ModalTitle, Pagination, Row, Table } from 'react-bootstrap';
 import CreatePost from './CreatePost.tsx';
-import Post from './Post.tsx';
 import EditPost from './EditPost.tsx';
+import Post from './Post.tsx';
 
 interface Props {
     show: boolean
@@ -60,6 +59,7 @@ export default function Board({ show, onHide }: Props) {
     }
 
     const getList = () => {
+
         axios.get('/api/getList', {
             params: {
                 page: page,
@@ -80,7 +80,7 @@ export default function Board({ show, onHide }: Props) {
         getList()
         updatePagination()
 
-    }, [mode, page, total])
+    }, [show, mode, page, total])
 
 
     return (
@@ -104,7 +104,7 @@ export default function Board({ show, onHide }: Props) {
                                     {posts.map((post: boardDTO, index) => (
                                         <tr key={index} onClick={() => handlePost(post.id)}>
                                             <td>{post.id}</td>
-                                            <td>{post.title.substring(0,12)}</td>
+                                            <td>{post.title.substring(0, 12)}</td>
                                             <td>{post.author}</td>
                                         </tr>
                                     ))}

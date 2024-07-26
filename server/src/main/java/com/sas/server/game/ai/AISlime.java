@@ -6,7 +6,7 @@ import java.util.Random;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
-import com.sas.server.dto.Game.ActionData;
+import com.sas.server.dto.game.ActionData;
 import com.sas.server.service.game.GameService;
 
 import lombok.RequiredArgsConstructor;

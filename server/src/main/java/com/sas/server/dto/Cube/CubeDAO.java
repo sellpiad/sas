@@ -1,4 +1,4 @@
-package com.sas.server.dto.Cube;
+package com.sas.server.dto.cube;
 
 import java.time.LocalDateTime;
 

@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.sas.server.dto.Game.RankerDTO;
+import com.sas.server.dto.game.RankerDTO;
 import com.sas.server.entity.RankerEntity;
 import com.sas.server.entity.UserEntity;
 import com.sas.server.repository.RankerRepository;

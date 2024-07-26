@@ -6,7 +6,7 @@ import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import com.sas.server.dto.Queue.CreationInfo;
+import com.sas.server.dto.queue.CreationInfo;
 import com.sas.server.service.queue.QueueService;
 
 import lombok.RequiredArgsConstructor;

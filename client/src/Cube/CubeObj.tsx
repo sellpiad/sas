@@ -14,7 +14,7 @@ interface Props {
 export default function CubeObj({ name, isConquest, isClickable, isDominating }: Props) {
 
     const attr = useSelector((state: RootState) => state.user.attr)
-    const classNames = `slime-Box ${isClickable ? "clickable" : ''} ${isDominating ? "isDominating" : ''}`;
+    const classNames = `slime-box ${isClickable ? "clickable" : ''} ${isDominating ? "isDominating" : ''}`;
     
     const getAttr = () => {
         switch (attr) {

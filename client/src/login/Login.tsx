@@ -3,6 +3,9 @@ import React, { KeyboardEventHandler, useState } from "react";
 import { Button, Container, FloatingLabel, Form, Modal, ModalBody, Row, Stack } from "react-bootstrap";
 import './Login.css';
 import Signup from "./Signup.tsx";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../redux/Store.tsx";
+import { changeLogin } from "../redux/UserSlice.tsx";
 
 export default function Login() {
 
@@ -10,9 +13,12 @@ export default function Login() {
     const invalidPwd = "비밀번호를 입력해주세요."
     const invalidInfo = "아이디, 혹은 비밀번호를 확인해주세요."
 
-    const [login, setLogin] = useState<boolean>(false)
     const [id, setId] = useState<string>('')
     const [password, setPassword] = useState<string>('')
+
+    // 로그인 유지용 redux dispatch 및 state
+    const isLogined = useSelector((state: RootState) => state.user.isLogined)
+    const dispatch = useDispatch()
 
     const [mode, setMode] = useState<string>('LOGIN')
 
@@ -36,8 +42,8 @@ export default function Login() {
 
         axios.post('/api/login', formData)
             .then((res) => {
-                if (JSON.parse(res.data)) {
-                    setLogin(true)
+                if (res.data) {
+                    dispatch(changeLogin({isLogined:true}))
                 } else {
                     alarmErr(invalidInfo)
                 }
@@ -72,7 +78,7 @@ export default function Login() {
 
 
     return (
-        <Modal show={!login} centered size="sm">
+        <Modal show={!isLogined} centered size="sm">
             <ModalBody>
                 {mode === 'LOGIN' && <Container style={{ fontFamily: "DNFBitBitv2" }}>
                     <Stack gap={2}>

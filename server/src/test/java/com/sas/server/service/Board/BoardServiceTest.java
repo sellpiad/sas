@@ -22,7 +22,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.sas.server.dto.Board.BoardDTO;
+import com.sas.server.dto.board.BoardElement;
 import com.sas.server.entity.PostEntity;
 import com.sas.server.repository.BoardRepository;
 import com.sas.server.service.board.BoardService;
@@ -67,16 +67,16 @@ public class BoardServiceTest {
             when(boardRepository.findAll()).thenReturn(Arrays.asList(post1, post2));
 
             // Act
-            List<BoardDTO> board = boardService.findAll();
+            List<BoardElement> board = boardService.findAll();
 
             // Assert
             assertEquals(2, board.size());
 
-            BoardDTO boardDTO1 = board.get(0);
+            BoardElement boardDTO1 = board.get(0);
             assertEquals("Title1", boardDTO1.title);
             assertEquals("Author1", boardDTO1.author);
 
-            BoardDTO boardDTO2 = board.get(1);
+            BoardElement boardDTO2 = board.get(1);
             assertEquals("Title2", boardDTO2.title);
             assertEquals("Author2", boardDTO2.author);
 

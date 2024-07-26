@@ -13,9 +13,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
-import com.sas.server.dto.Game.ActionData;
-import com.sas.server.dto.Game.RankerDTO;
-import com.sas.server.dto.Game.SlimeDTO;
+import com.sas.server.dto.game.ActionData;
+import com.sas.server.dto.game.RankerDTO;
+import com.sas.server.dto.game.SlimeDTO;
+import com.sas.server.dto.game.UserData;
 import com.sas.server.service.game.GameService;
 import com.sas.server.service.ranker.RankerService;
 import com.sas.server.service.user.UserSerivce;
@@ -60,6 +61,7 @@ public class GameController {
 
         return rankerService.getRankerList();
     }
+
 
     @EventListener
     private void disconnect(SessionDisconnectEvent event) {

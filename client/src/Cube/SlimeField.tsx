@@ -148,7 +148,7 @@ export default function SlimeField({ client, left, top, right, down }: Props) {
 
         if (move) {
 
-            if (playerId === move.playerId && move.target !== undefined) {
+            if (playerId === move.playerId && move.target !== null) {
                 dispatch(updatePosition({ position: move.target }))
             }
 
@@ -165,6 +165,7 @@ export default function SlimeField({ client, left, top, right, down }: Props) {
                         direction: move.direction
                     }
 
+                    //Observer용 redux state 업데이트
                     if (move.target !== undefined)
                         dispatch(updateCubeNickname({ cubeNickname: move.target }))
 

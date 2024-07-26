@@ -1,6 +1,4 @@
-package com.sas.server.dto.Game;
-
-import java.time.LocalDateTime;
+package com.sas.server.dto.game;
 
 import lombok.Builder;
 import lombok.Data;

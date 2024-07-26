@@ -3,9 +3,7 @@ package com.sas.server.entity;
 import java.util.Date;
 
 import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.redis.core.index.Indexed;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
