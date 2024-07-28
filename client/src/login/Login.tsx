@@ -40,16 +40,13 @@ export default function Login({ client }: Props) {
     const [err, setErr] = useState<string>('')
     const [errEffect, setErrEffect] = useState<boolean>(false)
 
-    // 연결 중 토스트 토글용
-    const [showMsg, setShowMsg] = useState<boolean>(false)
+    // 게임 초기화 메시지
     const [msg, setMsg] = useState<string>('')
 
     // 게임 셋팅용 정보
     const cubeset = useSelector((state: RootState) => state.game.cubeset)
     const slimeset = useSelector((state: RootState) => state.game.slimeset)
 
-
-    const toggleMsg = () => setShowMsg(!msg)
 
     const handleId = (e) => setId(e.target.value)
     const handlePwd = (e) => setPassword(e.target.value)
@@ -106,7 +103,6 @@ export default function Login({ client }: Props) {
 
         if (isLogined && client) {
             setMsg('로그인 성공! 큐브셋 정보를 받아오는 중...')
-            toggleMsg()
 
             //초기 큐브셋 받아오기
             client.subscribe('/user/queue/cube/cubeSet', (msg: IMessage) => {
@@ -166,12 +162,11 @@ export default function Login({ client }: Props) {
 
     }, [slimeset])
 
-    // 4. 로딩 토글 off
+    // 4. 로딩 메시지 초기화
     useEffect(()=>{
 
         if(isReady){
             setMsg('')
-            toggleMsg()
         }
 
     },[isReady])
@@ -209,6 +204,7 @@ export default function Login({ client }: Props) {
                                 </Row>
                                 <Row>
                                     <p className={errEffect ? "shake err-msg" : "err-msg"}>{err}</p>
+                                    <p>{msg}</p>
                                 </Row>
                                 <Row className="Btn-Box">
                                     <Button className="Btn" type="submit">Login</Button>
@@ -223,15 +219,6 @@ export default function Login({ client }: Props) {
                 {mode === 'REGISTER' && <Signup onMode={setMode}></Signup>}
             </ModalBody>
 
-            <ToastContainer
-                className="p-3"
-                position="middle-center"
-                style={{ zIndex: 1 }}
-            >
-                <Toast show={showMsg} onClose={toggleMsg}>
-                    <Toast.Body>{msg}</Toast.Body>
-                </Toast>
-            </ToastContainer>
         </Modal>
     )
 }
