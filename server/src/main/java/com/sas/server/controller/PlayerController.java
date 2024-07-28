@@ -1,13 +1,10 @@
 package com.sas.server.controller;
 
-import java.util.List;
-
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
 import com.sas.server.dto.game.ObserverData;
-import com.sas.server.dto.game.UserData;
 import com.sas.server.service.player.PlayerService;
 
 import lombok.RequiredArgsConstructor;
@@ -20,10 +17,10 @@ public class PlayerController {
 
     private final PlayerService playerService;
 
-    @MessageMapping("/player/playerList")
-    @SendTo("/topic/player/playerList")
-    public List<ObserverData> getPlayerList() {
-        return playerService.findAllPlayer();
+    @MessageMapping("/player/anyObserver")
+    @SendTo("/topic/player/anyObserver")
+    public ObserverData getPlayerList() {
+        return playerService.findRandObserver();
     }
 
 }

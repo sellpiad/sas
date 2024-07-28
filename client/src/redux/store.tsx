@@ -4,11 +4,13 @@ import storage from "redux-persist/lib/storage"
 import cubeSlice from "./CubeSlice.tsx"
 import gameSlice from "./GameSlice.tsx"
 import userSlice from "./UserSlice.tsx"
+import ObserverSlice from "./ObserverSlice.tsx"
 
 const reducers = combineReducers({
     user:userSlice,
     cube:cubeSlice,
-    game:gameSlice
+    game:gameSlice,
+    observer:ObserverSlice
 })
 
 const persistConfig = {

@@ -1,8 +1,6 @@
 import { Client, IMessage } from "@stomp/stompjs";
 import React, { useEffect, useState } from "react";
 import { Modal, ModalBody } from "react-bootstrap";
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/Store";
 import './RankingBoard.css';
 
 interface Props {
@@ -14,8 +12,6 @@ interface Props {
 export default function RankingBoard({ client, show, onHide }: Props) {
 
     const [list, setList] = useState([])
-
-    const status = useSelector((state: RootState) => state.game.gameStatus)
 
 
     useEffect(() => {
@@ -34,6 +30,13 @@ export default function RankingBoard({ client, show, onHide }: Props) {
                 setList(Array.from(parser))
             })
 
+        }
+
+        return () => {
+            if(client){
+                client.unsubscribe('/topic/game/ranker')
+                client.unsubscribe('/user/queue/game/ranker')
+            }
         }
 
     }, [client])

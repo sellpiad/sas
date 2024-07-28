@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { RootState } from "../redux/Store";
+import { RootState } from "../../redux/Store";
 
 
 /**
@@ -41,7 +41,6 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
     const [width, setWidth] = useState<number>(0)
     const [height, setHeight] = useState<number>(0)
 
-    const scale = useSelector((state: RootState) => state.game.scale)
     const boxWidth = useSelector((state: RootState) => state.cube.width)
     const boxHeight = useSelector((state: RootState) => state.cube.height)
 

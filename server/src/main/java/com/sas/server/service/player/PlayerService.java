@@ -1,16 +1,15 @@
 package com.sas.server.service.player;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
 import com.sas.server.dto.game.ObserverData;
-import com.sas.server.dto.game.UserData;
 import com.sas.server.entity.UserEntity;
 import com.sas.server.repository.UserRepository;
 
@@ -81,27 +80,30 @@ public class PlayerService {
     }
 
     /**
-     * 현재 플레이 중인 유저들의 정보를 리턴.
+     * 현재 플레이 중인 유저들 중 랜덤으로 한 명의 정보를 리턴.
      * 
      * @return
      */
-    public List<ObserverData> findAllPlayer() {
+    public ObserverData findRandObserver() {
 
         List<UserEntity> list = repo.findAllByState("PLAYER");
-        List<ObserverData> userList = new ArrayList<>();
 
-        for (UserEntity user : list) {
-            userList.add(ObserverData
-                    .builder()
-                    .username(user.nickname)
-                    .playerId(user.playerId)
-                    .attr(user.attr)
-                    .kill(user.kill)
-                    .conquer(0)
-                    .build());
-        }
+        Random random = new Random();
 
-        return userList;
+        random.setSeed(System.currentTimeMillis());
+
+        if (list.size() == 0)
+            return null;
+
+        UserEntity user = list.get(random.nextInt(list.size()));
+
+        return ObserverData.builder()
+                .username(user.nickname)
+                .playerId(user.playerId)
+                .attr(user.attr)
+                .kill(user.kill)
+                .conquer(0)
+                .build();
     }
 
     public List<UserEntity> findAllAi() {

@@ -19,9 +19,9 @@ public class QueueController {
 
     private final QueueService queueService;
 
-    @MessageMapping("/queue/joiningQueue")
-    @SendToUser("/queue/queue/joiningQueue")
-    public boolean inQueue(@RequestBody CreationInfo info, SimpMessageHeaderAccessor simpMessageHeaderAccessor) {
+    @MessageMapping("/queue/register")
+    @SendToUser("/queue/queue/register")
+    public boolean register(@RequestBody CreationInfo info, SimpMessageHeaderAccessor simpMessageHeaderAccessor) {
 
         String sessionId = simpMessageHeaderAccessor.getSessionId();
 
