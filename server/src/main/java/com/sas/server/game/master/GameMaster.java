@@ -1,7 +1,9 @@
 package com.sas.server.game.master;
 
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -46,6 +48,7 @@ public class GameMaster {
     private final SimpMessagingTemplate messagingTemplate;
 
     private final StringRedisTemplate redisTemplate;
+
 
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) {

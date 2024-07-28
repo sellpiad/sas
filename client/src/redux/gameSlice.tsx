@@ -1,40 +1,50 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { PURGE } from "redux-persist";
 
-const initialState = {
-    gameStatus: 0,
-    voteTime: 0,
-    size: 0,
-    width: 0,
-    height: 0,
-    scale: 1, // 게임 스케일
-    observeX: 0, // 게임 시점용 좌표 x
-    observeY: 0 // 게임 시점용 좌표 y
+
+export interface SlimeDTO {
+    actionType: string
+    playerId: string
+    target: string // 위치
+    attr: string
+    direction: string
 }
 
-export const cube = createSlice({
+export interface gameState {
+    size: number
+    slimeset: {[key:string]: SlimeDTO}
+    cubeset: []
+    isReady: boolean
+}
+
+const initialState: gameState = {
+    size: 0, // 게임 사이즈 size*size
+    slimeset: {},
+    cubeset: [],
+    isReady: false
+}
+
+export const game = createSlice({
     name: 'game',
     initialState,
     reducers: {
-        changeGameSize(state, action) {
+        initialGameSize(state, action) {
             state.size = action.payload.size
         },
-        changeGameStatus(state, action) {
-            state.gameStatus = action.payload.gameStatus
+        initialCubeSet(state, action) {
+            state.cubeset = action.payload.cubeset
         },
-        changeVoteTime(state, action) {
-            state.voteTime = action.payload.voteTime
+        initialSlimeSet(state, action) {
+            state.slimeset = action.payload.slimeset
         },
-        resize(state, action) {
-            state.width = action.payload.width
-            state.height = action.payload.height
+        addSlime: (state, action) => {
+            state.slimeset[action.payload.playerId] = action.payload.slimedto
         },
-        updateScale(state, action) {
-            state.scale = action.payload.scale
+        removeSlime: (state, action) => {
+            delete state.slimeset[action.payload.playerId]
         },
-        updateObserve(state, action) {
-            state.observeX = action.payload.observeX
-            state.observeY = action.payload.observeY
+        setReady: (state) => {
+            state.isReady = true
         }
     },
     extraReducers: builder => {
@@ -42,7 +52,7 @@ export const cube = createSlice({
     }
 })
 
-export const { changeGameStatus, changeVoteTime, changeGameSize, resize, updateScale, updateObserve } = cube.actions
+export const { initialGameSize, initialCubeSet, initialSlimeSet, addSlime, removeSlime, setReady } = game.actions
 
-export default cube.reducer
+export default game.reducer
 

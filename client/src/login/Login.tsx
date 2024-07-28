@@ -1,13 +1,22 @@
 import axios from "axios";
-import React, { KeyboardEventHandler, useState } from "react";
-import { Button, Container, FloatingLabel, Form, Modal, ModalBody, Row, Stack } from "react-bootstrap";
+import React, { KeyboardEventHandler, useEffect, useState } from "react";
+import { Button, Container, FloatingLabel, Form, Modal, ModalBody, Row, Stack, Toast, ToastContainer } from "react-bootstrap";
 import './Login.css';
 import Signup from "./Signup.tsx";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/Store.tsx";
 import { changeLogin } from "../redux/UserSlice.tsx";
+import { Client, IMessage } from "@stomp/stompjs";
+import { initialCubeSet, initialGameSize, initialSlimeSet, SlimeDTO, setReady } from "../redux/GameSlice.tsx";
+import { persistor } from "../index.js";
 
-export default function Login() {
+
+interface Props {
+    client: Client | undefined
+}
+
+
+export default function Login({ client }: Props) {
 
     const invalidId = "아이디를 입력해주세요."
     const invalidPwd = "비밀번호를 입력해주세요."
@@ -18,6 +27,7 @@ export default function Login() {
 
     // 로그인 유지용 redux dispatch 및 state
     const isLogined = useSelector((state: RootState) => state.user.isLogined)
+    const isReady = useSelector((state:RootState) => state.game.isReady)
     const dispatch = useDispatch()
 
     const [mode, setMode] = useState<string>('LOGIN')
@@ -30,9 +40,21 @@ export default function Login() {
     const [err, setErr] = useState<string>('')
     const [errEffect, setErrEffect] = useState<boolean>(false)
 
+    // 연결 중 토스트 토글용
+    const [showMsg, setShowMsg] = useState<boolean>(false)
+    const [msg, setMsg] = useState<string>('')
+
+    // 게임 셋팅용 정보
+    const cubeset = useSelector((state: RootState) => state.game.cubeset)
+    const slimeset = useSelector((state: RootState) => state.game.slimeset)
+
+
+    const toggleMsg = () => setShowMsg(!msg)
+
     const handleId = (e) => setId(e.target.value)
     const handlePwd = (e) => setPassword(e.target.value)
 
+    // 로그인
     const handleLogin = () => {
 
         const formData = new FormData()
@@ -43,7 +65,7 @@ export default function Login() {
         axios.post('/api/login', formData)
             .then((res) => {
                 if (res.data) {
-                    dispatch(changeLogin({isLogined:true}))
+                    dispatch(changeLogin({ isLogined: true }))
                 } else {
                     alarmErr(invalidInfo)
                 }
@@ -53,6 +75,7 @@ export default function Login() {
 
     }
 
+    // 폼 체크
     const checkSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 
         e.preventDefault()
@@ -67,6 +90,7 @@ export default function Login() {
 
     }
 
+    // 에러 메세지 출력
     const alarmErr = (msg) => {
         setErr(msg)
         setErrEffect(true)
@@ -75,6 +99,82 @@ export default function Login() {
         }, 1000)
     }
 
+
+
+    // 1. 큐브셋 요청
+    useEffect(() => {
+
+        if (isLogined && client) {
+            setMsg('로그인 성공! 큐브셋 정보를 받아오는 중...')
+            toggleMsg()
+
+            //초기 큐브셋 받아오기
+            client.subscribe('/user/queue/cube/cubeSet', (msg: IMessage) => {
+
+                const parser = JSON.parse(msg.body)
+
+                dispatch(initialCubeSet({
+                    cubeset: parser.reduce((result, value) => {
+
+                        const posY = value['posY']
+
+                        if (!result[posY])
+                            result[posY] = [];
+
+                        result[posY].push(value)
+
+                        return result
+                    }, [])
+
+                }))
+
+            })
+
+            client.publish({ destination: '/app/cube/cubeSet' })
+        }
+
+    }, [isLogined, client])
+
+    // 2. 슬라임 소환
+    useEffect(() => {
+
+        if (cubeset && client) {
+            setMsg('슬라임들을 소환 중...')
+
+            // 초기 슬라임들 받아오기
+            client.subscribe('/user/queue/game/slimes', (msg: IMessage) => {
+
+                const slimeSet: {[key:string]:SlimeDTO} = JSON.parse(msg.body) as {[key:string]:SlimeDTO} 
+
+                dispatch(initialSlimeSet({ slimeset: slimeSet }))
+
+                client.unsubscribe('/user/queue/game/slimes')
+            })
+
+            client.publish({ destination: '/app/game/slimes' })
+        }
+
+    }, [cubeset])
+
+    // 3. 게임 로딩 완료 설정
+    useEffect(() => {
+
+        if (slimeset && client && !isReady) {
+            setMsg('게임 로딩 완료!')
+            dispatch(setReady())
+        }
+
+    }, [slimeset])
+
+    // 4. 로딩 토글 off
+    useEffect(()=>{
+
+        if(isReady){
+            setMsg('')
+            toggleMsg()
+        }
+
+    },[isReady])
 
 
     return (
@@ -122,6 +222,16 @@ export default function Login() {
                 </Container>}
                 {mode === 'REGISTER' && <Signup onMode={setMode}></Signup>}
             </ModalBody>
+
+            <ToastContainer
+                className="p-3"
+                position="middle-center"
+                style={{ zIndex: 1 }}
+            >
+                <Toast show={showMsg} onClose={toggleMsg}>
+                    <Toast.Body>{msg}</Toast.Body>
+                </Toast>
+            </ToastContainer>
         </Modal>
     )
 }

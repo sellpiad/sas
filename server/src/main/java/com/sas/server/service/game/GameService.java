@@ -249,7 +249,7 @@ public class GameService {
         gameRepo.save(game);
     }
 
-    @Retryable(value = { LockAcquisitionException.class }, maxAttempts = 10, backoff = @Backoff(delay = 100))
+    @Retryable(value = { LockAcquisitionException.class }, maxAttempts = 15, backoff = @Backoff(delay = 200))
     @DistributedLock(key = "lock:game")
     public Map<String, SlimeDTO> findAllSlimes() {
 
@@ -380,7 +380,7 @@ public class GameService {
      * @param direction
      * @return MoveData형식으로 슬라임 닉네임, 위치 리턴. 실패시 null
      */
-    @Retryable(value = { LockAcquisitionException.class }, maxAttempts = 10, backoff = @Backoff(delay = 100))
+    @Retryable(value = { LockAcquisitionException.class }, maxAttempts = 15, backoff = @Backoff(delay = 200))
     @DistributedLock(key = "lock:game")
     public ActionData updateMove(String sessionId, String direction) {
 
@@ -465,6 +465,7 @@ public class GameService {
             UserEntity loser = actionType.equals("ATTACK") ? enemy : player;
 
             removeOnly(game, loser.sessionId);
+            userSerivce.deleteById(loser.sessionId);
             rankerService.save(playerService.addKillCount(winner.sessionId));
 
             simpMessagingTemplate.convertAndSend("/topic/game/deleteSlime",
