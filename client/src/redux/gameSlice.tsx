@@ -4,7 +4,7 @@ import { PURGE } from "redux-persist";
 
 export interface SlimeDTO {
     actionType: string
-    playerId: string
+    username: string
     target: string // 위치
     attr: string
     direction: string
@@ -38,10 +38,10 @@ export const game = createSlice({
             state.slimeset = action.payload.slimeset
         },
         addSlime: (state, action) => {
-            state.slimeset[action.payload.playerId] = action.payload.slimedto
+            state.slimeset[action.payload.username] = action.payload.slimedto
         },
         removeSlime: (state, action) => {
-            delete state.slimeset[action.payload.playerId]
+            delete state.slimeset[action.payload.username]
         },
         setReady: (state) => {
             state.isReady = true

@@ -6,7 +6,7 @@ const initialState = {
     observeX: 0, // 게임 시점용 좌표 x
     observeY: 0, // 게임 시점용 좌표 y
     observerId: '', // 게임 시점용 아이디
-    ObserverPos: '' // 게임 시점용 위치
+    observerPos: '' // 게임 시점용 위치
 }
 
 export const cube = createSlice({
@@ -16,7 +16,7 @@ export const cube = createSlice({
         updateScale(state, action) {
             state.scale = action.payload.scale
         },
-        updateObserveCoor(state, action) {
+        updateObserverCoor(state, action) {
             state.observeX = action.payload.observeX
             state.observeY = action.payload.observeY
         },
@@ -24,7 +24,7 @@ export const cube = createSlice({
             state.observerId = action.payload.observerId
         },
         updateObserverPos(state,action){
-            state.ObserverPos = action.payload.observerPos
+            state.observerPos = action.payload.observerPos
         }
     },
     extraReducers: builder => {
@@ -32,7 +32,7 @@ export const cube = createSlice({
     }
 })
 
-export const {updateScale, updateObserveCoor,updateObserverId,updateObserverPos } = cube.actions
+export const {updateScale, updateObserverCoor,updateObserverId,updateObserverPos } = cube.actions
 
 export default cube.reducer
 

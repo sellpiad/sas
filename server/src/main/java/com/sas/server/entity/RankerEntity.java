@@ -1,6 +1,6 @@
 package com.sas.server.entity;
 
-import java.time.LocalDateTime;
+import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
@@ -14,7 +14,7 @@ public class RankerEntity {
 
     @Id
     @Nonnull
-    String sessiondId;
+    String playerId;
 
     @Nonnull
     public String nickname;

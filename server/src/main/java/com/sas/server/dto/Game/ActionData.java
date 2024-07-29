@@ -17,8 +17,8 @@ public class ActionData {
     @NotBlank(message = "actionType value cannot be null, empty, and blank.")
     String actionType;
 
-    @NotBlank(message = "playerId value cannot be null, empty, and blank.")
-    UUID playerId;
+    @NotBlank(message = "username value cannot be null, empty, and blank.")
+    String username;
     String target;
         
     /**

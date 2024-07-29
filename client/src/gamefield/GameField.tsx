@@ -2,7 +2,7 @@ import { Client } from "@stomp/stompjs";
 import React, { useEffect, useState } from "react";
 import { Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { updateObserveCoor, updateScale } from '../redux/ObserverSlice.tsx';
+import { updateObserverCoor, updateScale } from '../redux/ObserverSlice.tsx';
 import { RootState } from "../redux/Store.tsx";
 import CubeSet from "./cubeset/CubeSet.tsx";
 import './GameField.css';
@@ -36,7 +36,7 @@ export default function PlayBoard({ client }: Props) {
     // 옵저버 states
     const observeX = useSelector((state: RootState) => state.observer.observeX)
     const observeY = useSelector((state: RootState) => state.observer.observeY)
-    const observerPos = useSelector((state: RootState) => state.observer.ObserverPos)
+    const observerPos = useSelector((state: RootState) => state.observer.observerPos)
 
     // 옵저버 이동 한계 좌표
     const [limitXY, setLimitXY] = useState<number>(0)
@@ -67,7 +67,7 @@ export default function PlayBoard({ client }: Props) {
             const x = height / 2 - (boxLeft + ((boxWidth) / 2))
             const y = height / 2 - (boxTop + ((boxHeight) / 2))
 
-            dispatch(updateObserveCoor({ observeX: Math.abs(x) < limitXY ? x : Math.sign(x) * limitXY, observeY: Math.abs(y) < limitXY ? y : Math.sign(y) * limitXY }))
+            dispatch(updateObserverCoor({ observeX: Math.abs(x) < limitXY ? x : Math.sign(x) * limitXY, observeY: Math.abs(y) < limitXY ? y : Math.sign(y) * limitXY }))
         }
 
     }
@@ -76,7 +76,7 @@ export default function PlayBoard({ client }: Props) {
     useEffect(() => {
 
         getWidth() // 초기 화면 크기 구하기
-        dispatch(updateScale({ scale: 3 })) // 초기 스케일 3으로 고정
+        dispatch(updateScale({ scale: 1 })) // 초기 스케일 3으로 고정
 
         window.addEventListener('resize', getWidth)
 
@@ -100,7 +100,7 @@ export default function PlayBoard({ client }: Props) {
 
         setObserveCenter()
 
-    }, [observerPos])
+    }, [observerPos,limitXY])
 
 
     return (

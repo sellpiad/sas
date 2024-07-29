@@ -1,12 +1,11 @@
 import { Client, IMessage } from "@stomp/stompjs";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateCubeNickname } from "../../redux/CubeSlice.tsx";
 import { addSlime, removeSlime, SlimeDTO } from "../../redux/GameSlice.tsx";
-import { RootState } from "../../redux/Store.tsx";
-import { updatePlayerId, updatePosition } from "../../redux/UserSlice.tsx";
-import Slime from "./Slime.tsx";
 import { updateObserverPos } from "../../redux/ObserverSlice.tsx";
+import { RootState } from "../../redux/Store.tsx";
+import { updatePosition, updateUsername } from "../../redux/UserSlice.tsx";
+import Slime from "./Slime.tsx";
 
 
 /**
@@ -24,7 +23,7 @@ interface Props {
 
 interface ActionData {
     actionType: string
-    playerId: string
+    username: string
     target?: string // 위치
     direction: string
 }
@@ -35,13 +34,13 @@ export default function SlimeSet({ client }: Props) {
     // 슬라임 저장용 state
     //const [slimes, setSlimes] = useState<Map<string, SlimeDTO>>(new Map())
 
-    const slimeset:{[key:string]:SlimeDTO} = useSelector((state: RootState) => state.game.slimeset);
+    const slimeset: { [key: string]: SlimeDTO } = useSelector((state: RootState) => state.game.slimeset);
 
     // 움직임 관련 states
     const [move, setMove] = useState<ActionData>()
 
     // 플레이어 아이디(게임 참가시)
-    const playerId = useSelector((state: RootState) => state.user.playerId);
+    const username = useSelector((state: RootState) => state.user.username);
     const observerId = useSelector((state: RootState) => state.observer.observerId);
 
     // redux state 수정용
@@ -53,17 +52,6 @@ export default function SlimeSet({ client }: Props) {
 
         if (client) {
 
-
-            // 유저 아이디 
-            client.subscribe("/user/queue/player/ingame", (msg: IMessage) => {
-                dispatch(updatePlayerId({ playerId: JSON.parse(msg.body) }))
-            })
-
-            // 초기 위치
-            client.subscribe("/user/queue/player/initialPosition", (msg: IMessage) => {
-                dispatch(updatePosition({ position: msg.body }))
-            })
-
             // 슬라임 위치 업데이트
             client.subscribe("/topic/game/move", (msg: IMessage) => {
 
@@ -73,41 +61,35 @@ export default function SlimeSet({ client }: Props) {
 
             })
 
-            client.subscribe("/topic/game/chat", (msg: IMessage) => {
-            })
-
-
             // 슬라임 추가
             client.subscribe('/topic/game/addSlime', (msg: IMessage) => {
 
                 const parser: SlimeDTO = JSON.parse(msg.body)
 
-                dispatch(addSlime({ playerId: parser.playerId, slimedto: parser }))
+                dispatch(addSlime({ username: parser.username, slimedto: parser }))
 
             })
 
 
             // 슬라임 삭제
-            client.subscribe("/topic/game/deleteSlime", (msg: IMessage) => {
+            client.subscribe('/topic/game/deleteSlime', (msg: IMessage) => {
 
-                const id = JSON.parse(msg.body)
+                const id = msg.body
 
                 // 플레이어라면 플레이어 아이디 초기화
-                if (id == playerId) {
-                    dispatch(updatePlayerId({ playerId: '' }))
+                if (id == username) {
+                    dispatch(updateUsername({ username: '' }))
                 }
 
-                dispatch(removeSlime({ playerId: id }))
+                dispatch(removeSlime({ username: id }))
             })
 
         }
 
         return () => {
             client?.unsubscribe('/topic/game/move')
-            client?.unsubscribe('/topic/game/slimes')
-            client?.unsubscribe('/topic/game/chat')
-            client?.unsubscribe("/user/queue/player/movable")
-            client?.unsubscribe("/user/queue/player/ingame")
+            client?.unsubscribe('/topic/game/addSlime')
+            client?.unsubscribe('/topic/game/deleteSlime')
         }
 
     }, [client])
@@ -118,39 +100,30 @@ export default function SlimeSet({ client }: Props) {
 
         if (move && slimeset) {
 
-            if (playerId === move.playerId && move.target !== null) {
+            if (username === move.username && move.target !== null) {
                 dispatch(updatePosition({ position: move.target }))
             }
 
-            if (observerId === move.playerId && move.target !== null) {
+            if (observerId === move.username && move.target !== null) {
                 dispatch(updateObserverPos({ observerPos: move.target }))
             }
 
-            const slime = slimeset[move.playerId]
+            const slime = slimeset[move.username]
 
             if (slime) {
 
                 const moveSlime: SlimeDTO = {
                     actionType: move.actionType,
                     target: move.target ?? slime.target,
-                    playerId: move.playerId,
+                    username: move.username,
                     attr: slime.attr,
                     direction: move.direction
                 }
 
-                dispatch(addSlime({ playerId: move.playerId, slimedto: moveSlime }))
+                dispatch(addSlime({ username: move.username, slimedto: moveSlime }))
             }
         }
     }, [move])
-
-
-    // 옵저버 아이디 업데이트 시, 현재 위치 찾아서 업데이트.
-    useEffect(() => {
-
-     
-            
-
-    }, [observerId])
 
 
     return (
@@ -158,8 +131,8 @@ export default function SlimeSet({ client }: Props) {
         <div style={{ position: "absolute", padding: 0 }}>
             {
                 Object.values(slimeset).map((value) => {
-                    return <Slime key={value['playerId']}
-                        playerId={value['playerId']}
+                    return <Slime key={value['username']}
+                        playerId={value['username']}
                         actionType={value['actionType']}
                         direction={value['direction']}
                         fill={value['attr']}

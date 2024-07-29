@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.sas.server.dao.CustomUserDetails;
 import com.sas.server.entity.MemberEntity;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class LoginService implements UserDetailsService {
 
     private final MemberService memberService;
+    private final HttpSession session;
   
     @Override
     public CustomUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -35,6 +37,7 @@ public class LoginService implements UserDetailsService {
         CustomUserDetails details = CustomUserDetails.builder()
                 .username(member.id)
                 .password(member.password)
+                .sessionId(session.getId())
                 .authorities(authorities)
                 .build();
 

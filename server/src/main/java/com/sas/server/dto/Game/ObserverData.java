@@ -1,7 +1,5 @@
 package com.sas.server.dto.game;
 
-import java.util.UUID;
-
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -11,10 +9,10 @@ import lombok.NonNull;
 public class ObserverData {
 
     @NonNull
-    String username;
+    String usrename;
 
     @NonNull
-    UUID playerId;
+    String nickname;
 
     @NonNull
     String attr;

@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Slime from "../gamefield/slimeset/Slime.tsx";
 import { updateObserverId, updateObserverPos } from "../redux/ObserverSlice.tsx";
 import { RootState } from "../redux/Store.tsx";
+import { updatePosition, updateUsername } from "../redux/UserSlice.tsx";
 import './ObserverInfo.css';
 
 
@@ -23,10 +24,10 @@ interface Props {
 
 interface ObservedPlayer {
     username: string
+    nickname: string
     attr: string
     kill: number
     conquer: number
-    playerId: string
 }
 
 export default function ObserverControl({ client }: Props) {
@@ -38,17 +39,27 @@ export default function ObserverControl({ client }: Props) {
     const observerId = useSelector((state: RootState) => state.observer.observerId)
 
     // 플레이어 아이디
-    const playerId = useSelector((state:RootState) => state.user.playerId)
+    const username = useSelector((state: RootState) => state.user.username)
+    const playerPos = useSelector((state: RootState) => state.user.position)
 
-    const slimeset = useSelector((state:RootState) => state.game.slimeset)
+    const slimeset = useSelector((state: RootState) => state.game.slimeset)
 
-    const isReady = useSelector((state:RootState) => state.game.isReady)
+    const isReady = useSelector((state: RootState) => state.game.isReady)
 
     const dispatch = useDispatch()
 
     useEffect(() => {
 
         if (client && isReady) {
+
+            // 유저 아이디 
+            client.subscribe("/user/queue/player/ingame", (msg: IMessage) => {
+
+                const parser = JSON.parse(msg.body)
+
+                dispatch(updateUsername({ username: parser.username }))
+                dispatch(updatePosition({ position: parser.position }))
+            })
 
             // 옵저버 대상 정보 받아오기
             client.subscribe('/topic/player/anyObserver', (msg: IMessage) => {
@@ -63,13 +74,13 @@ export default function ObserverControl({ client }: Props) {
             // 슬라임 삭제가 발생했을 때 그것이 옵저버인지 아닌지 판별.
             client.subscribe("/topic/game/deleteSlime", (msg: IMessage) => {
 
-                if (JSON.parse(msg.body) == observedPlayer?.playerId) {
+                if (msg.body == observedPlayer?.username) {
                     client.publish({ destination: '/app/player/anyObserver' })
                 }
             })
 
             // 현재 플레이 중이 아니라면 옵저버 받아오기
-            if(playerId !== '')
+            if (username !== '')
                 client.publish({ destination: '/app/player/anyObserver' })
         }
 
@@ -86,33 +97,32 @@ export default function ObserverControl({ client }: Props) {
 
 
     // 플레이어 추가 됐을 때 옵저버 아이디도 업데이트
+    useEffect(() => {
+
+        if (username !== null){
+            dispatch(updateObserverId({ observerId: username }))
+        }
+
+    }, [username])
+
     useEffect(()=>{
-
-        if(playerId !== '')
-            dispatch(updateObserverId({observerId: playerId}))
-
-    },[playerId])
+        if(observedPlayer)
+            dispatch(updateObserverId({ observerId: observedPlayer.username }))
+    },[observedPlayer])
 
 
     useEffect(() => {
 
-        if (observedPlayer) {
-            dispatch(updateObserverId({ observerId: observedPlayer.playerId }))
-        }
-
-    }, [observedPlayer])
-
-    useEffect(()=>{
-
-        if(observerId){
-            if(slimeset[observerId]===undefined){
+        if (observerId) {
+            if (slimeset[observerId] === undefined) {
                 client?.publish({ destination: '/app/player/anyObserver' })
-            }else{
+            } else {
                 dispatch(updateObserverPos({ observerPos: slimeset[observerId].target }))
             }
         }
 
-    },[observerId])
+    }, [observerId,playerPos])
+
 
 
     return (
@@ -121,7 +131,7 @@ export default function ObserverControl({ client }: Props) {
                 <Slime playerId={"ObserverSlime"} direction={"down"} width={"100%"} height={"100%"} isAbsolute={false} fill={observedPlayer?.attr}></Slime>
             </Col>
             <Col xs={3} sm={9} className="msg-nickname">
-                <strong>{observedPlayer?.username}</strong> <span>의 플레이를 관전 중</span>
+                <strong>{observedPlayer?.nickname}</strong> <span>의 플레이를 관전 중</span>
             </Col>
             <Col xs={2} sm={12} className="info-container">
                 <span className="box-attr">속성</span>

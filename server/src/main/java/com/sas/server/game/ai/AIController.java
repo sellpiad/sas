@@ -19,12 +19,11 @@ import org.springframework.stereotype.Component;
 
 import com.sas.server.annotation.DistributedLock;
 import com.sas.server.entity.GameEntity;
-import com.sas.server.entity.UserEntity;
+import com.sas.server.entity.PlayerEntity;
 import com.sas.server.exception.LockAcquisitionException;
 import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.game.GameService;
 import com.sas.server.service.player.PlayerService;
-import com.sas.server.service.user.UserSerivce;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +36,6 @@ public class AIController {
     private final CubeService cubeService;
     private final PlayerService playerService;
     private final GameService gameService;
-    private final UserSerivce userSerivce;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(20);
     private Map<String, ScheduledFuture<?>> actionTasks = new ConcurrentHashMap<>();
@@ -50,42 +48,20 @@ public class AIController {
      * @param playerPercentage
      * @throws IllegalArgumentException
      */
-    @DistributedLock(key = "lock:game")
-    public UserEntity placeRandomAI(double playerPercentage) {
+    public PlayerEntity placeRandomAI(double playerPercentage) {
+        
+        int totalPlayer = playerService.findAllByInGame().size();
+        int totalCube = cubeService.findAll().size();
 
-        GameEntity game = gameService.findGame();
+        double fraction = (double) totalPlayer / totalCube;
 
-        Map<String, String> cubeTable = game.cubeTable;
+        if (fraction < playerPercentage) {
 
-        long totalNull = cubeTable.values().stream().filter(value -> value.equals("null")).count();
-        int totalCube = cubeTable.size();
+            PlayerEntity ai = createAI();
 
-        double fraction = (double) totalNull / totalCube;
+            playerService.saveAI(ai);
 
-        if (fraction > playerPercentage) {
-
-            UserEntity ai = createAI();
-
-            List<String> cubekeySet = cubeTable.entrySet()
-                    .stream()
-                    .filter(entry -> entry.getValue().equals("null"))
-                    .map(Map.Entry::getKey)
-                    .collect(Collectors.toList());
-
-            if (cubekeySet.isEmpty()) {
-                throw new IllegalArgumentException("There's no cube with null");
-            }
-
-            String randCubeId = cubekeySet.get(new Random().nextInt(cubekeySet.size()));
-
-            String cubeNickname = cubeService.getCubeNickname(randCubeId);
-
-            gameService.addOnly(game, ai.sessionId, randCubeId);
-            playerService.registerPlayer(ai, true, cubeNickname);
-
-            gameService.saveGame(game);
-
-            return userSerivce.findBySessionId(ai.sessionId);
+            return ai;
         }
 
         return null;
@@ -105,7 +81,7 @@ public class AIController {
                             Throwable cause = ex instanceof CompletionException ? ex.getCause() : ex;
                             if (cause instanceof LockAcquisitionException || cause instanceof ExhaustedRetryException) {
                             } else {
-                                
+
                                 throw new CompletionException(cause);
                             }
                         }
@@ -138,14 +114,13 @@ public class AIController {
         }
     }
 
-    private UserEntity createAI() {
+    private PlayerEntity createAI() {
 
-        UserEntity ai = UserEntity.builder()
-                .sessionId(UUID.randomUUID().toString())
-                .createdTime(LocalDateTime.now())
-                .ai(true)
+        PlayerEntity ai = PlayerEntity.builder()
+                .username(UUID.randomUUID().toString())
                 .nickname(randNickname())
                 .attr(getRandAttr())
+                .ai(true)
                 .build();
 
         return ai;

@@ -3,9 +3,9 @@ import React, { useEffect, useState } from "react";
 import { Stack } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { updateRenderingState, updateSize } from "../../redux/CubeSlice.tsx";
-import { initialCubeSet, initialGameSize } from "../../redux/GameSlice.tsx";
+import { initialGameSize } from "../../redux/GameSlice.tsx";
 import { RootState } from "../../redux/Store.tsx";
-import { updatePlayerId } from "../../redux/UserSlice.tsx";
+import { updateUsername } from "../../redux/UserSlice.tsx";
 import Cube from "./Cube.tsx";
 import './CubeSet.css';
 
@@ -22,7 +22,7 @@ export default function CubeSet({ client }: Props) {
 
     const dispatch = useDispatch()
 
-    const playerId = useSelector((state: RootState) => state.user.playerId)
+    const playerId = useSelector((state: RootState) => state.user.username)
     const playerPos = useSelector((state: RootState) => state.user.position)
 
 
@@ -46,7 +46,7 @@ export default function CubeSet({ client }: Props) {
         
             client.subscribe('/user/queue/player/alive', (msg: IMessage) => {
                 if (!JSON.parse(msg.body)) {
-                    dispatch(updatePlayerId({ playerId: null }))
+                    dispatch(updateUsername({ playerId: null }))
                 }
             })
 
