@@ -1,6 +1,5 @@
 package com.sas.server.dao;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -15,6 +14,7 @@ public class CustomUserDetails implements UserDetails{
 
     private String username;
     private String password;
+    private String sessionId;
     private List<GrantedAuthority> authorities;
 
     @Builder.Default

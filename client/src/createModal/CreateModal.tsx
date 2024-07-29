@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { updateAttr } from "../redux/UserSlice.tsx";
 import Slime from "../gamefield/slimeset/Slime.tsx";
 import './CreateModal.css';
+import axios from "axios";
 
 /**
  * Component CreateModal
@@ -33,9 +34,16 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
 
     const btnHanlder = () => {
 
-        const state = { nickname: nickname, attr: attr }
+        const user = { nickname: nickname, attr: attr }
         dispatch(updateAttr({ attr: attr }))
-        client?.publish({ destination: '/app/queue/register', body: JSON.stringify(state) })
+
+        axios.post('/api/player/register', user)
+            .then((res) => {
+
+            }).catch((err) => {
+
+            })
+
         onHide()
     }
 

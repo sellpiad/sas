@@ -9,7 +9,7 @@ import lombok.Data;
 @Builder
 public class MoveData {
   
-    public UUID playerId;
+    public String username;
     public String position;
     public String direction;
     public long lockTime;

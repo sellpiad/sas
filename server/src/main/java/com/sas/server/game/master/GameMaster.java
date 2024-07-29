@@ -1,9 +1,7 @@
 package com.sas.server.game.master;
 
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -21,12 +19,12 @@ import org.springframework.stereotype.Component;
 import com.sas.server.dto.game.SlimeDTO;
 import com.sas.server.entity.CubeEntity;
 import com.sas.server.entity.GameEntity;
-import com.sas.server.entity.UserEntity;
+import com.sas.server.entity.PlayerEntity;
 import com.sas.server.exception.LockAcquisitionException;
 import com.sas.server.game.ai.AIController;
 import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.game.GameService;
-import com.sas.server.service.user.UserSerivce;
+import com.sas.server.service.player.PlayerService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,12 +41,11 @@ public class GameMaster {
 
     private final GameService gameService;
     private final CubeService cubeService;
-    private final UserSerivce userSerivce;
+    private final PlayerService playerService;
 
     private final SimpMessagingTemplate messagingTemplate;
 
     private final StringRedisTemplate redisTemplate;
-
 
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) {
@@ -59,7 +56,7 @@ public class GameMaster {
         clear();
         setting();
 
-        aiDeploymentRun(0, 500, TimeUnit.MILLISECONDS, 0.3);
+        aiDeploymentRun(0, 500, TimeUnit.MILLISECONDS, 0.1);
         queueRun(0, 1000, TimeUnit.MILLISECONDS);
     }
 
@@ -75,11 +72,8 @@ public class GameMaster {
 
         log.info("1. Game Setting Progress.");
 
-        GameEntity game = gameService.createGame(20, "TEST", 1, 10);
-
-        List<CubeEntity> cubeSet = cubeService.createCubeSet(game.size);
-
-        gameService.createCubeTable(cubeSet);
+        gameService.createGame(20, "TEST");
+        cubeService.createCubeSet(20);
 
     }
 
@@ -91,7 +85,7 @@ public class GameMaster {
             } catch (NullPointerException | MessagingException e) {
                 log.error("[scanQueue] {}", e.getMessage());
             } catch (LockAcquisitionException e) {
-            }
+            } 
 
         }, initialDelay, period, unit);
 
@@ -102,39 +96,24 @@ public class GameMaster {
 
             try {
 
-                UserEntity ai = aiController.placeRandomAI(percentage);
+                PlayerEntity ai = aiController.placeRandomAI(percentage);
 
                 if (ai == null)
                     return;
-
-                String startPos = gameService.isInGame(ai.sessionId);
-
-                if (startPos != null) {
-
-                    SlimeDTO slime = SlimeDTO.builder()
-                            .playerId(ai.playerId)
-                            .attr(ai.attr)
-                            .direction("down")
-                            .target(startPos)
-                            .build();
-
-                    String msg = slime.playerId + "가 플레이를 시작합니다.";
-
-                    messagingTemplate.convertAndSend("/topic/game/addSlime", slime);
-                    messagingTemplate.convertAndSend("/topic/game/chat", msg);
-
-                    aiController.action(ai.sessionId);
-
+                else {
+                    aiController.action(ai.username);
                 }
+
             } catch (IllegalArgumentException | NullPointerException | MessagingException e) {
                 log.error("[aiDeploymentRun] {}", e.getMessage());
             } catch (LockAcquisitionException e) {
- 
-            } catch (Exception e){
+
+            } catch (Exception e) {
                 log.error("[aiDeploymentRun] {}", e.getMessage());
             }
 
         }, initialDelay, period, unit);
+
     }
 
     private void aiDeploymentStop() {
