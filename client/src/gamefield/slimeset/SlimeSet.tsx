@@ -1,12 +1,11 @@
 import { Client, IMessage } from "@stomp/stompjs";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addSlime, removeSlime, SlimeDTO } from "../../redux/GameSlice.tsx";
+import { SlimeDTO } from "../../redux/GameSlice.tsx";
 import { updateObserverPos } from "../../redux/ObserverSlice.tsx";
 import { RootState } from "../../redux/Store.tsx";
 import { updatePosition, updateUsername } from "../../redux/UserSlice.tsx";
 import Slime from "./Slime.tsx";
-import throttle from 'lodash'
 
 
 /**
@@ -78,7 +77,6 @@ export default function SlimeSet({ client }: Props) {
                     ...prev,
                     [moveSlime.username]: moveSlime
                 }))
-                //dispatch(addSlime({ username: action.username, slimedto: moveSlime }))
             }
         }
     }
@@ -90,8 +88,6 @@ export default function SlimeSet({ client }: Props) {
         if (processing.current) return;
 
         processing.current = true;
-
-        console.log(msgQueue.current.length)
 
         while (msgQueue.current.length > 0) {
             const action = msgQueue.current.shift();
@@ -139,8 +135,6 @@ export default function SlimeSet({ client }: Props) {
 
                 const parser: SlimeDTO = JSON.parse(msg.body)
 
-                //dispatch(addSlime({ username: parser.username, slimedto: parser }))
-
                 setSlimes(prev => ({
                     ...prev,
                     [parser.username]: parser
@@ -157,8 +151,6 @@ export default function SlimeSet({ client }: Props) {
                 if (id == username) {
                     dispatch(updateUsername({ username: '' }))
                 }
-
-                //dispatch(removeSlime({ username: id }))
 
                 setSlimes(prev => {
                     const { [id]: _, ...rest } = prev
