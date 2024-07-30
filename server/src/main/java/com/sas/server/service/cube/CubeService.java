@@ -11,10 +11,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import com.sas.server.dto.Cube.CubeDAO;
+import com.sas.server.dto.cube.CubeDAO;
 import com.sas.server.entity.CubeEntity;
 import com.sas.server.repository.CubeRepository;
 
@@ -107,7 +106,7 @@ public class CubeService {
 
     }
 
-    public List<CubeEntity> getAllCube() {
+    public List<CubeEntity> findAll() {
         return (List<CubeEntity>) cubeRepo.findAll();
     }
 
@@ -163,6 +162,12 @@ public class CubeService {
 
     }
 
+    public CubeEntity findByName(String name) {
+        return cubeRepo.findByName(name)
+                .orElseThrow(() -> new NullPointerException("CubeEntity not found with name = " + name));
+
+    }
+
     public CubeEntity findById(String cubeId) {
 
         if (cubeId.equals("null")) {
@@ -183,10 +188,10 @@ public class CubeService {
      * @throws NoSuchElementException curCubeId에 해당하는 큐브가 존재하지 않을 때.
      * @throws NullPointerException   curCubeId가 null값으로 들어왔을 때.
      */
-    public CubeEntity getNextCube(String curCubeId, String direction) {
+    public CubeEntity getNextCube(String position, String direction) {
 
-        CubeEntity cube = cubeRepo.findById(curCubeId)
-                .orElseThrow(() -> new NullPointerException("Cube Entity not found with " + curCubeId));
+        CubeEntity cube = cubeRepo.findByName(position)
+                .orElseThrow(() -> new NullPointerException("Cube Entity not found with " + position));
 
         int posX = cube.posX;
         int posY = cube.posY;
@@ -227,25 +232,6 @@ public class CubeService {
             clickable.add("slimebox" + findByPosition(cube.posX - 1, cube.posY).order);
 
         return clickable;
-    }
-
-    public void lockCubeSet(List<String> cubeList) {
-
-        for (String cubeId : cubeList) {
-
-            String cubeLockKey = lockKey + ":" + cubeId;
-
-            redisTemplate.opsForValue().set(cubeLockKey, "locked", 500, TimeUnit.MILLISECONDS);
-        }
-    }
-
-    public void unlockCubeSet(List<String> cubeList) {
-        for (String cubeId : cubeList) {
-
-            String cubeLockKey = lockKey + ":" + cubeId;
-
-            redisTemplate.delete(cubeLockKey);
-        }
     }
 
 }

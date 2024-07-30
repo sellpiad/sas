@@ -1,17 +1,14 @@
 package com.sas.server.service.player;
 
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.Random;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.esotericsoftware.kryo.util.Null;
-import com.sas.server.entity.UserEntity;
-import com.sas.server.repository.UserRepository;
+import com.sas.server.dto.game.ObserverData;
+import com.sas.server.entity.PlayerEntity;
+import com.sas.server.repository.PlayerRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,65 +18,112 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PlayerService {
 
-    private final UserRepository repo;
+    private final PlayerRepository repo;
 
-    public void registerPlayer(UserEntity user, boolean ai, String startCubeNickname) {
+    /**
+     * 
+     * @param playerId
+     * @param nickname
+     * @param attr
+     */
 
-        Objects.requireNonNull(user, "UserEntity cannot be null");
-        Objects.requireNonNull(ai, "ai cannot be null");
-        Objects.requireNonNull(startCubeNickname, "start cube nickname cannot be null");
+    public void savePlayer(String username, String nickname, String attr) {
 
-        Set<String> conqueredCubes = new HashSet<>();
+        PlayerEntity player = PlayerEntity.builder()
+                .username(username)
+                .nickname(nickname)
+                .attr(attr)
+                .build();
 
-        conqueredCubes.add(startCubeNickname);
+        repo.save(player);
+    }
 
-        repo.save(user.toBuilder()
-                .state("PLAYER")
-                .playerId(UUID.randomUUID())
-                .ai(ai)
-                .nickname(user.nickname)
-                .conqueredCubes(conqueredCubes)
-                .direction("down")
-                .life(0)
-                .actionPoint(100)
-                .rechargingSpeed(15)
-                .build());
+    public void saveAI(PlayerEntity user) {
+        repo.save(user);
+    }
+
+    public void updatePlayer(PlayerEntity player) {
+
+        repo.save(player);
 
     }
 
-    public void update(UserEntity user) {
+    public PlayerEntity findById(String username) {
+        return repo.findById(username)
+                .orElseThrow(() -> new NullPointerException("PlayerEntity not found with username = " + username));
+    }
 
-        repo.findById(user.sessionId).orElseThrow(() -> new IllegalArgumentException("There's no matched user"));
+    public PlayerEntity findByPosition(String position) {
+        return repo.findByPosition(position)
+                .orElseThrow(() -> new NullPointerException("PlayerEntity not found with position = " + position));
+    }
 
-        repo.save(user);
+    public List<PlayerEntity> findAllByInQueue() {
+        return repo.findAllByInQueue(true);
+    }
+
+    public List<PlayerEntity> findAllByInGame() {
+        return repo.findAllByInQueue(false);
+    }
+
+    public void deleteById(String playerId) {
+        repo.deleteById(playerId);
     }
 
     /**
      * 유저의 킬 횟수 증가
      * 
-     * @param sessionId
+     * @param playerId
      * @return 갱신한 유저 객체 리턴
      */
-    public UserEntity addKillCount(String sessionId) throws NullPointerException {
-        UserEntity user = repo.findById(sessionId)
+    public PlayerEntity incKill(String playerId) throws NullPointerException {
+
+        PlayerEntity user = repo.findById(playerId)
                 .orElseThrow(() -> new NullPointerException("There's no matched user"));
 
-        user.toBuilder().kill(user.kill++).build();
-
-        repo.save(user);
+        repo.save(user.toBuilder()
+                .totalKill(user.totalKill + 1)
+                .build());
 
         return user;
     }
 
-    public List<UserEntity> findAll() {
+    public List<PlayerEntity> findAll() {
 
-        List<UserEntity> list = repo.findAllByState("PLAYER");
+        List<PlayerEntity> list = (List<PlayerEntity>) repo.findAll();
 
         return list.isEmpty() ? null : list;
 
     }
 
-    public List<UserEntity> findAllAi() {
+    /**
+     * 현재 플레이 중인 유저들 중 랜덤으로 한 명의 정보를 리턴.
+     * 
+     * @return
+     */
+    public ObserverData findRandObserver() {
+
+        List<PlayerEntity> list = (List<PlayerEntity>) repo.findAll();
+
+        Random random = new Random();
+
+        random.setSeed(System.currentTimeMillis());
+
+        if (list.size() == 0)
+            return null;
+
+        PlayerEntity user = list.get(random.nextInt(list.size()));
+
+        return ObserverData.builder()
+                .usrename(user.username)
+                .nickname(user.nickname)
+                .attr(user.attr)
+                .kill(user.totalKill)
+                .conquer(0)
+                .build();
+    }
+
+    public List<PlayerEntity> findAllAi() {
         return repo.findAllByAi(true);
     }
 

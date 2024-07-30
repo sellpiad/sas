@@ -4,7 +4,7 @@ import java.util.Random;
 
 import org.springframework.stereotype.Component;
 
-import com.sas.server.entity.UserEntity;
+import com.sas.server.entity.PlayerEntity;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +21,7 @@ public class BattleSystem {
      * @return 플레이어가 승리했다면 true, 공격 대상이 승리했다면 false
      * @throws IllegalArgumentException 유효한 속성값이 존재하지 않는다면
      */
-    public boolean attrJudgment(UserEntity player, UserEntity enemy) {
+    public boolean attrJudgment(PlayerEntity player, PlayerEntity enemy) {
 
         if (enemy == null)
             return true;

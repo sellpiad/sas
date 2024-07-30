@@ -1,4 +1,4 @@
-package com.sas.server.dto.Game;
+package com.sas.server.dto.game;
 
 import java.util.UUID;
 
@@ -9,7 +9,7 @@ import lombok.Data;
 @Builder
 public class MoveData {
   
-    public UUID playerId;
+    public String username;
     public String position;
     public String direction;
     public long lockTime;

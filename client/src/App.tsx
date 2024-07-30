@@ -1,34 +1,39 @@
-import { Client, IMessage } from '@stomp/stompjs';
+import { Client } from '@stomp/stompjs';
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Col, Container, Navbar, Row, Stack } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import SockJS from 'sockjs-client';
 import './App.css';
+import Board from './board/Board.tsx';
+import ControlPanel from './controlPanel/ControlPanel.tsx';
 import CreateModal from './createModal/CreateModal.tsx';
-import PlayBody from './playboard/PlayBody.tsx';
-import { resize } from './redux/gameSlice.tsx';
-import { RootState } from './redux/store.tsx';
-import { changeLogin } from './redux/userSlice.tsx';
-import Slime from './slime/Slime.tsx';
-import RankingBoard from './Ranker/RankingBoard.tsx';
-import ControlPanel from './ControlPanel/ControlPanel.tsx';
+import GameField from './gamefield/GameField.tsx';
+import Slime from './gamefield/slimeset/Slime.tsx';
+import { persistor } from './index.js';
+import Login from './login/Login.tsx';
+import ObserverInfo from './observerInfo/ObserverInfo.tsx';
+import PlayerInfo from './player/PlayerInfo.tsx';
+import RankingBoard from './ranker/RankingBoard.tsx';
+import { RootState } from './redux/Store.tsx';
+import { changeLogin } from './redux/UserSlice.tsx';
 
 function App() {
 
   const [isConn, setIsConn] = useState<boolean>(false)
-  const [text, setText] = useState<string>()
 
   const ws = useRef<Client>()
-  const app = useRef<HTMLDivElement>(null)
-
-
+  // Redux state 업데이트용
   const dispatch = useDispatch()
-
-  const isLogined = useSelector((state: RootState) => state.user.isLogined)
 
   const [createModal, setCreateModal] = useState(false)
   const [rankingModal, setRankingModal] = useState(false)
+  const [boardModal, setBoardModal] = useState(false)
+  const [playerModal, setPlayerModal] = useState(false)
 
+  const isLogined = useSelector((state: RootState) => state.user.isLogined)
+  const isReady = useSelector((state: RootState) => state.game.isReady)
+
+  // 모달 관리 메소드들
   const showCreateModal = () => {
     setCreateModal(true)
   }
@@ -37,122 +42,116 @@ function App() {
     setRankingModal(true)
   }
 
-  const windowResize = () => {
-    dispatch(resize({ width: app.current?.offsetWidth, height: app.current?.offsetHeight }))
+  const showBoardModal = () => {
+    setBoardModal(true)
   }
 
-  const enterBtnHandler = () => {
-    ws.current?.publish({ destination: "/app/user/newbie" })
+  const showPlayerModal = () => {
+    setPlayerModal(true)
+  }
+
+  const handleLogout = () => {
+    persistor.purge()
   }
 
 
-  useEffect(() => {
-
-    dispatch(resize({ width: app.current?.offsetWidth, height: app.current?.offsetHeight }))
-
-    const client = new Client({
-      webSocketFactory: () => new SockJS('http://192.168.0.47:8080/ws'),
-      onConnect: () => {
-        console.log("Conneted!")
-        setIsConn(true)
-      },
-      onStompError: (error) => {
-        console.log("Address Error "+error)
-      },
-      onDisconnect: (error) => {
-        console.log("Disconnetd! " + error)
-        setIsConn(false)
-      }
-    })
-
-    ws.current = client
-
-    if (!ws.current.connected) {
-      ws.current.activate()
-    }
-
-  }, [])
 
   useEffect(() => {
 
-    window.addEventListener('resize', windowResize)
-
-  }, [app])
-
-  useEffect(() => {
-
-    if (ws.current?.connected) {
-
-      ws.current.subscribe("/user/queue/user/newbie", (msg: IMessage) => {
-        dispatch(changeLogin({ isLogined: msg.body }))
+    if (isLogined) {
+      const client = new Client({
+        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+        onConnect: () => {
+          console.log("Conneted!")
+          setIsConn(true)
+        },
+        onStompError: (error) => {
+          console.log("Address Error " + error)
+        },
+        onDisconnect: (error) => {
+          console.log("Disconnetd! " + error)
+          setIsConn(false)
+        },
+        onWebSocketClose: (error) => {
+          console.log("WebSocketError! " + error)
+          dispatch(changeLogin({ isLogined: false }))
+        }
       })
 
-      ws.current.publish({ destination: "/app/user/newbie" })
+      ws.current = client
 
+      if (!ws.current.connected) {
+        ws.current.activate()
+      }
     }
 
-    return () => {
-      ws.current?.unsubscribe("/user/queue/user/newbie")
-    }
-
-  }, [ws.current])
-
-
+  }, [isLogined])
 
 
   return (
-    <div className="App" ref={app}>
-      <Navbar>
-        <Container style={{justifyContent:"center"}}>
-          <Row className='w-100 justify-content-between'>
-            <Col xs={12} sm={6} style={{paddingLeft:0}}>
-              <Navbar.Brand>
-                <Slime playerId={"navbarSlime"} direction="down" width={"96"} height={"96"} isAbsolute={false}></Slime>
-                <svg width="100%" height="100%" viewBox="-5 -30 200 50">
-                  <text
-                    x="0" y="0" fill="#3678ce"
-                    fontFamily="SBAggroB"
-                    fontSize="1rem"
-                    rotate="4, 8, -8, -4, -20, -24, 48, 0, 0">
-                    슬라임으로 살아남기
-                  </text>
-                </svg>
+    <div className="App">
 
-              </Navbar.Brand>
-            </Col>
-            <Col className="d-flex flex-column justify-content-lg-center" xs={12} sm={6}>
-              <Row className="justify-content-end justify-content-lg-end">
-                <Col xs={3} sm={2}>
-                  <Button variant="outline-light" onClick={showCreateModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%", color:"black", background:"#f8f9fa" }}>PLAY</Button>
-                </Col>
-               
-                <Col xs={3} sm={2}>
-                  <Button variant="outline-light" onClick={showRankingModal} style={{ fontFamily: "Dotfont", fontSize: "1.2rem", width: "100%", color:"black", background:"#f8f9fa" }}>RANK</Button>
-                </Col>
+      <Login client={ws.current}></Login>
 
+      {isReady &&
+        <>
+          <Navbar>
+            <Container style={{ justifyContent: "center" }}>
+              <Row className='w-100 justify-content-between'>
+                <Col xs={12} sm={6} style={{ paddingLeft: 0 }}>
+                  <Navbar.Brand>
+                    <Slime playerId={"navbarSlime"} direction={"down"} width={"96"} height={"96"} isAbsolute={false}></Slime>
+                    <svg width="100%" height="100%" viewBox="-5 -30 200 50">
+                      <text
+                        x="0" y="0" fill="#3678ce"
+                        fontFamily="SBAggroB"
+                        fontSize="1rem"
+                        rotate="4, 8, -8, -4, -20, -24, 48, 0, 0">
+                        슬라임으로 살아남기
+                      </text>
+                    </svg>
+
+                  </Navbar.Brand>
+                </Col>
+                <Col xs={12} sm={6} style={{ alignContent: "center" }}>
+                  <Row className='Btn-Container'>
+                    <Button className="Menu-Btn" variant="outline-light" onClick={showCreateModal}>플레이</Button>
+                    <Button className="Menu-Btn" variant="outline-light" onClick={showRankingModal}>랭킹</Button>
+                    <Button className="Menu-Btn" variant="outline-light" onClick={showBoardModal}>게시판</Button>
+                    <Button className="Menu-Btn" variant="outline-light" onClick={showPlayerModal}>플레이어</Button>
+                    {isLogined && <Button className="Menu-Btn" variant="outline-light" onClick={handleLogout}>로그아웃</Button>}
+                  </Row>
+                </Col>
               </Row>
-            </Col>
-          </Row>
-        </Container>
+            </Container>
+          </Navbar>
 
-      </Navbar>
-      <Container>
-        <Row >
-          {
-            isConn &&
-            <Col xs={12} sm={9} xxl={{ span: 6, offset: 3 }}>
-              <Stack gap={4} style={{ alignItems: "center" }}>
-                <PlayBody client={ws.current}></PlayBody>
-                <ControlPanel client={ws.current}></ControlPanel>
-              </Stack>
-            </Col>
-          }
-        </Row>
+          <Container>
+            <Row >
+              {
+                isConn && <>
+                  <Col xs={12} sm={3}>
+                    <ObserverInfo client={ws.current}></ObserverInfo>
+                  </Col>
+                  <Col xs={12} sm={9}>
+                    <Stack gap={4} style={{ alignItems: "center" }}>
+                      <GameField client={ws.current}></GameField>
+                      <ControlPanel client={ws.current}></ControlPanel>
+                    </Stack>
+                  </Col>
+                </>
+              }
+            </Row>
+          </Container>
 
-      </Container>
+          <CreateModal show={createModal} onHide={() => setCreateModal(false)} client={ws.current}></CreateModal>
+          <RankingBoard show={rankingModal} onHide={() => setRankingModal(false)} client={ws.current}></RankingBoard>
+          <Board show={boardModal} onHide={() => setBoardModal(false)}></Board>
+          <PlayerInfo show={playerModal} onHide={() => setPlayerModal(false)}></PlayerInfo>
+        </>
+      }
 
-      <CreateModal show={createModal} onHide={() => setCreateModal(false)} client={ws.current}></CreateModal>
-      <RankingBoard show={rankingModal} onHide={() => setRankingModal(false)} client={ws.current}></RankingBoard>
+
     </div>
   );
 }

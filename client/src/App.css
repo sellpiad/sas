@@ -7,6 +7,29 @@
   overflow: hidden;
 }
 
+.Menu-Btn {
+  font-family: DNFBitBitv2;
+  font-size: 1rem;
+  width: 15%;
+  color: black;
+  background: #f8f9fa;
+  padding-left: 1px;
+  padding-right: 1px;
+  margin-right: 2%;
+  margin-left: 2%;
+}
+
+.Btn-Container {
+  justify-content: center;
+}
+
+@media (max-width: 600px) {
+  .Menu-Btn {
+      font-size: 0.6rem;
+  }
+}
+
+
 @font-face {
   font-family: 'SBAggroB';
   src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SBAggroB.woff') format('woff');
@@ -15,7 +38,13 @@
 }
 
 @font-face {
-  font-family: 'Dotfont';         
-  src: url('./font/BallsoOnTheRampage.ttf'); 
+  font-family: 'Dotfont';
+  src: url('./Font/BallsoOnTheRampage.ttf');
 }
 
+@font-face {
+  font-family: 'DNFBitBitv2';
+  font-style: normal;
+  font-weight: 400;
+  src: url('//cdn.df.nexon.com/img/common/font/DNFBitBitv2.otf')format('opentype')
+}

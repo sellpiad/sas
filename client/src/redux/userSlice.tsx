@@ -5,7 +5,7 @@ const initialState = {
     isLogined: false,
     name: '',
     token: null,
-    playerId: null,
+    username: null,
     selectedKey: '',
     attr: '',
     isDominating: false,
@@ -28,8 +28,8 @@ export const user = createSlice({
         updateAttr(state,action) {
             state.attr = action.payload.attr
         },
-        updatePlayerId(state, action) {
-            state.playerId = action.payload.playerId
+        updateUsername(state, action) {
+            state.username = action.payload.username
         },
         updateSelectedKey(state, action) {
             state.selectedKey = action.payload.selectedKey
@@ -46,7 +46,7 @@ export const user = createSlice({
     }
 })
 
-export const { changeUserName, changeLogin, changeToken, updatePlayerId, updateSelectedKey, updateAttr, updateIsDominating,updatePosition } = user.actions
+export const { changeUserName, changeLogin, changeToken, updateUsername, updateSelectedKey, updateAttr, updateIsDominating,updatePosition } = user.actions
 
 export default user.reducer
 

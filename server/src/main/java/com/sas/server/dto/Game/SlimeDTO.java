@@ -1,6 +1,4 @@
-package com.sas.server.dto.Game;
-
-import java.util.UUID;
+package com.sas.server.dto.game;
 
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +7,7 @@ import lombok.Data;
 @Builder
 public class SlimeDTO {
     
-    public UUID playerId;
+    public String username;
     public String attr;
     public String direction;
     public String target;
