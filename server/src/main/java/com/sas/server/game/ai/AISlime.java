@@ -36,6 +36,7 @@ public class AISlime implements Serializable {
 
         if (action != null) {
             simpMessagingTemplate.convertAndSend("/topic/game/move", action);
+            log.info("{}가 {}로 이동을 전송",action.getUsername(), action.getTarget());
             return true;
         }
 

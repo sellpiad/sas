@@ -142,7 +142,6 @@ public class GameService {
     }
 
     @Retryable(value = { LockAcquisitionException.class }, maxAttempts = 15, backoff = @Backoff(delay = 200))
-    @DistributedLock(key = "lock:player")
     public Map<String, SlimeDTO> findAllSlimes() {
 
         Map<String, SlimeDTO> slimeSet = new HashMap<>();
@@ -259,6 +258,8 @@ public class GameService {
         }
 
         ActionData action = processMove(player, direction);
+
+        log.info("{}가 {}로 이동",action.getUsername(), action.getTarget());
 
         return action;
 

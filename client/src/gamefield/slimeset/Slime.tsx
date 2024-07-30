@@ -206,7 +206,6 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
 
 
 
-
     return (
         speed > 0 &&
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={getWidth()} height={getHeight()} preserveAspectRatio="xMidYMid meet" style={{ position: isAbsolute ? "absolute" : "relative", transform: "translate(" + moveX + "px," + moveY + "px)", transition: "transform " + speed + "s ease" }}>
