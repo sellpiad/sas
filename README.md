@@ -37,15 +37,24 @@
 
 ### 설치 및 실행(With Docker)
 
-1. **클론 및 실행** 리포지토리:
+1. **클론 리포지토리**
 
     ```bash
     git clone https://github.com/sellpiad/sas.git
-    cd sas
-    docker-compose up
     ```
 
-2. localhost:3000 접속 후 플레이.
+2. **프론트 부분 주소 수정**
+   ```javascript
+   webSocketFactory: () => new SockJS('http://192.168.0.47:8080/ws')
+   ```
+   App.tsx 파일에서 ip부분을 localhost, 혹은 해당하는 주소로 수정.
+
+3. **실행**
+   ```bash
+   cd sas
+   docker-compose up --build
+   ```
+4. localhost:3000 접속 후 플레이.
 
 ### 설치(Without Docker)
 
@@ -82,12 +91,18 @@
     ```
 4. **클라이언트 설정 및 시작**
 
+   ```javascript
+   webSocketFactory: () => new SockJS('http://192.168.0.47:8080/ws')
+   ```
+   
+   App.tsx 파일에서 ip부분을 localhost, 혹은 해당하는 주소로 수정.
+
    ```
    cd client
    npm i
    npm start
    ```
-5. **서버 구동**
+6. **서버 구동**
 
    ```bash
    cd target
@@ -96,7 +111,7 @@
 
    혹은 그냥 Run 클릭.
 
-6. localhost:3000 접속 후 플레이.
+7. localhost:3000 접속 후 플레이.
 
 
 
