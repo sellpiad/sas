@@ -13,12 +13,22 @@ FROM eclipse-temurin:21
 
 WORKDIR /app
 
+# Download and install dockerize
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -fsSL https://github.com/jwilder/dockerize/releases/download/v0.7.0/dockerize-alpine-linux-amd64-v0.7.0.tar.gz \
+    | tar xzf - -C /usr/local/bin && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 ARG JAR_FILE=*.jar
 
 COPY --from=build /app/target/${JAR_FILE} ./app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java","-jar","app.jar"]
-
-
+ENTRYPOINT ["dockerize", \
+    "-wait", "tcp://redis:6379", \
+    "-wait", "tcp://mysql:3306", \
+    "-timeout", "30s", \
+    "java", "-jar", "app.jar"]

@@ -1,4 +1,4 @@
-package com.sas.server.dto.Queue;
+package com.sas.server.dto.queue;
 
 import lombok.Data;
 

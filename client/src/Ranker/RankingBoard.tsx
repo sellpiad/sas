@@ -1,9 +1,7 @@
 import { Client, IMessage } from "@stomp/stompjs";
-import React, { useEffect, useRef, useState } from "react";
-import { Col, ListGroup, ListGroupItem, Modal, ModalBody, Row } from "react-bootstrap";
-import './RankingBoard.css'
-import { useSelector } from "react-redux";
-import { RootState } from "../redux/store";
+import React, { useEffect, useState } from "react";
+import { Modal, ModalBody } from "react-bootstrap";
+import './RankingBoard.css';
 
 interface Props {
     client: Client | undefined
@@ -14,8 +12,6 @@ interface Props {
 export default function RankingBoard({ client, show, onHide }: Props) {
 
     const [list, setList] = useState([])
-
-    const status = useSelector((state: RootState) => state.game.gameStatus)
 
 
     useEffect(() => {
@@ -36,6 +32,13 @@ export default function RankingBoard({ client, show, onHide }: Props) {
 
         }
 
+        return () => {
+            if(client){
+                client.unsubscribe('/topic/game/ranker')
+                client.unsubscribe('/user/queue/game/ranker')
+            }
+        }
+
     }, [client])
 
 
@@ -49,11 +52,11 @@ export default function RankingBoard({ client, show, onHide }: Props) {
 
 
     return (
-        <Modal show={show} onHide={onHide} size="sm" centered >
-            <ModalBody style={{ height: "40vh" }}>
+        <Modal show={show} onHide={onHide} centered >
+            <ModalBody style={{ height: "40vh",  fontFamily:"DNFBitBitv2", fontSize:"0.9rem"}}>
                 <div style={{ height: "15%" }}>
                     <strong>실시간 플레이어 랭킹</strong>
-                    <div style={{ display: "flex", justifyContent: "space-between", padding: "0 3px" }}>
+                    <div style={{ display: "flex", padding: "0 3px" }}>
                         <span className="rank-col">순위</span>
                         <span className="nickname-col">닉네임</span>
                         <span className="kill-col">킬</span>

@@ -1,10 +1,19 @@
+import { Client } from "@stomp/stompjs";
 import React, { useEffect, useState } from "react";
 import { Button, Carousel, Form, InputGroup, Modal, ModalBody } from "react-bootstrap";
-import Slime from "../slime/Slime.tsx";
-import { Client } from "@stomp/stompjs";
 import { useDispatch } from "react-redux";
-import { updateAttr } from "../redux/userSlice.tsx";
-import './CreateModal.css'
+import { updateAttr } from "../redux/UserSlice.tsx";
+import Slime from "../gamefield/slimeset/Slime.tsx";
+import './CreateModal.css';
+import axios from "axios";
+
+/**
+ * Component CreateModal
+ * 유저가 게임에 참여하고자 할때, 생성을 요청하는 모달.
+ *
+ * Children Component
+ * -Slime: 모습 보여주기 용
+ */
 
 interface Props {
     client: Client | undefined
@@ -25,9 +34,16 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
 
     const btnHanlder = () => {
 
-        const state = { nickname: nickname, attr: attr }
+        const user = { nickname: nickname, attr: attr }
         dispatch(updateAttr({ attr: attr }))
-        client?.publish({ destination: '/app/queue/joiningQueue', body: JSON.stringify(state) })
+
+        axios.post('/api/player/register', user)
+            .then((res) => {
+
+            }).catch((err) => {
+
+            })
+
         onHide()
     }
 

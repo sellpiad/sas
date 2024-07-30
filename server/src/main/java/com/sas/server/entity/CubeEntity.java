@@ -18,7 +18,7 @@ public class CubeEntity {
      public int order;
      @Indexed public int posX;
      @Indexed public int posY;
-     public String name;
+     @Indexed public String name;
      
      public String nickname;
      public String founder;

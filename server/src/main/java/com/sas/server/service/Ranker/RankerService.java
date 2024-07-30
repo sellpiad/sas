@@ -1,4 +1,4 @@
-package com.sas.server.service.Ranker;
+package com.sas.server.service.ranker;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -7,9 +7,9 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.sas.server.dto.Game.RankerDTO;
+import com.sas.server.dto.game.RankerDTO;
+import com.sas.server.entity.PlayerEntity;
 import com.sas.server.entity.RankerEntity;
-import com.sas.server.entity.UserEntity;
 import com.sas.server.repository.RankerRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -20,13 +20,13 @@ public class RankerService {
 
     private final RankerRepository rankerRepo;
 
-    public void save(UserEntity user) {
+    public void save(PlayerEntity user) {
 
         RankerEntity ranker = RankerEntity.builder()
-                .sessiondId(user.sessionId)
+                .playerId(user.username)
                 .nickname(user.nickname)
                 .attr(user.attr)
-                .kill(user.kill)
+                .kill(user.totalKill)
                 .build();
 
         rankerRepo.save(ranker);

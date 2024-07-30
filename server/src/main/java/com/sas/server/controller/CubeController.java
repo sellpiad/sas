@@ -7,13 +7,16 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
-import com.sas.server.dto.Cube.CubeDAO;
+import com.esotericsoftware.minlog.Log;
+import com.sas.server.dto.cube.CubeDAO;
 import com.sas.server.service.cube.CubeService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class CubeController {
     
     private final CubeService cubeService;

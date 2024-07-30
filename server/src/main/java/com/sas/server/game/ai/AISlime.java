@@ -6,7 +6,7 @@ import java.util.Random;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
-import com.sas.server.dto.Game.ActionData;
+import com.sas.server.dto.game.ActionData;
 import com.sas.server.service.game.GameService;
 
 import lombok.RequiredArgsConstructor;
@@ -34,11 +34,12 @@ public class AISlime implements Serializable {
 
         ActionData action = gameService.updateMove(sessionId, randDirection());
 
-        if (action != null){
+        if (action != null) {
             simpMessagingTemplate.convertAndSend("/topic/game/move", action);
+            log.info("{}가 {}로 이동을 전송",action.getUsername(), action.getTarget());
             return true;
         }
-        
+
         return false;
     }
 

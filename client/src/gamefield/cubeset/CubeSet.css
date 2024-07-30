@@ -1,0 +1,24 @@
+.cube-set {
+    gap: 5px;
+    padding: 0
+}
+
+.cube-row {
+    display: flex;
+    flex-flow: row;
+    flex: 1;
+    gap: 5px;
+}
+
+@media (max-width: 576px) {
+    .cube-set {
+        gap: 5px
+    }
+
+    .cube-row {
+        display: flex;
+        flex-flow: row;
+        flex: 1;
+        gap: 5px;
+    }
+}

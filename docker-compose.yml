@@ -3,14 +3,25 @@ services:
   frontend:
     build: ./client
     container_name: frontend
+    environment:
+      - REACT_APP_API_TARGET=http://backend:8080
     ports:
       - "3000:3000"
 
   backend:
     build: ./server
     container_name: backend
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/slime
+      - SPRING_DATASOURCE_USERNAME=test
+      - SPRING_DATASOURCE_PASSWORD=test
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
     ports: 
       - "8080:8080"
+    depends_on:
+      - mysql
+      - redis
 
   redis: 
     image: redis:alpine
@@ -19,3 +30,14 @@ services:
     hostname: redis
     ports:
       - "6379:6379"
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: slime
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test

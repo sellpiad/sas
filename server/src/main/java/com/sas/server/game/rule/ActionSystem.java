@@ -6,7 +6,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import com.sas.server.entity.CubeEntity;
-import com.sas.server.entity.UserEntity;
+import com.sas.server.entity.PlayerEntity;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,9 +25,9 @@ public class ActionSystem {
      * @param cube
      * @return locktime
      */
-    public long lock(UserEntity user, CubeEntity cube) {
+    public long lock(PlayerEntity user, CubeEntity cube) {
 
-        String userLockkey = "lock:user:" + user.sessionId;
+        String userLockkey = "lock:user:" + user.username;
         long lockTime = user.actionPoint * user.rechargingSpeed;
 
         if (cube.attr.equals(user.attr)) {

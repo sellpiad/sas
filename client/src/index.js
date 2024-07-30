@@ -5,7 +5,7 @@ import './index.css';
 
 // Redux
 import { Provider } from 'react-redux';
-import store from './redux/store.tsx';
+import store from './redux/Store.tsx';
 
 // Redux-persist
 import { persistStore } from 'redux-persist';
@@ -17,7 +17,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <Provider store={store}>
     <PersistGate loading={null} persistor={persistor}>
-      <App />
+        <App />
     </PersistGate>
   </Provider>
 
