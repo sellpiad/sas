@@ -2,21 +2,26 @@ import { Client } from '@stomp/stompjs';
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Col, Container, Navbar, Row, Stack } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
+
 import SockJS from 'sockjs-client';
+
 import './App.css';
-import Board from './board/Board.tsx';
-import ControlPanel from './controlPanel/ControlPanel.tsx';
+
+import { persistor } from './index.js';
+
+import { RootState } from './redux/Store.tsx';
+import { changeLogin } from './redux/UserSlice.tsx';
+
 import CreateModal from './createModal/CreateModal.tsx';
 import GameField from './gamefield/GameField.tsx';
 import Slime from './gamefield/slimeset/Slime.tsx';
-import { persistor } from './index.js';
 import Login from './login/Login.tsx';
 import ObserverInfo from './observerInfo/ObserverInfo.tsx';
 import PlayerInfo from './player/PlayerInfo.tsx';
 import PlayResultModal from './playResultModal/PlayResultModal.tsx';
+import Board from './board/Board.tsx';
 import RankingBoard from './ranker/RankingBoard.tsx';
-import { RootState } from './redux/Store.tsx';
-import { changeLogin } from './redux/UserSlice.tsx';
+import ControlPanel from './controlPanel/ControlPanel.tsx';
 
 function App() {
 
