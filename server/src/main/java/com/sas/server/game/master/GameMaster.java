@@ -114,7 +114,7 @@ public class GameMaster {
             } catch (LockAcquisitionException e) {
 
             } catch (Exception e) {
-                log.error("[aiDeploymentRun] {}", e.getMessage());
+                log.error("[aiDeploymentRun] {}", e);
             }
 
         }, initialDelay, period, unit);
