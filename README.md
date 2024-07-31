@@ -42,14 +42,7 @@
     ```bash
     git clone https://github.com/sellpiad/sas.git
     ```
-
-2. **프론트 부분 주소 수정**
-   ```javascript
-   webSocketFactory: () => new SockJS('http://192.168.0.47:8080/ws')
-   ```
-   App.tsx 파일에서 ip부분을 localhost, 혹은 해당하는 주소로 수정.
-
-3. **실행**
+2. **실행**
    ```bash
    cd sas
    docker-compose up --build
@@ -81,22 +74,27 @@
     mvnw clean install 
     ```
 
-3. **Redis 설정**:
+3. **Redis 및 mysql 설정**:
 
     Redis 서버가 로컬에서 실행 중이어야 합니다. 기본 설정은 `localhost:6379`입니다. 필요에 따라 `application.properties` 파일에서 Redis 설정을 변경할 수 있습니다.
+    아래는 작성 예시입니다.
 
     ```properties
-    spring.redis.host=localhost
-    spring.redis.port=6379
+    #Spring
+    spring.data.redis.host=127.0.0.1
+    spring.data.redis.port=6379
+    spring.cache.type=redis
+    spring.data.redis.repositories.enabled=true
+
+    #Mysql
+    spring.datasource.driver-class-name= com.mysql.cj.jdbc.Driver
+    spring.datasource.url=jdbc:mysql://localhost:3306/crud?serverTimezone=UTC&characterEncoding=UTF-8
+    spring.datasource.username={user id}
+    spring.datasource.password={user password}
+    spring.jpa.hibernate.ddl-auto=update
     ```
-4. **클라이언트 설정 및 시작**
-
-   ```javascript
-   webSocketFactory: () => new SockJS('http://192.168.0.47:8080/ws')
-   ```
+5. **클라이언트 시작**
    
-   App.tsx 파일에서 ip부분을 localhost, 혹은 해당하는 주소로 수정.
-
    ```
    cd client
    npm i
