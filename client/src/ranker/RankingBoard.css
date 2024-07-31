@@ -1,0 +1,51 @@
+.myRank {
+    position: sticky;
+    bottom: 0;
+    border-radius: 0.5rem;
+    border: #ffffff solid;
+    background-color: black;
+    opacity: 90%;
+    box-shadow: inset 0px 0px 8px 0;
+}
+
+.rank-col {
+    flex: 1;
+    text-align: center;
+    width: 5%;
+}
+
+.nickname-col {
+    flex: 2;
+    text-align: center;
+    width: 50%;
+}
+
+.kill-col {
+    flex: 1;
+    text-align: center;
+    width: 5%;
+}
+
+.attr-col {
+    flex: 1;
+    text-align: center;
+    width: 40%;
+}
+
+.scroll-container {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    position: relative;
+    height: 85%;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scroll-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scroll-container {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
