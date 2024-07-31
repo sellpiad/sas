@@ -24,6 +24,7 @@ import com.sas.server.exception.LockAcquisitionException;
 import com.sas.server.game.ai.AIController;
 import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.game.GameService;
+import com.sas.server.service.member.MemberService;
 import com.sas.server.service.player.PlayerService;
 
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,7 @@ public class GameMaster {
     private final GameService gameService;
     private final CubeService cubeService;
     private final PlayerService playerService;
+    private final MemberService memberService;
 
     private final SimpMessagingTemplate messagingTemplate;
 
@@ -58,6 +60,9 @@ public class GameMaster {
 
         aiDeploymentRun(0, 500, TimeUnit.MILLISECONDS, 0.1);
         queueRun(0, 1000, TimeUnit.MILLISECONDS);
+
+        //테스트 아이디
+        memberService.save("test","1234");
     }
 
     private void clear() {

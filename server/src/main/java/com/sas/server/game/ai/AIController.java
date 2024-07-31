@@ -71,7 +71,7 @@ public class AIController {
     public void action(String sessionId) {
 
         int initialDelay = (int) (Math.random() * 1000); // 0~1000ms 사이의 랜덤 초기 딜레이
-        int moveInterval = (int) (Math.random() * 500) + 500; // 500~1000ms 사이의 랜덤 이동 간격
+        int moveInterval = (int) (Math.random() * 1500) + 500; // 500~1000ms 사이의 랜덤 이동 간격
 
         ScheduledFuture<?> future = scheduler.scheduleWithFixedDelay(() -> {
 

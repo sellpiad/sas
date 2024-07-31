@@ -32,8 +32,9 @@ interface ActionData {
 export default function SlimeSet({ client }: Props) {
 
     // 슬라임셋
-    const slimeset: { [key: string]: SlimeDTO } = useSelector((state: RootState) => state.game.slimeset);
-    const [slimes, setSlimes] = useState<{ [key: string]: SlimeDTO }>({})
+    const slimeset: { [key: string]: SlimeDTO } = useSelector((state: RootState) => state.game.slimeset); // 초기화용
+    const [slimes, setSlimes] = useState<{ [key: string]: SlimeDTO }>(slimeset) // 렌더링용
+    const slimesetRef = useRef(slimes); // 업데이트용
 
     // 플레이어 아이디(게임 참가시)
     const username = useSelector((state: RootState) => state.user.username);
@@ -44,7 +45,7 @@ export default function SlimeSet({ client }: Props) {
     // 큐 관련
     const msgQueue = useRef<ActionData[]>([])
     const processing = useRef<boolean>(false)
-    const slimesetRef = useRef(slimeset);
+   
 
     // 삭제 관련
     const deleteQueue = useRef<string[]>([])
@@ -89,11 +90,10 @@ export default function SlimeSet({ client }: Props) {
                     direction: action.direction
                 }
 
-
                 setSlimes(prev => ({
                     ...prev,
                     [moveSlime.username]: moveSlime
-                }))
+                }));
             }
         }
     }
@@ -149,7 +149,7 @@ export default function SlimeSet({ client }: Props) {
 
     useEffect(() => {
 
-        setSlimes(slimeset);
+        setSlimes({...slimeset});
 
     }, [slimeset])
 
