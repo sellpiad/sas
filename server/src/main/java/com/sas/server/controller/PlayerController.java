@@ -2,14 +2,11 @@ package com.sas.server.controller;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.sas.server.dao.CustomUserDetails;
 import com.sas.server.dto.game.ObserverData;
@@ -28,17 +25,23 @@ public class PlayerController {
 
     @MessageMapping("/player/anyObserver")
     @SendTo("/topic/player/anyObserver")
-    public ObserverData getPlayerList() {
+    public ObserverData anyObserver() {
         return playerService.findRandObserver();
+    }
+
+    @MessageMapping("/player/findObserver")
+    @SendTo("/queue/player/findObserver")
+    public ObserverData findObserver(@RequestBody String username) {
+        return playerService.findObserverById(username);
     }
 
     @PostMapping("/player/register")
     @ResponseBody
-    public boolean register(@RequestBody CreationInfo info, @AuthenticationPrincipal CustomUserDetails user) {
+    public ObserverData register(@RequestBody CreationInfo info, @AuthenticationPrincipal CustomUserDetails user) {
 
         playerService.savePlayer(user.getUsername(), info.getNickname(), info.getAttr());
 
-        return true;
+        return playerService.findObserverById(user.getUsername());
 
     }
 

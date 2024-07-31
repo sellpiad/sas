@@ -5,17 +5,15 @@ import './Cube.css'
 
 interface Props {
     name: string
-    isDominating: boolean
-    isConquest: boolean
-    isClickable: boolean
+    hasPlayer: boolean
+    attr: string
 }
 
 
-export default function CubeObj({ name, isConquest, isClickable, isDominating }: Props) {
+export default function CubeObj({ name, hasPlayer, attr }: Props) {
 
-    const attr = useSelector((state: RootState) => state.user.attr)
-    const classNames = `slime-box ${isClickable ? "clickable" : ''} ${isDominating ? "isDominating" : ''}`;
-    
+    const classNames = `slime-box ${hasPlayer ? "hasPlayer" : ''}`
+
     const getAttr = () => {
         switch (attr) {
             case 'GRASS':
@@ -29,20 +27,12 @@ export default function CubeObj({ name, isConquest, isClickable, isDominating }:
         }
     }
 
-    const getBackground = () => {
-        if (isConquest) {
-            return getAttr()
-        } else {
-            return "transparent"
-        }
-    }
-
     return (
 
         <div key={name} className={classNames} id={name} color="#ffffff" style={{
-            borderColor: isClickable ? getAttr() : '#ffffff',
-            backgroundColor: getBackground()
-        }}/>
+            borderColor: hasPlayer ? getAttr() : '#ffffff',
+            backgroundColor: "transparent"
+        }} />
     )
 
 }

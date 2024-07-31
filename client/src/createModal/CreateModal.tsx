@@ -1,11 +1,12 @@
 import { Client } from "@stomp/stompjs";
-import React, { useEffect, useState } from "react";
-import { Button, Carousel, Form, InputGroup, Modal, ModalBody } from "react-bootstrap";
-import { useDispatch } from "react-redux";
-import { updateAttr } from "../redux/UserSlice.tsx";
-import Slime from "../gamefield/slimeset/Slime.tsx";
-import './CreateModal.css';
 import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { Button, Carousel, Col, Form, InputGroup, Modal, ModalBody, ModalFooter, Row, Stack } from "react-bootstrap";
+import { useDispatch } from "react-redux";
+import Slime from "../gamefield/slimeset/Slime.tsx";
+import { Observer, updateObserver } from "../redux/ObserverSlice.tsx";
+import { updateAttr } from "../redux/UserSlice.tsx";
+import './CreateModal.css';
 
 /**
  * Component CreateModal
@@ -23,112 +24,140 @@ interface Props {
 
 export default function CreateModal({ client, show, onHide, ...props }: Props) {
 
-    const [nickname, setNickname] = useState<string>()
+    const [nickname, setNickname] = useState<string>('')
 
-    const [slime, setSlime] = useState<number>(0)
-    const [btnColor, setBtnColor] = useState<string>()
-    const [btnText, setBtnText] = useState<string>()
+    // 입력 제한 및 에러 출력용 state
+    const [valid, setValid] = useState<boolean>(false)
+    const [err, setErr] = useState<string>('')
+
+    const [color, setColor] = useState<string>()
+    const [text, setText] = useState<string>()
     const [attr, setAttr] = useState<string>()
+    const [exp, setExp] = useState<string>()
+
+    const [index, setIndex] = useState<number>(0)
 
     const dispatch = useDispatch()
 
     const btnHanlder = () => {
 
-        const user = { nickname: nickname, attr: attr }
-        dispatch(updateAttr({ attr: attr }))
+        if (nickname.length < 1) {
+            alarmErr()
+        } else {
+            const user = { nickname: nickname, attr: attr }
 
-        axios.post('/api/player/register', user)
-            .then((res) => {
+            axios.post('/api/player/register', user)
+                .then((res) => {
+                    dispatch(updateObserver({ observer: res.data as Observer }))
+                }).catch((err) => {
 
-            }).catch((err) => {
+                })
 
-            })
-
-        onHide()
+            onHide()
+        }
     }
 
-    useEffect(() => {
+     // 에러 메세지 출력
+     const alarmErr = () => {
+        setErr('닉네임을 입력해주세요.')
+        setValid(true)
+        setTimeout(() => {
+            setValid(false)
+            setErr('')
+        }, 2000)
+    }
 
-        switch (slime) {
+
+    // 속성 선택 버튼
+    const incIndex = () => {
+        if (index < 2)
+            setIndex(prev => prev + 1)
+    }
+
+    const decIndex = () => {
+        if (index > 0)
+            setIndex(prev => prev - 1)
+    }
+
+    const getAttr = () => {
+
+        switch (index) {
             case 0:
-                setBtnColor("#38f113")
-                setBtnText("풀속성")
+                setColor("#38f113")
+                setText("풀속성")
                 setAttr("GRASS")
+                setExp("물속성과 전투시 승리 불속성과 전투시 패배")
                 break;
             case 1:
-                setBtnColor("#dc3545")
-                setBtnText("불속성")
+                setColor("#dc3545")
+                setText("불속성")
                 setAttr("FIRE")
+                setExp("풀속성과 전투시 승리 물속성과 전투시 패배")
                 break;
             case 2:
-                setBtnColor("#180bc7")
-                setBtnText("물속성")
+                setColor("#180bc7")
+                setText("물속성")
                 setAttr("WATER")
+                setExp("불속성과 전투시 승리 풀속성과 전투시 패배")
                 break;
         }
 
-    }, [slime])
+    }
 
+    useEffect(() => {
+        getAttr()
+    }, [index])
 
     return (
-        <Modal show={show} onHide={onHide} size="sm" centered>
+        <Modal show={show} onHide={onHide} size="sm" centered style={{ fontFamily: "DNFBitBitv2" }} >
             <ModalBody>
-                <Carousel controls={true} onSelect={(eventKey) => setSlime(eventKey)} interval={null}>
-                    <Carousel.Item>
-                        <div style={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-                            <Slime playerId="createModalGrass" direction="down" fill="GRASS" width="60%" height="60%" isAbsolute={false} target={undefined}></Slime>
-                            <div style={{ textAlign: "center" }}>
-                                <strong>속성 - 풀</strong>
-                                <p></p>
-                                <strong>물속성</strong> 슬라임과 전투시 승리
-                                <p></p>
-                                <strong>불속성</strong> 슬라임과 전투시 패배
+                <Stack gap={2}>
+                    <Row className="info-span">
+                        <Slime playerId="createModalWater" direction="down" fill={attr} width="30%" height="30%" isAbsolute={false}></Slime>
+                        <span>{exp?.substring(0, 11)}</span>
+                        <span>{exp?.substring(12, 23)}</span>
+                    </Row>
+                    <Row>
+                        <Col className="info-span" xs={4}>
+                            <span>속성</span>
+                        </Col>
+                        <Col className="info-span" xs={8}>
+                            <div>
+                                <Button className="arrow-btn" onClick={decIndex}>◀</Button>
+                                <span style={{ color: color }}>{attr}</span>
+                                <Button className="arrow-btn" onClick={incIndex}>▶</Button>
                             </div>
-                        </div>
-                    </Carousel.Item>
-                    <Carousel.Item>
-                        <div style={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-                            <Slime playerId="createModalFire" direction="down" fill="FIRE" width="60%" height="60%" isAbsolute={false}></Slime>
-                            <div style={{ textAlign: "center" }}>
-                                <strong>속성 - 불</strong>
-                                <p></p>
-                                <strong>풀속성</strong> 슬라임과 전투시 승리
-                                <p></p>
-                                <strong>물속성</strong> 슬라임과 전투시 패배
-                            </div>
-                        </div>
-                    </Carousel.Item>
-                    <Carousel.Item>
-                        <div style={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-                            <Slime playerId="createModalWater" direction="down" fill="WATER" width="60%" height="60%" isAbsolute={false}></Slime>
-                            <div style={{ textAlign: "center" }}>
-                                <strong>속성 - 물</strong>
-                                <p></p>
-                                <strong>물속성</strong> 슬라임과 전투시 승리
-                                <p></p>
-                                <strong>풀속성</strong> 슬라임과 전투시 패배
-                            </div>
-                        </div>
-                    </Carousel.Item>
-                </Carousel>
-
-                <InputGroup className="mb-3" onSubmit={btnHanlder} hasValidation>
-                    <Form.Control
-                        required
-                        placeholder="닉네임을 입력해주세요."
-                        aria-label="닉네임"
-                        aria-describedby="basic-addon2"
-                        value={nickname}
-                        onChange={(e) => setNickname(e.target.value)}
-                        isInvalid={true}
-                    />
-                    <Button style={{ backgroundColor: btnColor }} onClick={btnHanlder} variant="outline-secondary">
-                        전생
-                    </Button>
-                    <Form.Control.Feedback type="invalid">
-                        닉네임을 입력해주세요.
-                    </Form.Control.Feedback>
-                </InputGroup>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col className="info-span" xs={4}>
+                            <span>닉네임</span>
+                        </Col>
+                        <Col className="info-span" xs={8}>
+                            <InputGroup onSubmit={btnHanlder} hasValidation>
+                                <Form.Control
+                                    required
+                                    placeholder="닉네임을 입력해주세요."
+                                    aria-label="닉네임"
+                                    aria-describedby="basic-addon2"
+                                    value={nickname}
+                                    onChange={(e) => setNickname(e.target.value)}
+                                    isInvalid={valid}
+                                />
+                            </InputGroup>
+                        </Col>
+                    </Row>
+                    <Row className="info-span">
+                        <p className={valid ? "shake err-msg" : "err-msg"}>{err}</p>
+                    </Row>
+                    <Row>
+                        <Col xs={{ offset: 3, span: 6 }}>
+                            <Button onClick={btnHanlder} variant="outline-secondary" style={{color:"black"}}>
+                                슬라임 생성
+                            </Button>
+                        </Col>
+                    </Row>
+                </Stack>
             </ModalBody>
         </Modal>
     )

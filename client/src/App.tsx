@@ -13,6 +13,7 @@ import { persistor } from './index.js';
 import Login from './login/Login.tsx';
 import ObserverInfo from './observerInfo/ObserverInfo.tsx';
 import PlayerInfo from './player/PlayerInfo.tsx';
+import PlayResultModal from './playResultModal/PlayResultModal.tsx';
 import RankingBoard from './ranker/RankingBoard.tsx';
 import { RootState } from './redux/Store.tsx';
 import { changeLogin } from './redux/UserSlice.tsx';
@@ -29,9 +30,11 @@ function App() {
   const [rankingModal, setRankingModal] = useState(false)
   const [boardModal, setBoardModal] = useState(false)
   const [playerModal, setPlayerModal] = useState(false)
+  const [playResultModal, setPlayResultModal] = useState(false)
 
-  const isLogined = useSelector((state: RootState) => state.user.isLogined)
+  const isLogin = useSelector((state: RootState) => state.user.isLogin)
   const isReady = useSelector((state: RootState) => state.game.isReady)
+  const isDead = useSelector((state: RootState) => state.user.isDead)
 
   // 모달 관리 메소드들
   const showCreateModal = () => {
@@ -50,6 +53,10 @@ function App() {
     setPlayerModal(true)
   }
 
+  const showPlayResultModal = () => {
+    setPlayResultModal(true)
+  }
+
   const handleLogout = () => {
     persistor.purge()
   }
@@ -58,7 +65,7 @@ function App() {
 
   useEffect(() => {
 
-    if (isLogined) {
+    if (isLogin) {
       const client = new Client({
         webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
         onConnect: () => {
@@ -74,7 +81,7 @@ function App() {
         },
         onWebSocketClose: (error) => {
           console.log("WebSocketError! " + error)
-          dispatch(changeLogin({ isLogined: false }))
+          dispatch(changeLogin({ isLogin: false }))
         }
       })
 
@@ -83,9 +90,24 @@ function App() {
       if (!ws.current.connected) {
         ws.current.activate()
       }
+
+      return () => {
+        if (client) {
+          client.deactivate();
+        }
+      };
     }
 
-  }, [isLogined])
+
+  }, [isLogin])
+
+  useEffect(() => {
+
+    if (isDead) {
+      showPlayResultModal()
+    }
+
+  }, [isDead])
 
 
   return (
@@ -119,7 +141,7 @@ function App() {
                     <Button className="Menu-Btn" variant="outline-light" onClick={showRankingModal}>랭킹</Button>
                     <Button className="Menu-Btn" variant="outline-light" onClick={showBoardModal}>게시판</Button>
                     <Button className="Menu-Btn" variant="outline-light" onClick={showPlayerModal}>플레이어</Button>
-                    {isLogined && <Button className="Menu-Btn" variant="outline-light" onClick={handleLogout}>로그아웃</Button>}
+                    {isLogin && <Button className="Menu-Btn" variant="outline-light" onClick={handleLogout}>로그아웃</Button>}
                   </Row>
                 </Col>
               </Row>
@@ -148,6 +170,7 @@ function App() {
           <RankingBoard show={rankingModal} onHide={() => setRankingModal(false)} client={ws.current}></RankingBoard>
           <Board show={boardModal} onHide={() => setBoardModal(false)}></Board>
           <PlayerInfo show={playerModal} onHide={() => setPlayerModal(false)}></PlayerInfo>
+          <PlayResultModal show={playResultModal} onHide={() => setPlayResultModal(false)} client={ws.current}></PlayResultModal>
         </>
       }
 

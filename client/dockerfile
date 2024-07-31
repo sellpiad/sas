@@ -4,7 +4,6 @@ WORKDIR /app
 
 COPY package.json .
 COPY .env.docker .env
-COPY . .
 
 RUN npm install
 

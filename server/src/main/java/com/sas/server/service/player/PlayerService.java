@@ -115,12 +115,29 @@ public class PlayerService {
         PlayerEntity user = list.get(random.nextInt(list.size()));
 
         return ObserverData.builder()
-                .usrename(user.username)
+                .username(user.username)
                 .nickname(user.nickname)
+                .position(user.position)
                 .attr(user.attr)
                 .kill(user.totalKill)
                 .conquer(0)
                 .build();
+    }
+
+    public ObserverData findObserverById(String playerId) {
+
+        PlayerEntity player = repo.findById(playerId)
+                .orElseThrow(() -> new NullPointerException("PlayerEntity not found with " + playerId));
+
+        return ObserverData.builder()
+                .username(player.username)
+                .nickname(player.nickname)
+                .position(player.position)
+                .attr(player.attr)
+                .kill(player.totalKill)
+                .conquer(0)
+                .build();
+
     }
 
     public List<PlayerEntity> findAllAi() {

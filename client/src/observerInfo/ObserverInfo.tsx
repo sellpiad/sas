@@ -1,11 +1,11 @@
 import { Client, IMessage } from "@stomp/stompjs";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Col, Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import Slime from "../gamefield/slimeset/Slime.tsx";
-import { updateObserverId, updateObserverPos } from "../redux/ObserverSlice.tsx";
+import { incKill, ObserverType, updateObserver, updateObserverPos } from "../redux/ObserverSlice.tsx";
 import { RootState } from "../redux/Store.tsx";
-import { updatePosition, updateUsername } from "../redux/UserSlice.tsx";
+import { updateUsername } from "../redux/UserSlice.tsx";
 import './ObserverInfo.css';
 
 
@@ -22,25 +22,19 @@ interface Props {
     client: Client | undefined
 }
 
-interface ObservedPlayer {
+interface IngameData {
     username: string
-    nickname: string
-    attr: string
-    kill: number
-    conquer: number
+    position: string
 }
 
 export default function ObserverControl({ client }: Props) {
 
-    // 옵저버 정보
-    const [observedPlayer, setObservedPlayer] = useState<ObservedPlayer>()
 
-    // 옵저버 아이디
-    const observerId = useSelector((state: RootState) => state.observer.observerId)
+    // 옵저버 아이디 및 객체
+    const observer = useSelector((state: RootState) => state.observer.observer)
 
     // 플레이어 아이디
     const username = useSelector((state: RootState) => state.user.username)
-    const playerPos = useSelector((state: RootState) => state.user.position)
 
     const slimeset = useSelector((state: RootState) => state.game.slimeset)
 
@@ -55,33 +49,42 @@ export default function ObserverControl({ client }: Props) {
             // 유저 아이디 
             client.subscribe("/user/queue/player/ingame", (msg: IMessage) => {
 
-                const parser = JSON.parse(msg.body)
+                const parser = JSON.parse(msg.body) as IngameData
 
-                dispatch(updateUsername({ username: parser.username }))
-                dispatch(updatePosition({ position: parser.position }))
+                dispatch(updateUsername({ username: parser.username })) // 유저 이름 셋팅
+                dispatch(updateObserverPos({ observerPos: parser.position })) // 초기 옵저버 위치 셋팅
             })
 
             // 옵저버 대상 정보 받아오기
             client.subscribe('/topic/player/anyObserver', (msg: IMessage) => {
 
-                const parser = JSON.parse(msg.body)
+                const parser = JSON.parse(msg.body) as ObserverType
 
-                const observedPlayer: ObservedPlayer = parser as ObservedPlayer
+                dispatch(updateObserver({ observer: parser })) // 옵저버 정보 셋팅
+                dispatch(updateObserverPos({ observerPos: parser.position })) // 초기 옵저버 위치 셋팅
 
-                setObservedPlayer(observedPlayer)
             })
 
-            // 슬라임 삭제가 발생했을 때 그것이 옵저버인지 아닌지 판별.
-            client.subscribe("/topic/game/deleteSlime", (msg: IMessage) => {
+            client.subscribe('/queue/player/findObserver', (msg: IMessage) => {
 
-                if (msg.body == observedPlayer?.username) {
-                    client.publish({ destination: '/app/player/anyObserver' })
+                const parser = JSON.parse(msg.body) as ObserverType
+
+                dispatch(updateObserver({ observer: parser })) // 옵저버 정보 셋팅
+
+            })
+
+            client.subscribe('/topic/game/incKill', (msg:IMessage) => {
+
+                if(msg.body === observer?.username){
+                    dispatch(incKill())
                 }
+
             })
 
-            // 현재 플레이 중이 아니라면 옵저버 받아오기
-            if (username !== '')
-                client.publish({ destination: '/app/player/anyObserver' })
+            //처음 접속, 새로고침 시 플레이어가 존재하는지 검사하고, 아니라면 옵저버 요청.
+            if (username === null) {
+                client?.publish({ destination: '/app/player/anyObserver' })
+            }
         }
 
         return () => {
@@ -89,6 +92,7 @@ export default function ObserverControl({ client }: Props) {
             if (client) {
                 client.unsubscribe('/topic/player/anyObserver')
                 client.unsubscribe('/topic/game/deleteSlime"')
+                client.unsubscribe('/user/queue/player/ingame')
             }
 
         }
@@ -96,54 +100,33 @@ export default function ObserverControl({ client }: Props) {
     }, [isReady])
 
 
-    // 플레이어 추가 됐을 때 옵저버 아이디도 업데이트
+    // user 정보가 업데이트 됐을 때, user의 옵저버용 정보 요청.
     useEffect(() => {
-
-        if (username !== null){
-            dispatch(updateObserverId({ observerId: username }))
+        if (username) {
+            client?.publish({ destination: '/app/player/findObserver', body: username })
         }
-
     }, [username])
-
-    useEffect(()=>{
-        if(observedPlayer)
-            dispatch(updateObserverId({ observerId: observedPlayer.username }))
-    },[observedPlayer])
-
-
-    useEffect(() => {
-
-        if (observerId) {
-            if (slimeset[observerId] === undefined) {
-                client?.publish({ destination: '/app/player/anyObserver' })
-            } else {
-                dispatch(updateObserverPos({ observerPos: slimeset[observerId].target }))
-            }
-        }
-
-    }, [observerId,playerPos])
-
 
 
     return (
         <Row className="observer">
             <Col xs={2} sm={3}>
-                <Slime playerId={"ObserverSlime"} direction={"down"} width={"100%"} height={"100%"} isAbsolute={false} fill={observedPlayer?.attr}></Slime>
+                <Slime playerId={"ObserverSlime"} direction={"down"} width={"100%"} height={"100%"} isAbsolute={false} fill={observer?.attr}></Slime>
             </Col>
             <Col xs={3} sm={9} className="msg-nickname">
-                <strong>{observedPlayer?.nickname}</strong> <span>의 플레이를 관전 중</span>
+                <strong>{observer?.nickname}</strong> <span>의 플레이를 관전 중</span>
             </Col>
             <Col xs={2} sm={12} className="info-container">
                 <span className="box-attr">속성</span>
-                <span className="box-attr">{observedPlayer?.attr}</span>
+                <span className="box-attr">{observer?.attr}</span>
             </Col>
             <Col xs={1} sm={12} className="info-container">
                 <span className="box-attr">킬</span>
-                <span className="box-attr">{observedPlayer?.kill}</span>
+                <span className="box-attr">{observer?.kill}</span>
             </Col>
             <Col xs={3} sm={12} className="info-container">
                 <span className="box-attr">정복횟수</span>
-                <span className="box-attr">{observedPlayer?.conquer}</span>
+                <span className="box-attr">{observer?.conquer}</span>
             </Col>
         </Row>
     )

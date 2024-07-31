@@ -8,6 +8,7 @@ import { RootState } from "../../redux/Store.tsx";
 import { updateUsername } from "../../redux/UserSlice.tsx";
 import Cube from "./Cube.tsx";
 import './CubeSet.css';
+import { Root } from "react-dom/client";
 
 interface Props {
     client: Client | undefined;
@@ -17,58 +18,26 @@ export default function CubeSet({ client }: Props) {
 
     const cubeset = useSelector((state: RootState) => state.game.cubeset)
 
-    const [conqueredCubes, setConqueredCubes] = useState<Set<string>>(new Set<string>())
-    const [targetCube, setTartgetCube] = useState<string>('')
-
     const dispatch = useDispatch()
 
-    const playerId = useSelector((state: RootState) => state.user.username)
-    const playerPos = useSelector((state: RootState) => state.user.position)
+    const observerPos = useSelector((state:RootState) => state.observer.observerPos)
+    const observer = useSelector((state:RootState) => state.observer.observer)
 
-
-    const isConquered = (cubeNickname: string) => {
-        return conqueredCubes.has(cubeNickname)
+    const hasPlayer = (cubeNickname: string) => {
+        return observerPos === cubeNickname ? true : false
     }
 
-    const isClickable = (cubeNickname: string) => {
-        return playerPos === cubeNickname ? true : false
+    const getAttr = (cubeNickname: string) => {
+        if(hasPlayer(cubeNickname)){
+            return observer !== null ? observer.attr : ''
+        }
     }
-
-    const isDominating = (cubeNickname: string) => {
-        return targetCube === cubeNickname ? true : false
-    }
-
-
 
     useEffect(() => {
 
-        if (client != undefined) {
-        
-            client.subscribe('/user/queue/player/alive', (msg: IMessage) => {
-                if (!JSON.parse(msg.body)) {
-                    dispatch(updateUsername({ playerId: null }))
-                }
-            })
-
-            client.subscribe("/user/queue/player/isDominating", (msg: IMessage) => {
-                setTartgetCube(msg.body)
-            })
-
-            client.subscribe("/user/queue/cube/conqueredCubes", (msg: IMessage) => {
-                //setConqueredCubes(new Set<string>(JSON.parse(msg.body)))
-            })
-
-        }
-
         window.addEventListener('resize', updateCubeSize)
 
-
         return () => {
-
-            if (client != undefined) {
-                client.unsubscribe("/user/queue/cube/cubeSet")
-                client.unsubscribe("/user/queue/cube/conqueredCubes")
-            }
 
             window.removeEventListener('resize', updateCubeSize)
 
@@ -115,16 +84,6 @@ export default function CubeSet({ client }: Props) {
 
     }, [cubeset])
 
-
-    useEffect(() => {
-
-        if (playerId === null) {
-            setConqueredCubes(new Set<string>())
-        }
-
-    }, [playerId])
-
-
     return (
         cubeset &&
         <Stack id="cubeSet" className="cube-set">
@@ -134,7 +93,7 @@ export default function CubeSet({ client }: Props) {
                         {
                             cubeset[rowNum].map((cube, index) => {
                                 return <div key={'col-' + cube.posX + cube.posY} style={{ width: "100%", height: "100%" }}>
-                                    <Cube name={cube.name} isConquest={isConquered(cube.name)} isClickable={isClickable(cube.name)} isDominating={isDominating(cube.name)} />
+                                    <Cube name={cube.name} hasPlayer={hasPlayer(cube.name)} attr={getAttr(cube.name)} />
                                 </div>
                             })
                         }
