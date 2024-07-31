@@ -130,28 +130,31 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
         // 딜레이가 경과할 때마다 frame 증가
         if (elaspedTime > delay) {
 
-            setFrame(prev => prev + 1)
-            startTimeRef.current = currentTime
-
-            // 좌표 체크
-            const slimeBox = targetRef.current !== undefined && document.getElementById(targetRef.current)
-
-
-            if (slimeBox) {
-                const targetX = slimeBox.offsetLeft
-                const targetY = slimeBox.offsetTop
-
-                const t = frameRef.current / movingFrame
-
-                setMoveX(prevX => prevX * (1 - t) + targetX * t)
-                setMoveY(prevY => prevY * (1 - t) + targetY * t)
-            }
-
-
-            if (frameRef.current === maxFrame) {
-                setAction('idle')
-                setFrame(1)
-            }
+            setFrame(prev => {
+                const newFrame = prev + 1;
+        
+                // 좌표 체크
+                const slimeBox = targetRef.current && document.getElementById(targetRef.current);
+        
+                if (slimeBox) {
+                    const targetX = slimeBox.offsetLeft;
+                    const targetY = slimeBox.offsetTop;
+        
+                    const t = frameRef.current / movingFrame;
+        
+                    setMoveX(prevX => prevX * (1 - t) + targetX * t);
+                    setMoveY(prevY => prevY * (1 - t) + targetY * t);
+                }
+        
+                if (newFrame > maxFrame) {
+                    setAction('idle');
+                    return 1;
+                }
+        
+                return newFrame;
+            });
+        
+            startTimeRef.current = currentTime;
         }
 
         requestAnimationFrame(updateAnimation)

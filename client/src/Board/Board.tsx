@@ -77,8 +77,10 @@ export default function Board({ show, onHide }: Props) {
 
     useEffect(() => {
 
-        getList()
-        updatePagination()
+        if (show) {
+            getList()
+            updatePagination()
+        }
 
     }, [show, mode, page, total])
 

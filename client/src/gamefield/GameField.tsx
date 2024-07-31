@@ -54,9 +54,9 @@ export default function PlayBoard({ client }: Props) {
     }
 
     // 옵저버 위치를 좌표를 중심으로 조정
-    const setObserveCenter = () => {
+    const setObserveCenter = (position:string) => {
 
-        const box = document.getElementById(observerPos)
+        const box = document.getElementById(position)
 
         if (box) {
             const boxHeight = box.offsetHeight
@@ -76,7 +76,7 @@ export default function PlayBoard({ client }: Props) {
     useEffect(() => {
 
         getWidth() // 초기 화면 크기 구하기
-        dispatch(updateScale({ scale: 1 })) // 초기 스케일 3으로 고정
+        dispatch(updateScale({ scale: 2.5 })) // 초기 스케일 3으로 고정
 
         window.addEventListener('resize', getWidth)
 
@@ -98,7 +98,8 @@ export default function PlayBoard({ client }: Props) {
     // 옵저버 포지션이 변할 때 화면 중심 이동
     useEffect(() => {
 
-        setObserveCenter()
+        if(observerPos !== null)
+            setObserveCenter(observerPos)
 
     }, [observerPos,limitXY])
 

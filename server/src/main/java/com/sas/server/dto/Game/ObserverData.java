@@ -9,10 +9,13 @@ import lombok.NonNull;
 public class ObserverData {
 
     @NonNull
-    String usrename;
+    String username;
 
     @NonNull
     String nickname;
+
+    @NonNull
+    String position;
 
     @NonNull
     String attr;

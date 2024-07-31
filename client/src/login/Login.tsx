@@ -26,7 +26,7 @@ export default function Login({ client }: Props) {
     const [password, setPassword] = useState<string>('')
 
     // 로그인 유지용 redux dispatch 및 state
-    const isLogined = useSelector((state: RootState) => state.user.isLogined)
+    const isLogin = useSelector((state: RootState) => state.user.isLogin)
     const isReady = useSelector((state:RootState) => state.game.isReady)
     const dispatch = useDispatch()
 
@@ -62,7 +62,7 @@ export default function Login({ client }: Props) {
         axios.post('/api/login', formData)
             .then((res) => {
                 if (res.data) {
-                    dispatch(changeLogin({ isLogined: true }))
+                    dispatch(changeLogin({ isLogin: true }))
                 } else {
                     alarmErr(invalidInfo)
                 }
@@ -101,7 +101,7 @@ export default function Login({ client }: Props) {
     // 1. 큐브셋 요청
     useEffect(() => {
 
-        if (isLogined && client) {
+        if (isLogin && client) {
             setMsg('로그인 성공! 큐브셋 정보를 받아오는 중...')
 
             //초기 큐브셋 받아오기
@@ -129,7 +129,7 @@ export default function Login({ client }: Props) {
             client.publish({ destination: '/app/cube/cubeSet' })
         }
 
-    }, [isLogined, client])
+    }, [isLogin, client])
 
     // 2. 슬라임 소환
     useEffect(() => {
@@ -173,7 +173,7 @@ export default function Login({ client }: Props) {
 
 
     return (
-        <Modal show={!isLogined} centered size="sm">
+        <Modal show={!isLogin} centered size="sm">
             <ModalBody>
                 {mode === 'LOGIN' && <Container style={{ fontFamily: "DNFBitBitv2" }}>
                     <Stack gap={2}>

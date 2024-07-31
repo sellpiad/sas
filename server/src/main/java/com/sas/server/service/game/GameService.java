@@ -69,7 +69,6 @@ public class GameService {
         return GAME_ID;
     }
 
-
     public GameEntity createGame(int initialSize, String title) {
 
         GameEntity game = GameEntity.builder()
@@ -110,7 +109,7 @@ public class GameService {
     @Retryable(value = { LockAcquisitionException.class }, maxAttempts = 10, backoff = @Backoff(delay = 100))
     public Boolean isInGame(String username) {
 
-        PlayerEntity player= playerService.findById(username);
+        PlayerEntity player = playerService.findById(username);
 
         return !player.inQueue;
 
@@ -138,7 +137,7 @@ public class GameService {
 
         redisTemplate.delete(lockKey);
         playerService.deleteById(lockKey);
-        
+
     }
 
     @Retryable(value = { LockAcquisitionException.class }, maxAttempts = 15, backoff = @Backoff(delay = 200))
@@ -199,8 +198,7 @@ public class GameService {
             if (redisTemplate.opsForSet().size(lockKey) == 0) {
 
                 PlayerEntity player = waiterItr.next();
-                redisTemplate.opsForSet().add(lockKey,"");
-               
+                redisTemplate.opsForSet().add(lockKey, "");
 
                 // 참가하기 전, 기존 슬라임이 존재한다면 삭제.
                 if (isInGame(player.username)) {
@@ -259,7 +257,7 @@ public class GameService {
 
         ActionData action = processMove(player, direction);
 
-        log.info("{}가 {}로 이동",action.getUsername(), action.getTarget());
+        log.info("{}가 {}로 이동", action.getUsername(), action.getTarget());
 
         return action;
 
@@ -307,17 +305,8 @@ public class GameService {
         // 적이 존재하지 않을시 MOVE.
         // 승리했다면 ATTACK
         // 졌다면 DIED
-        if (battleSystem.attrJudgment(player, enemy)) {
-
-            actionType = "MOVE";
-
-            if (enemy != null) {
-                actionType = "ATTACK";
-            }
-
-        } else {
-            actionType = "DIED";
-        }
+        // 무승부라면 DRAW
+        actionType = battleSystem.attrJudgment(player, enemy);
 
         // 전투가 일어났을 때만 반영
         if (actionType.equals("ATTACK") || actionType.equals("DIED")) {
@@ -336,20 +325,27 @@ public class GameService {
                     loser.username);
             simpMessagingTemplate.convertAndSend("/topic/game/ranker",
                     rankerService.getRankerList());
+            simpMessagingTemplate.convertAndSend("/topic/game/incKill",
+                    winner.username);
 
         }
 
         // 승리하거나, 이동했을 때만.
         if (actionType.equals("ATTACK") || actionType.equals("MOVE")) {
             playerService.updatePlayer(player.toBuilder().position(target.name).build());
-            redisTemplate.opsForSet().add("lock:cube:" + target.name,"");
+            redisTemplate.opsForSet().add("lock:cube:" + target.name, "");
+        }
+
+        // 무승부
+        if (actionType.equals("DRAW")) {
+            redisTemplate.opsForSet().add("lock:cube:" + player.position, "");
         }
 
         return ActionData.builder()
                 .actionType(actionType)
                 .username(player.username)
                 .direction(direction)
-                .target(target.name)
+                .target(actionType.equals("DRAW") ? player.position : target.name)
                 .lockTime(lockTime)
                 .build();
     }
