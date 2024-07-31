@@ -1,11 +1,10 @@
 import { Client } from "@stomp/stompjs";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Button, Carousel, Col, Form, InputGroup, Modal, ModalBody, ModalFooter, Row, Stack } from "react-bootstrap";
+import { Button, Col, Form, InputGroup, Modal, ModalBody, Row, Stack } from "react-bootstrap";
 import { useDispatch } from "react-redux";
 import Slime from "../gamefield/slimeset/Slime.tsx";
-import { Observer, updateObserver } from "../redux/ObserverSlice.tsx";
-import { updateAttr } from "../redux/UserSlice.tsx";
+import { ObserverType, updateObserver } from "../redux/ObserverSlice.tsx";
 import './CreateModal.css';
 
 /**
@@ -48,7 +47,7 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
 
             axios.post('/api/player/register', user)
                 .then((res) => {
-                    dispatch(updateObserver({ observer: res.data as Observer }))
+                    dispatch(updateObserver({ observer: res.data as ObserverType }))
                 }).catch((err) => {
 
                 })
