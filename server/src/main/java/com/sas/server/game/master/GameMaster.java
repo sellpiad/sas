@@ -1,12 +1,11 @@
 package com.sas.server.game.master;
 
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.connection.DefaultStringRedisConnection;
 import org.springframework.data.redis.connection.RedisConnection;
@@ -16,11 +15,9 @@ import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
-import com.sas.server.dto.game.SlimeDTO;
-import com.sas.server.entity.CubeEntity;
-import com.sas.server.entity.GameEntity;
 import com.sas.server.entity.PlayerEntity;
 import com.sas.server.exception.LockAcquisitionException;
+import com.sas.server.exception.UserAlreadyExistsException;
 import com.sas.server.game.ai.AIController;
 import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.game.GameService;
@@ -50,7 +47,7 @@ public class GameMaster {
     private final StringRedisTemplate redisTemplate;
 
     @EventListener
-    public void onApplicationEvent(ContextRefreshedEvent event) {
+    public void onApplicationEvent(ApplicationReadyEvent event) {
 
         log.info("Application initialized!");
         log.info("Game Starting...");
@@ -58,11 +55,18 @@ public class GameMaster {
         clear();
         setting();
 
-        aiDeploymentRun(0, 500, TimeUnit.MILLISECONDS, 0.1);
+        aiDeploymentRun(0, 2000, TimeUnit.MILLISECONDS, 0.1);
         queueRun(0, 1000, TimeUnit.MILLISECONDS);
 
         //테스트 아이디
-        memberService.save("test","1234");
+        try{
+            memberService.save("test","1234");
+        } catch(UserAlreadyExistsException E){
+            log.info("이미 있는 아이디이므로 추가 X");
+        }
+          
+     
+      
     }
 
     private void clear() {
