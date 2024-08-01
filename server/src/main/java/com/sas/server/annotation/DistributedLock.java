@@ -23,6 +23,6 @@ public @interface DistributedLock {
     /**
      * 타임 유닛(기본 밀리세컨즈)
      */
-    TimeUnit timeUnit() default TimeUnit.MILLISECONDS; 
+    TimeUnit timeUnit() default TimeUnit.MILLISECONDS;
 
 }

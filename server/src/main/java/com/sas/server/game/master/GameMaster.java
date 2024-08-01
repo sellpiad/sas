@@ -63,9 +63,7 @@ public class GameMaster {
             memberService.save("test","1234");
         } catch(UserAlreadyExistsException E){
             log.info("이미 있는 아이디이므로 추가 X");
-        }
-          
-     
+        } 
       
     }
 
@@ -94,7 +92,9 @@ public class GameMaster {
             } catch (NullPointerException | MessagingException e) {
                 log.error("[scanQueue] {}", e.getMessage());
             } catch (LockAcquisitionException e) {
-            } 
+            } catch (Exception e){
+                log.error("{}",e.getMessage());
+            }
 
         }, initialDelay, period, unit);
 

@@ -1,6 +1,5 @@
 package com.sas.server.service.player;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -43,8 +42,17 @@ public class PlayerService {
     }
 
     public void updatePlayer(PlayerEntity player) {
-
         repo.save(player);
+    }
+
+    public boolean existById(String username) {
+        return repo.existsById(username);
+    }
+
+    public PlayerEntity ingameById(String username) {
+
+        return repo.findByUsernameAndInQueue(username, false)
+                .orElse(null);
 
     }
 

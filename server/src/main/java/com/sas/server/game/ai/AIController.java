@@ -49,7 +49,7 @@ public class AIController {
      * @throws IllegalArgumentException
      */
     public PlayerEntity placeRandomAI(double playerPercentage) {
-        
+
         int totalPlayer = playerService.findAllByInGame().size();
         int totalCube = cubeService.findAll().size();
 
@@ -76,27 +76,22 @@ public class AIController {
         ScheduledFuture<?> future = scheduler.scheduleWithFixedDelay(() -> {
 
             CompletableFuture.supplyAsync(() -> aiSlime.move(sessionId))
-                    .handle((result, ex) -> {
+                    .exceptionally(ex -> {
+                        // 예외가 발생한 경우 처리 로직
+
                         if (ex != null) {
                             Throwable cause = ex instanceof CompletionException ? ex.getCause() : ex;
                             if (cause instanceof LockAcquisitionException || cause instanceof ExhaustedRetryException) {
                             } else {
-
                                 throw new CompletionException(cause);
                             }
                         }
-                        return result;
-                    })
-                    .exceptionally(ex -> {
-                        // 예외가 발생한 경우 처리 로직
-
-                        log.error("[슬라임 스케줄러] {}", ex.getMessage());
-
-                        return false;
-
-                    })
-                    .thenAccept(isAlive -> {
+                        
+                        return true;
+                        
+                    }).thenAccept((isAlive) -> {
                         if (!isAlive) {
+                            log.info("{} 정지",sessionId);
                             stop(sessionId);
                         }
                     });

@@ -14,6 +14,7 @@ import com.sas.server.dto.game.ActionData;
 import com.sas.server.dto.game.RankerDTO;
 import com.sas.server.dto.game.SlimeDTO;
 import com.sas.server.service.game.GameService;
+import com.sas.server.service.player.PlayerService;
 import com.sas.server.service.ranker.RankerService;
 
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public class GameController {
 
     private final GameService gameService;
+    private final PlayerService playerService;
     private final RankerService rankerService;
 
     @MessageMapping("/game/slimes")
@@ -42,7 +44,7 @@ public class GameController {
 
         String username = simpMessageHeaderAccessor.getUser().getName();
 
-        if (gameService.isInGame(username) == null) {
+        if (playerService.ingameById(username)== null) {
             return null;
         }
 
