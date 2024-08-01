@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.sas.server.dto.game.ActionData;
 import com.sas.server.service.game.GameService;
+import com.sas.server.service.player.PlayerService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AISlime implements Serializable {
 
     private final GameService gameService;
+    private final PlayerService playerService;
     private final SimpMessagingTemplate simpMessagingTemplate;
 
     /**
@@ -26,17 +28,17 @@ public class AISlime implements Serializable {
      * @param sessionId
      * @throws NullPoniterException
      */
-    public boolean move(String sessionId) {
+    public boolean move(String username) {
 
-        if (gameService.isInGame(sessionId) == null) {
+        // AI가 더 이상 존재하지 않으면 작동 중지
+        if(!playerService.existById(username)){
             return false;
         }
 
-        ActionData action = gameService.updateMove(sessionId, randDirection());
+        ActionData action = gameService.updateMove(username, randDirection());
 
         if (action != null) {
             simpMessagingTemplate.convertAndSend("/topic/game/move", action);
-            log.info("{}가 {}로 이동을 전송",action.getUsername(), action.getTarget());
             return true;
         }
 

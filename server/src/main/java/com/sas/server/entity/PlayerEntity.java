@@ -18,6 +18,7 @@ import lombok.NoArgsConstructor;
 public class PlayerEntity {
 
     @Id
+    @Indexed
     public String username;
 
     @Indexed

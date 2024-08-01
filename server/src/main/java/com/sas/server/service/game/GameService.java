@@ -13,6 +13,7 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.MessagingException;
@@ -96,22 +97,6 @@ public class GameService {
         Objects.requireNonNull(game, "[saveGame] game is null");
 
         gameRepo.save(game);
-
-    }
-
-    /**
-     * 유저 테이블과 큐브 테이블을 교차 검증하여 유저가 게임에 정상적인 상태로 참여 중인지 확인.
-     * 
-     * @param sessionId
-     * @return 플레이어가 현재 위치한 큐브 ID 리턴
-     * @throws NullPointerException
-     */
-    @Retryable(value = { LockAcquisitionException.class }, maxAttempts = 10, backoff = @Backoff(delay = 100))
-    public Boolean isInGame(String username) {
-
-        PlayerEntity player = playerService.findById(username);
-
-        return !player.inQueue;
 
     }
 
@@ -201,7 +186,7 @@ public class GameService {
                 redisTemplate.opsForSet().add(lockKey, "");
 
                 // 참가하기 전, 기존 슬라임이 존재한다면 삭제.
-                if (isInGame(player.username)) {
+                if (playerService.ingameById(player.username) != null) {
                     redisTemplate.delete("lock:cube:" + player.position);
                     simpMessagingTemplate.convertAndSend("/topic/game/deleteSlime", player.username);
                 }
@@ -229,8 +214,6 @@ public class GameService {
                         ingameData);
 
                 simpMessagingTemplate.convertAndSend("/topic/game/addSlime", slime);
-
-                log.info("scan queue and joining new player");
             }
 
         }
@@ -242,11 +225,12 @@ public class GameService {
      * @param direction
      * @return MoveData형식으로 슬라임 닉네임, 위치 리턴. 실패시 null
      */
-    @Retryable(value = { LockAcquisitionException.class }, maxAttempts = 15, backoff = @Backoff(delay = 200))
+    //@Retryable(value = { LockAcquisitionException.class }, maxAttempts = 15, backoff = @Backoff(delay = 200))
+    //@DistributedLock(key = "'lock:user:' + #username", watingTime = 500, timeUnit = TimeUnit.MILLISECONDS)
     public ActionData updateMove(String username, String direction) {
 
         PlayerEntity player = playerService.findById(username);
-
+        
         if (actionSystem.isLocked(username)) {
             return ActionData.builder()
                     .actionType("LOCKED")
@@ -255,11 +239,7 @@ public class GameService {
                     .build();
         }
 
-        ActionData action = processMove(player, direction);
-
-        log.info("{}가 {}로 이동", action.getUsername(), action.getTarget());
-
-        return action;
+        return processMove(player, direction);
 
     }
 
