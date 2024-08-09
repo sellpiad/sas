@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { KeyboardEventHandler, useEffect, useState } from "react";
-import { Button, Container, FloatingLabel, Form, Modal, ModalBody, Row, Stack, Toast, ToastContainer } from "react-bootstrap";
+import { Button, Col, Container, FloatingLabel, Form, Modal, ModalBody, Row, Spinner, Stack, Toast, ToastContainer } from "react-bootstrap";
 import './Login.css';
 import Signup from "./Signup.tsx";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,19 +15,39 @@ interface Props {
     client: Client | undefined
 }
 
+const LoadingDots = () => {
+
+    const [dots, setDots] = useState('');
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setDots(prevDots => (prevDots.length < 3 ? prevDots + '.' : ''));
+        }, 300);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    return <span>{dots}</span>;
+
+}
+
 
 export default function Login({ client }: Props) {
 
     const invalidId = "아이디를 입력해주세요."
     const invalidPwd = "비밀번호를 입력해주세요."
     const invalidInfo = "아이디, 혹은 비밀번호를 확인해주세요."
+    const getServer = '서버와 통신 중'
+    const getSlime = '슬라임들을 소환 중'
+    const getCubeset = '로그인 성공! 큐브셋 정보를 받아오는 중'
+    const getComplete = '게임 로딩 완료!'
 
     const [id, setId] = useState<string>('')
     const [password, setPassword] = useState<string>('')
 
     // 로그인 유지용 redux dispatch 및 state
     const isLogin = useSelector((state: RootState) => state.user.isLogin)
-    const isReady = useSelector((state:RootState) => state.game.isReady)
+    const isReady = useSelector((state: RootState) => state.game.isReady)
     const dispatch = useDispatch()
 
     const [mode, setMode] = useState<string>('LOGIN')
@@ -37,11 +57,9 @@ export default function Login({ client }: Props) {
     const [idValidation, setIdValidation] = useState<boolean>(false)
     const [pwdValidation, setPwdValidation] = useState<boolean>(false)
 
-    const [err, setErr] = useState<string>('')
-    const [errEffect, setErrEffect] = useState<boolean>(false)
-
     // 게임 초기화 메시지
     const [msg, setMsg] = useState<string>('')
+    const [msgType, setMsgType] = useState<string>('')
 
     // 게임 셋팅용 정보
     const cubeset = useSelector((state: RootState) => state.game.cubeset)
@@ -53,6 +71,9 @@ export default function Login({ client }: Props) {
 
     // 로그인
     const handleLogin = () => {
+
+        setMsg(getServer)
+        setMsgType('normal-msg')
 
         const formData = new FormData()
 
@@ -89,10 +110,10 @@ export default function Login({ client }: Props) {
 
     // 에러 메세지 출력
     const alarmErr = (msg) => {
-        setErr(msg)
-        setErrEffect(true)
+        setMsg(msg)
+        setMsgType('shake err-msg')
         setTimeout(() => {
-            setErrEffect(false)
+            setMsgType('err-msg')
         }, 1000)
     }
 
@@ -102,7 +123,7 @@ export default function Login({ client }: Props) {
     useEffect(() => {
 
         if (isLogin && client) {
-            setMsg('로그인 성공! 큐브셋 정보를 받아오는 중...')
+            setMsg(getCubeset)
 
             //초기 큐브셋 받아오기
             client.subscribe('/user/queue/cube/cubeSet', (msg: IMessage) => {
@@ -135,12 +156,12 @@ export default function Login({ client }: Props) {
     useEffect(() => {
 
         if (cubeset && client) {
-            setMsg('슬라임들을 소환 중...')
+            setMsg(getSlime)
 
             // 초기 슬라임들 받아오기
             client.subscribe('/user/queue/game/slimes', (msg: IMessage) => {
 
-                const slimeSet: {[key:string]:SlimeDTO} = JSON.parse(msg.body) as {[key:string]:SlimeDTO} 
+                const slimeSet: { [key: string]: SlimeDTO } = JSON.parse(msg.body) as { [key: string]: SlimeDTO }
 
                 dispatch(initialSlimeSet({ slimeset: slimeSet }))
 
@@ -156,20 +177,20 @@ export default function Login({ client }: Props) {
     useEffect(() => {
 
         if (slimeset && client && !isReady) {
-            setMsg('게임 로딩 완료!')
+            setMsg(getComplete)
             dispatch(setReady())
         }
 
     }, [slimeset])
 
     // 4. 로딩 메시지 초기화
-    useEffect(()=>{
+    useEffect(() => {
 
-        if(isReady){
+        if (isReady) {
             setMsg('')
         }
 
-    },[isReady])
+    }, [isReady])
 
 
     return (
@@ -189,9 +210,9 @@ export default function Login({ client }: Props) {
                                     <Form.Group>
                                         <FloatingLabel
                                             controlId="floatingInput"
-                                            label="이메일 주소"
+                                            label="아이디"
                                         >
-                                            <Form.Control type="email" placeholder="name@example.com" required isValid={idValidation} onChange={handleId} />
+                                            <Form.Control type="id" required isValid={idValidation} onChange={handleId} />
                                         </FloatingLabel>
                                     </Form.Group>
                                 </Row>
@@ -202,9 +223,11 @@ export default function Login({ client }: Props) {
                                         </FloatingLabel>
                                     </Form.Group>
                                 </Row>
-                                <Row>
-                                    <p className={errEffect ? "shake err-msg" : "err-msg"}>{err}</p>
-                                    <p>{msg}</p>
+                                <Row style={{ textAlign: "center" }}>
+                                    <Col>
+                                        <span className={msgType}>{msg}</span>
+                                        {msgType === 'normal-msg' && <LoadingDots />}
+                                    </Col>
                                 </Row>
                                 <Row className="Btn-Box">
                                     <Button className="Btn" type="submit">Login</Button>

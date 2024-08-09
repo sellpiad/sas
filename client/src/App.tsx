@@ -23,7 +23,11 @@ import Board from './board/Board.tsx';
 import RankingBoard from './ranker/RankingBoard.tsx';
 import ControlPanel from './controlPanel/ControlPanel.tsx';
 
+
 function App() {
+
+  const apiTarget = process.env.REACT_APP_API_TARGET || 'http://127.0.0.1:8080'; // 기본값으로 로컬 호스트 설정
+  const wsTarget= process.env.REACT_APP_WS_TARGET 
 
   const [isConn, setIsConn] = useState<boolean>(false)
 
@@ -72,7 +76,7 @@ function App() {
 
     if (isLogin) {
       const client = new Client({
-        webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+        webSocketFactory: () => new SockJS(wsTarget+'/ws'),
         onConnect: () => {
           console.log("Conneted!")
           setIsConn(true)
@@ -85,9 +89,13 @@ function App() {
           setIsConn(false)
         },
         onWebSocketClose: (error) => {
-          console.log("WebSocketError! " + error)
+          console.log("WebSocketError! ")
+          console.dir(error)
           dispatch(changeLogin({ isLogin: false }))
-        }
+        },
+        reconnectDelay: 15000, // 재연결 딜레이 (밀리초)
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000,
       })
 
       ws.current = client
@@ -124,7 +132,7 @@ function App() {
         <>
           <Navbar>
             <Container style={{ justifyContent: "center" }}>
-              <Row className='w-100 justify-content-between'>
+              <Row className='w-100 justify-content-between '>
                 <Col xs={12} sm={6} style={{ paddingLeft: 0 }}>
                   <Navbar.Brand>
                     <Slime playerId={"navbarSlime"} direction={"down"} width={"96"} height={"96"} isAbsolute={false}></Slime>
@@ -137,7 +145,6 @@ function App() {
                         슬라임으로 살아남기
                       </text>
                     </svg>
-
                   </Navbar.Brand>
                 </Col>
                 <Col xs={12} sm={6} style={{ alignContent: "center" }}>

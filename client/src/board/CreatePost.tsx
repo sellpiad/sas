@@ -1,12 +1,14 @@
 import React, { EventHandler, useEffect, useState } from "react";
-import { Button, Col, Container, Form, FormControlProps, InputGroup, Row, Spinner, Toast, ToastContainer } from "react-bootstrap";
+import { Button, Col, Container, Dropdown, DropdownButton, Form, FormControlProps, InputGroup, ListGroup, Row, Spinner, Stack, Toast, ToastContainer } from "react-bootstrap";
 import axios from 'axios'
 
-export default function CreatePost({onMode}) {
+export default function CreatePost({ onMode }) {
 
     // 제목 및 내용
     const [title, setTitle] = useState<string>('')
     const [content, setContent] = useState<string>('')
+    const [category,setCategory] = useState<string>('일반')
+    const [categories,setCategories] = useState<string[]>([])
 
     // 알림 및 메시지
     const [toast, setToast] = useState<boolean>(false)
@@ -19,6 +21,18 @@ export default function CreatePost({onMode}) {
     // 알림 토글
     const toggleToast = () => setToast(!toast)
 
+    const getCategory = () => {
+
+        axios.get('/api/getCategory')
+        .then((res) => {
+            setCategories(res.data)
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+
+    }
+
     // 포스트 저장 및 전송
     const save = () => {
 
@@ -26,6 +40,7 @@ export default function CreatePost({onMode}) {
 
         formData.append("title", title)
         formData.append("content", content)
+        formData.append("category", category)
 
         setMsg('글을 등록 중입니다.')
         toggleToast()
@@ -47,13 +62,23 @@ export default function CreatePost({onMode}) {
 
     }
 
+    useEffect(()=>{
+
+    },[])
+
 
     return (
         <Container>
             <Row>
-                <Col>
+                <Col xs={2}>
+                    <DropdownButton title={category} style={{fontSize:"0.9rem"}} onClick={() => getCategory()}>
+                        {categories.map((value) => {
+                            return  <Dropdown.Item onClick={()=>setCategory(value)}>{value}</Dropdown.Item>
+                        })}
+                    </DropdownButton>
+                </Col>
+                <Col xs={10}>
                     <InputGroup className="mb-3">
-                        <InputGroup.Text id="basic-addon1">제목</InputGroup.Text>
                         <Form.Control
                             placeholder="제목"
                             aria-label="제목"
@@ -61,19 +86,23 @@ export default function CreatePost({onMode}) {
                             onChange={titleHandler}
                             maxLength={15}
                         />
-                        <InputGroup.Text id="basic-addon1">작성자</InputGroup.Text>
                     </InputGroup>
                 </Col>
             </Row>
             <Row>
                 <Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
                     <Form.Label>내용</Form.Label>
-                    <Form.Control as="textarea" rows={8} onChange={contentHandler} maxLength={1000}/>
+                    <Form.Control as="textarea" rows={8} onChange={contentHandler} maxLength={1000} />
                 </Form.Group>
             </Row>
-            <Row>
-                <Button variant="outline-primary" onClick={save}>등록</Button>
-            </Row>
+            <Stack gap={2}>
+                <Row>
+                    <Button variant="outline-primary" onClick={save}>등록</Button>
+                </Row>
+                <Row>
+                    <Button variant="outline-primary" onClick={() => onMode('LIST')}>뒤로가기</Button>
+                </Row>
+            </Stack>
             {toast === true && <CustomToast></CustomToast>}
         </Container>
     )

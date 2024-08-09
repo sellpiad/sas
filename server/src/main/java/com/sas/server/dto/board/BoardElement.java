@@ -7,6 +7,9 @@ import lombok.Builder;
 @Builder
 @AllArgsConstructor
 public class BoardElement {
+
+    @NonNull
+    public String category;
     
     @NonNull
     public Long id;

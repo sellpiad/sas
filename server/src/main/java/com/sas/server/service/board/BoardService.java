@@ -2,16 +2,22 @@ package com.sas.server.service.board;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import com.sas.server.dto.board.BoardElement;
 import com.sas.server.dto.board.PostData;
 import com.sas.server.entity.PostEntity;
 import com.sas.server.repository.BoardRepository;
+import com.sas.server.util.Role;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +29,10 @@ public class BoardService {
 
     private final BoardRepository boardRepo;
 
-    public void save(String title, String content, String author) {
+    public void save(String category, String title, String content, String author) {
 
         boardRepo.save(PostEntity.builder()
+                .category(category)
                 .title(title)
                 .content(content)
                 .author(author)
@@ -66,10 +73,13 @@ public class BoardService {
         if (page > 0)
             page -= 1;
 
-        Pageable pageable = PageRequest.of(page, pageSize);
-        Page<BoardElement> postList = boardRepo.findList(pageable);
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "id"));
+
+        // 일반글
+        Page<BoardElement> postList = boardRepo.findWithNoticeAtTop(pageable);
 
         return postList;
+
     }
 
     public List<BoardElement> findAll() {
@@ -133,6 +143,24 @@ public class BoardService {
             throw new IllegalArgumentException(accessor + "가 " + post.author + "의 게시글에 비정상적인 접근을 시도했습니다.");
         }
 
+    }
+
+    public List<String> getCategories(List<GrantedAuthority> authorities) {
+
+        List<String> categories = new ArrayList<>();
+
+        for (GrantedAuthority authority : authorities) {
+            if (authority.getAuthority().equals("ROLE_USER")) {
+                categories.add("일반");
+                categories.add("건의");
+            }
+
+            if (authority.getAuthority().equals("ROLE_ADMIN") || authority.getAuthority().equals("ROLE_MANAGER")) {
+                categories.add("공지");
+            }
+        }
+
+        return categories;
     }
 
 }

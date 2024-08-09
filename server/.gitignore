@@ -38,3 +38,9 @@ build/
 
 ### log ###
 log/
+
+### docker ###
+docker-compose.dev.yml
+
+### produection level ###
+dev.jvm.conf
