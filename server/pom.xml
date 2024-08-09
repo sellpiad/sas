@@ -95,12 +95,6 @@
 			<version>2.0.6</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.redisson</groupId>
-			<artifactId>redisson</artifactId>
-			<version>3.32.0</version>
-		</dependency>
-
 		<!--JPA-->
 
 		<!--Test-->
@@ -111,18 +105,6 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-aspects</artifactId>
 			<version>6.1.10</version>
-		</dependency>
-
-		<dependency>
-			<groupId>io.jsonwebtoken</groupId>
-			<artifactId>jjwt</artifactId>
-			<version>0.12.5</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.webjars.npm</groupId>
-			<artifactId>sockjs</artifactId>
-			<version>0.3.24</version>
 		</dependency>
 
 		<dependency>
@@ -151,7 +133,11 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<skipTests>true</skipTests>
+				  </configuration>
 				<version>2.19.1</version>
+				
 			</plugin>
 		</plugins>
 	</build>

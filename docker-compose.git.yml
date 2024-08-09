@@ -1,10 +1,10 @@
-version: '3'
 services: 
   frontend:
     build: ./client
     container_name: frontend
     environment:
       - REACT_APP_API_TARGET=http://backend:8080
+      - REACT_APP_WS_TARGET=http://127.0.0.1:8080
     ports:
       - "3000:3000"
 
@@ -20,11 +20,12 @@ services:
       - SPRING_CACHE_type=redis
       - SPRING_DATA_REDIS_REPOSITORIES_ENABLED=true
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_HIBERNATE_DIALECT=org.hibernate.dialect.MySQL8Dialect
     ports: 
       - "8080:8080"
     depends_on:
-      - mysql
       - redis
+    command: ["sh", "-c", "dockerize -wait tcp://mysql:3306 -wait tcp://redis:6379 -timeout 30s && java -jar app.jar"]
 
   redis: 
     image: redis:7.4.0-alpine
@@ -44,3 +45,4 @@ services:
       MYSQL_DATABASE: slime
       MYSQL_USER: test
       MYSQL_PASSWORD: test
+

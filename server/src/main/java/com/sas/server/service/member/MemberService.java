@@ -3,8 +3,6 @@ package com.sas.server.service.member;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.esotericsoftware.minlog.Log;
-import com.sas.server.dao.CustomUserDetails;
 import com.sas.server.entity.MemberEntity;
 import com.sas.server.exception.UserAlreadyExistsException;
 import com.sas.server.repository.MemberRepository;

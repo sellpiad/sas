@@ -80,9 +80,9 @@ export default function Signup({ onMode }) {
                             <Form.Group>
                                 <FloatingLabel
                                     controlId="floatingInput"
-                                    label="이메일 주소"
+                                    label="아이디"
                                 >
-                                    <Form.Control type="email" placeholder="name@example.com" required onChange={handleId} />
+                                    <Form.Control type="id" required onChange={handleId} />
                                 </FloatingLabel>
                             </Form.Group>
                         </Row>

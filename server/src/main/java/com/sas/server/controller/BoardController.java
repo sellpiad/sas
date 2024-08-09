@@ -1,5 +1,7 @@
 package com.sas.server.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -8,16 +10,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.esotericsoftware.minlog.Log;
 import com.sas.server.dao.CustomUserDetails;
 import com.sas.server.dto.board.BoardElement;
 import com.sas.server.dto.board.PostData;
 import com.sas.server.service.board.BoardService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class BoardController {
 
     private final BoardService boardService;
@@ -34,13 +37,21 @@ public class BoardController {
     }
 
     @PostMapping("/createPost")
-    public boolean createPost(@RequestParam String title, String content,
+    public boolean createPost(@RequestParam String category, String title, String content,
             @AuthenticationPrincipal CustomUserDetails user) {
+    
 
-        boardService.save(title, content, user.getUsername());
+        boardService.save(category, title, content, user.getUsername());
 
         return true;
     }
+
+    @GetMapping("/getCategory")
+    public List<String> getCategory(@AuthenticationPrincipal CustomUserDetails user) {
+
+        return boardService.getCategories(user.getAuthorities());
+    }
+    
 
     @PostMapping("/updatePost")
     public boolean updatePost(@RequestParam Long id, String title, String content,
@@ -49,7 +60,7 @@ public class BoardController {
         try {
             boardService.update(id, title, content, user.getUsername());
         } catch (IllegalArgumentException e) {
-            Log.error(e.getMessage());
+            log.error(e.getMessage());
             return false;
         }
 
@@ -62,7 +73,7 @@ public class BoardController {
         try {
             boardService.delete(id, user.getUsername());
         } catch (IllegalArgumentException e) {
-            Log.error(e.getMessage());
+            log.error(e.getMessage());
             return false;
         }
 

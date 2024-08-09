@@ -27,8 +27,4 @@ COPY --from=build /app/target/${JAR_FILE} ./app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["dockerize", \
-    "-wait", "tcp://redis:6379", \
-    "-wait", "tcp://mysql:3306", \
-    "-timeout", "30s", \
-    "java", "-jar", "app.jar"]
+CMD ["java", "-jar", "app.jar"]

@@ -7,7 +7,6 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
-import com.esotericsoftware.minlog.Log;
 import com.sas.server.dto.cube.CubeDAO;
 import com.sas.server.service.cube.CubeService;
 

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { Button, Container, Modal, ModalBody, ModalHeader, ModalTitle, Pagination, Row, Table } from 'react-bootstrap';
+import { Badge, Button, Container, Modal, ModalBody, ModalHeader, ModalTitle, Pagination, Row, Table } from 'react-bootstrap';
 import CreatePost from './CreatePost.tsx';
 import EditPost from './EditPost.tsx';
 import Post from './Post.tsx';
@@ -12,6 +12,7 @@ interface Props {
 
 interface boardDTO {
 
+    category: string
     id: number
     title: string
     author: string
@@ -75,6 +76,25 @@ export default function Board({ show, onHide }: Props) {
 
     }
 
+    const getCategoryBg = (msg:string) => {
+        switch(msg){
+            case '공지':
+                return 'success'
+            default:
+                return 'light'             
+        }
+
+    }
+
+    const getCategoryColor = (msg:string) => {
+        switch(msg){
+            case '공지':
+                return 'white'
+            default:
+                return 'black'               
+        }
+    }
+
     useEffect(() => {
 
         if (show) {
@@ -97,14 +117,16 @@ export default function Board({ show, onHide }: Props) {
                             <Table striped hover style={{ textAlign: "center" }}>
                                 <thead>
                                     <tr>
-                                        <th style={{ width: "25%" }}>번호</th>
+                                        <th style={{ width: "15%" }}>유형</th>
+                                        <th style={{ width: "15%" }}>번호</th>
                                         <th style={{ width: "50%" }}>제목</th>
-                                        <th style={{ width: "25%" }}>작성자</th>
+                                        <th style={{ width: "20%" }}>작성자</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {posts.map((post: boardDTO, index) => (
                                         <tr key={index} onClick={() => handlePost(post.id)}>
+                                            <td><Badge bg={getCategoryBg(post.category)} text={getCategoryColor(post.category)}>{post.category}</Badge></td>
                                             <td>{post.id}</td>
                                             <td>{post.title.substring(0, 12)}</td>
                                             <td>{post.author}</td>

@@ -1,7 +1,5 @@
 package com.sas.server.dto.game;
 
-import java.util.UUID;
-
 import lombok.Builder;
 import lombok.Data;
 

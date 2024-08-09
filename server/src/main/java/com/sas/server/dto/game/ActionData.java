@@ -1,13 +1,12 @@
 package com.sas.server.dto.game;
 
-import java.util.UUID;
-
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
 
-@Builder(toBuilder = true)
+
 @Data
+@Builder(toBuilder = true)
 public class ActionData {
     
     /**
