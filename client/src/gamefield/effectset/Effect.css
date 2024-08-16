@@ -18,6 +18,33 @@
     font-size: 0.5rem;
 }
 
+@media (max-width: 576px) {
+    .attack-msg {
+        font-size: 0.3rem;
+    }
+    
+    .draw-msg {
+        font-size: 0.2rem;
+    }
+    
+    .feared-msg {
+        font-size: 0.2rem;
+    }
+
+    @keyframes moveUp {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    
+        to {
+            opacity: 0;
+            transform: translateY(-30px);
+            /* 위로 이동 */
+        }
+    }
+}
+
 @keyframes moveUp {
     from {
         opacity: 1;

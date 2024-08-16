@@ -1,4 +1,7 @@
 .observer-window {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     overflow: hidden;
     width: 100%;
     border: 2px dashed white;
@@ -11,15 +14,25 @@
     margin: 0;
 }
 
-@media (max-width: 600px) {
-    .observer-window {
-        height: 50vh
-    }
-}
+
 
 @media (max-width: 1440px) {
     .observer-window {
         height: 80vh
     }
+    .field-parent {
+        scale: 2.5
+    }
 }
+
+@media (max-width: 576px) {
+    .observer-window {
+        height: 50vh
+    }
+    .field-parent {
+        scale: 4.5
+    }
+}
+
+
 

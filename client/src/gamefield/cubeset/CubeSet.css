@@ -12,13 +12,13 @@
 
 @media (max-width: 576px) {
     .cube-set {
-        gap: 5px
+        gap: 2px
     }
 
     .cube-row {
         display: flex;
         flex-flow: row;
         flex: 1;
-        gap: 5px;
+        gap: 2px;
     }
 }

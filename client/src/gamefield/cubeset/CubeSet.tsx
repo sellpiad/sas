@@ -20,15 +20,17 @@ export default function CubeSet({ client }: Props) {
 
     const dispatch = useDispatch()
 
-    const observerPos = useSelector((state:RootState) => state.observer.observerPos)
-    const observer = useSelector((state:RootState) => state.observer.observer)
+    const observerPos = useSelector((state: RootState) => state.observer.observerPos)
+    const observer = useSelector((state: RootState) => state.observer.observer)
+
+    const gameSize = useSelector((state: RootState) => state.game.size)
 
     const hasPlayer = (cubeNickname: string) => {
         return observerPos === cubeNickname ? true : false
     }
 
     const getAttr = (cubeNickname: string) => {
-        if(hasPlayer(cubeNickname)){
+        if (hasPlayer(cubeNickname)) {
             return observer !== null ? observer.attr : ''
         }
     }
@@ -87,21 +89,36 @@ export default function CubeSet({ client }: Props) {
     return (
         cubeset &&
         <Stack id="cubeSet" className="cube-set">
+            <div className="cube-row">
+                {Array.from({ length: gameSize + 2 }, (_, index) => (
+                    <Cube key={'col-border-top-' + index} name={"styx"} hasPlayer={false} setBorder={true} attr={"STYX"} />
+                ))}
+            </div>
             {
                 Object.keys(cubeset).map((rowNum, index) => {
-                    return <div key={'row-' + rowNum} className="cube-row">
-                        {
-                            cubeset[rowNum].map((cube, index) => {
-                                return <div key={'col-' + cube.posX + cube.posY} style={{ width: "100%", height: "100%" }}>
-                                    <Cube name={cube.name} hasPlayer={hasPlayer(cube.name)} attr={getAttr(cube.name)} />
-                                </div>
-                            })
-                        }
-                    </div>
+                    return (
+                        <div key={'row-' + rowNum} className="cube-row">
+                            <Cube key={'col-border-left-' + index} name={"styx"} hasPlayer={false} setBorder={true} attr={"STYX"} />
+                            {
+                                cubeset[rowNum].map((cube, index) => {
+                                    return (
+                                        <Cube key={'col-' + cube.posX + cube.posY} name={cube.name} hasPlayer={hasPlayer(cube.name)} setBorder={false} attr={getAttr(cube.name)} />
+                                    )
+                                })
+                            }
+                            <Cube key={'col-border-right-' + index} name={"styx"} hasPlayer={false} setBorder={true} attr={"STYX"} />
+                        </div>
+                    )
                 })
-
             }
-        </Stack>
+            <div className="cube-row">
+                {
+                    Array.from({ length: gameSize + 2 }, (_, index) => (
+                        <Cube key={'col-border-down-' + index} name={"styx"} hasPlayer={false} setBorder={true} attr={"STYX"} />
+                    ))
+                }
+            </div>
+        </Stack >
 
 
     )

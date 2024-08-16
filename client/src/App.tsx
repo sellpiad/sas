@@ -22,6 +22,7 @@ import PlayResultModal from './playResultModal/PlayResultModal.tsx';
 import Board from './board/Board.tsx';
 import RankingBoard from './ranker/RankingBoard.tsx';
 import ControlPanel from './controlPanel/ControlPanel.tsx';
+import { Root } from 'react-dom/client';
 
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
 
   const isLogin = useSelector((state: RootState) => state.user.isLogin)
   const isReady = useSelector((state: RootState) => state.game.isReady)
+  const isPlaying = useSelector((state:RootState) => state.user.isPlaying)
   const isDead = useSelector((state: RootState) => state.user.isDead)
 
   // 모달 관리 메소드들
@@ -169,7 +171,7 @@ function App() {
                   <Col xs={12} sm={9}>
                     <Stack gap={4} style={{ alignItems: "center" }}>
                       <GameField client={ws.current}></GameField>
-                      <ControlPanel client={ws.current}></ControlPanel>
+                      {isPlaying && <ControlPanel client={ws.current}></ControlPanel>}
                     </Stack>
                   </Col>
                 </>

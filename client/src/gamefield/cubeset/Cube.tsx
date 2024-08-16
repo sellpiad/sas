@@ -6,33 +6,18 @@ import './Cube.css'
 interface Props {
     name: string
     hasPlayer: boolean
+    setBorder: boolean
     attr: string | undefined
 }
 
 
-export default function CubeObj({ name, hasPlayer, attr }: Props) {
+export default function CubeObj({name, hasPlayer, setBorder, attr }: Props) {
 
-    const classNames = `slime-box ${hasPlayer ? "hasPlayer" : ''}`
-
-    const getAttr = () => {
-        switch (attr) {
-            case 'GRASS':
-                return "#38f113"
-            case 'FIRE':
-                return "#dc3545"
-            case 'WATER':
-                return "#0d6efd"
-            default:
-                return "tranparent"
-        }
-    }
+    const classNames = `slime-box ${hasPlayer ? "hasPlayer " + attr?.toLowerCase() : ''} ${setBorder ? 'styx' : ''}`
 
     return (
 
-        <div key={name} className={classNames} id={name} color="#ffffff" style={{
-            borderColor: hasPlayer ? getAttr() : '#ffffff',
-            backgroundColor: "transparent"
-        }} />
+        <div key={name} className={classNames} id={name}/>
     )
 
 }
