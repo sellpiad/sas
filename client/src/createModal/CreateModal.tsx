@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 import Slime from "../gamefield/slimeset/Slime.tsx";
 import { ObserverType, updateObserver } from "../redux/ObserverSlice.tsx";
 import './CreateModal.css';
+import { updatePlaying } from "../redux/UserSlice.tsx";
 
 /**
  * Component CreateModal
@@ -48,6 +49,7 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
             axios.post('/api/player/register', user)
                 .then((res) => {
                     dispatch(updateObserver({ observer: res.data as ObserverType }))
+                    dispatch(updatePlaying({ isPlaying: true }))
                 }).catch((err) => {
 
                 })
@@ -56,8 +58,8 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
         }
     }
 
-     // 에러 메세지 출력
-     const alarmErr = () => {
+    // 에러 메세지 출력
+    const alarmErr = () => {
         setErr('닉네임을 입력해주세요.')
         setValid(true)
         setTimeout(() => {
@@ -151,7 +153,7 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
                     </Row>
                     <Row>
                         <Col xs={{ offset: 3, span: 6 }}>
-                            <Button onClick={btnHanlder} variant="outline-secondary" style={{color:"black"}}>
+                            <Button onClick={btnHanlder} variant="outline-secondary" style={{ color: "black" }}>
                                 슬라임 생성
                             </Button>
                         </Col>

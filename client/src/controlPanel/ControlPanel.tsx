@@ -58,7 +58,7 @@ export default function ControlPanel({ client }: Props) {
     }, [])
 
     return (
-        <Row>
+        <Row className="d-xs-none d-md-none" xs={12}>
             <Col xs={3}>
                 <svg onClick={() => handleClick('left')} className={direction === 'left' ? 'click-left-animation' : ''} width="100%" height="100%" viewBox="0 0 180 170" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path fillRule="evenodd" clipRule="evenodd" d="M20 90H10L10 80H20L20 70H30V60H40V50H50L50 40H60V30H70V20H80L80 10H90L90 20V30V40V50H100L170 50L170 120L90 120V130V140V150V160H80V150H70V140H60V130H50V120H40V110H30L30 100H20V90ZM100 130L170 130H180V120L180 50V40H170L100 40V30V20L100 10V0H90H80H70V10H60V20H50V30H40V40H30V50H20L20 60H10L10 70H0L0 80L0 90L0 100H10V110H20V120H30V130H40V140H50L50 150H60V160H70V170H80H90H100V160V150V140V130Z" fill={direction === 'left' ? 'blue' : 'white'} />

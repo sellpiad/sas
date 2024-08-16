@@ -3,6 +3,7 @@ import { PURGE } from "redux-persist";
 
 type State = {
     isLogin: boolean
+    isPlaying: boolean
     isDead: boolean
     username: string | null
     attr: string | null
@@ -10,6 +11,7 @@ type State = {
 
 const initialState: State = {
     isLogin: false,
+    isPlaying: false,
     isDead: false,
     username: null,
     attr: null,
@@ -21,6 +23,9 @@ export const user = createSlice({
     reducers: {
         changeLogin(state, action: PayloadAction<{ isLogin: boolean }>) {
             state.isLogin = action.payload.isLogin
+        },
+        updatePlaying(state, action: PayloadAction<{isPlaying: boolean}>){
+            state.isPlaying = action.payload.isPlaying
         },
         updateDead(state, action: PayloadAction<{isDead : boolean}>){
             state.isDead = action.payload.isDead
@@ -41,6 +46,7 @@ export const user = createSlice({
             state.username = null
             state.attr = null
             state.isDead = true
+            state.isPlaying = false
         }
     },
     extraReducers: builder => {
@@ -48,7 +54,7 @@ export const user = createSlice({
     }
 })
 
-export const { changeLogin, addPlayer, deletePlayer, updateDead, updateUsername, updateAttr } = user.actions
+export const { changeLogin, addPlayer, deletePlayer, updatePlaying, updateDead, updateUsername, updateAttr } = user.actions
 
 export default user.reducer
 

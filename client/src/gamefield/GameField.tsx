@@ -7,6 +7,7 @@ import { RootState } from "../redux/Store.tsx";
 import CubeSet from "./cubeset/CubeSet.tsx";
 import './GameField.css';
 import SlimeSet from "./slimeset/SlimeSet.tsx";
+import EffectSet from "./effectset/EffectSet.tsx";
 
 
 /**
@@ -107,8 +108,9 @@ export default function PlayBoard({ client }: Props) {
     return (
         <div id="observer-window" className="observer-window">
             <Row id="field-parent" className="field-parent" style={{ height: height, transform: `scale(${scale}) translate(${observeX}px, ${observeY}px)`, transition: 'transform 0.5s ease' }}>
-                <CubeSet client={client}></CubeSet>
-                <SlimeSet client={client}></SlimeSet>
+                <CubeSet client={client}/>
+                <SlimeSet client={client}/>
+                <EffectSet client={client}/>
             </Row>
         </div>
     )

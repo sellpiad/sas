@@ -26,8 +26,7 @@ import ControlPanel from './controlPanel/ControlPanel.tsx';
 
 function App() {
 
-  const apiTarget = process.env.REACT_APP_API_TARGET || 'http://127.0.0.1:8080'; // 기본값으로 로컬 호스트 설정
-  const wsTarget= process.env.REACT_APP_WS_TARGET 
+  const wsTarget= process.env.REACT_APP_WS_TARGET || 'http://localhost:8080'
 
   const [isConn, setIsConn] = useState<boolean>(false)
 

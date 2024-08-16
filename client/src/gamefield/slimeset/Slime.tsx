@@ -33,6 +33,9 @@ const movingTime = 300;
 const attackFrame = 3;
 const attackTime = 300;
 
+const fearedFrame = 1;
+const fearedTime = 300;
+
 export default function Slime({ playerId, actionType, direction, fill, border, target, isAbsolute, ...props }: Props) {
 
     // 슬라임 넓이와 높이
@@ -51,6 +54,7 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
     const [motion, setMotion] = useState<string>()
     const [action, setAction] = useState<string>('idle')
     const [frame, setFrame] = useState<number>(1)
+    const [isShaking, setShaking] = useState<boolean>(false)
 
     const startTimeRef = useRef(0)
     const actionRef = useRef('idle')
@@ -58,6 +62,10 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
 
     const targetRef = useRef<string>()
 
+    const startShaking = () => {
+        setShaking(true)
+        setTimeout(() => { setShaking(false) }, 500)
+    }
 
     // 슬라임의 속성을 나타내는 색을 반환하는 메소드
     const getAttr = () => {
@@ -125,6 +133,10 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
                 maxFrame = attackFrame
                 delay = attackTime / maxFrame
                 break;
+            case 'feared':
+                maxFrame = fearedFrame
+                delay = fearedTime / maxFrame
+                break;
         }
 
         // 딜레이가 경과할 때마다 frame 증가
@@ -132,28 +144,28 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
 
             setFrame(prev => {
                 const newFrame = prev + 1;
-        
+
                 // 좌표 체크
                 const slimeBox = targetRef.current && document.getElementById(targetRef.current);
-        
+
                 if (slimeBox) {
                     const targetX = slimeBox.offsetLeft;
                     const targetY = slimeBox.offsetTop;
-        
+
                     const t = frameRef.current / movingFrame;
-        
+
                     setMoveX(prevX => prevX * (1 - t) + targetX * t);
                     setMoveY(prevY => prevY * (1 - t) + targetY * t);
                 }
-        
+
                 if (newFrame > maxFrame) {
                     setAction('idle');
                     return 1;
                 }
-        
+
                 return newFrame;
             });
-        
+
             startTimeRef.current = currentTime;
         }
 
@@ -180,6 +192,15 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
         if (actionType) {
             setAction(prev => actionType?.toLowerCase() === 'locked' ? prev : actionType?.toLowerCase()) // action 변경 트리거
             setFrame(1) // 액션 변경으로 인한 frame 초기화
+
+            switch (actionType) {
+                case 'DRAW':
+                    startShaking()
+                    break;
+                case 'FEARED':
+                    startShaking()
+                    break;
+            }
         }
 
     }, [actionType])
@@ -213,8 +234,7 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
         speed > 0 &&
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={getWidth()} height={getHeight()} preserveAspectRatio="xMidYMid meet" style={{ position: isAbsolute ? "absolute" : "relative", transform: "translate(" + moveX + "px," + moveY + "px)", transition: "transform " + speed + "s ease" }}>
 
-            <use xlinkHref={motion} x={11} y={25} width={150} height={150} />
-
+            <use xlinkHref={motion} x={11} y={25} width={150} height={150} className={isShaking ? 'shake' : ''}/>
             <symbol id={'slime-' + playerId + '-down-idle-1'} viewBox="0 0 150 150">
                 <path id="Body" fillRule="evenodd" clipRule="evenodd" d="M97 9H39V18H19V37H10V82H24V91H39H97H107V82H117V37H110V18H97V9Z" fill={fill === undefined ? '#D9D9D9' : getAttr()} />
                 <rect id="RightEye" x="77" y="45" width="10" height="19" fill="black" />
@@ -406,6 +426,32 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
                 <path id="Frame" fillRule="evenodd" clipRule="evenodd" d="M69 8H28V18H19V28H29V18H69V8ZM89 28V18H69V28H89ZM99 43V28H89V43H99ZM119 63V53H109V43H99V53V63H109H119ZM139 73V63H119V73H139ZM99 93V83H139V73H149V83V93H139H99ZM29 93V103H99V93H29ZM9 83V93H29V83H9ZM9 38H-1V83H9V38ZM9 38V28H19V38H9Z" fill="black" />
                 <path id="Effect" fillRule="evenodd" clipRule="evenodd" d="M116 28H86V18H116V28ZM139 43H99V33H139V43Z" fill="black" />
                 <rect id="Mouse" width="25" height="25" transform="matrix(-1 0 0 1 56 59)" fill="black" />
+            </symbol>
+
+            <symbol id={'slime-' + playerId + '-up-feared'} viewBox="0 0 150 150">
+                <path id="Body" fillRule="evenodd" clipRule="evenodd" d="M40 20H88V27H108V46H117V91H102H88V100H40V91H19H10V46H20V27H40V20Z" fill="#D9D9D9" />
+                <path id="Frame" fillRule="evenodd" clipRule="evenodd" d="M39 18H88V27H108V36H117V46H127V91H117H98V100H28V91H10H0V46H10V36H19V27H39V18ZM40 27V36H20V55H10V82H29V91H98V82H117V55H107V36H88V27H40Z" fill="#020202" />
+            </symbol>
+
+            <symbol id={'slime-' + playerId + '-down-feared'} viewBox="0 0 150 150">
+                <path id="Body" fillRule="evenodd" clipRule="evenodd" d="M40 20H88V27H108V46H117V91H102H88V100H40V91H19H10V46H20V27H40V20Z" fill="#D9D9D9" />
+                <path id="LeftEye" fillRule="evenodd" clipRule="evenodd" d="M88 55H98V65H88V74H78V65H68V55H78H88Z" fill="black" />
+                <path id="RightEye" fillRule="evenodd" clipRule="evenodd" d="M50 55H60V65H50V74H40V65H30V55H40H50Z" fill="black" />
+                <path id="Frame" fillRule="evenodd" clipRule="evenodd" d="M39 18H88V27H108V36H117V46H127V91H117H98V100H28V91H10H0V46H10V36H19V27H39V18ZM40 27V36H20V55H10V82H29V91H98V82H117V55H107V36H88V27H40Z" fill="#020202" />
+            </symbol>
+
+            <symbol id={'slime-' + playerId + '-right-feared'} viewBox="0 0 150 150">
+                <path id="Body" fillRule="evenodd" clipRule="evenodd" d="M40 20H88V27H108V46H117V91H102H88V100H40V91H19H10V46H20V27H40V20Z" fill="#D9D9D9" />
+                <path id="LeftEye" fillRule="evenodd" clipRule="evenodd" d="M95 55H105V65H95V74H85V65H75V55H85H95Z" fill="black" />
+                <path id="RightEye" fillRule="evenodd" clipRule="evenodd" d="M59 55H69V65H59V74H49V65H39V55H49H59Z" fill="black" />
+                <path id="Frame" fillRule="evenodd" clipRule="evenodd" d="M39 18H88V27H108V36H117V46H127V91H117H98V100H28V91H10H0V46H10V36H19V27H39V18ZM40 27V36H20V55H10V82H29V91H98V82H117V55H107V36H88V27H40Z" fill="#020202" />
+            </symbol>
+
+            <symbol id={'slime-' + playerId + '-left-feared'} viewBox="0 0 150 150">
+                <path id="Body" fillRule="evenodd" clipRule="evenodd" d="M88 20H40V27H20V46H11V91H26H40V100H88V91H109H118V46H108V27H88V20Z" fill="#D9D9D9" />
+                <path id="LeftEye" fillRule="evenodd" clipRule="evenodd" d="M33 55H23V65H33V74H43V65H53V55H43H33Z" fill="black" />
+                <path id="RightEye" fillRule="evenodd" clipRule="evenodd" d="M69 55H59V65H69V74H79V65H89V55H79H69Z" fill="black" />
+                <path id="Frame" fillRule="evenodd" clipRule="evenodd" d="M89 18H40V27H20V36H11V46H1V91H11H30V100H100V91H118H128V46H118V36H109V27H89V18ZM88 27V36H108V55H118V82H99V91H30V82H11V55H21V36H40V27H88Z" fill="#020202" />
             </symbol>
         </svg>
     )

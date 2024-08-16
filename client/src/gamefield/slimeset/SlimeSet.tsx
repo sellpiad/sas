@@ -1,7 +1,7 @@
 import { Client, IMessage } from "@stomp/stompjs";
 import React, { useEffect, useReducer, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { SlimeDTO } from "../../redux/GameSlice.tsx";
+import { ActionData, SlimeDTO } from "../../redux/GameSlice.tsx";
 import { ObserverType, updateObserverPos } from "../../redux/ObserverSlice.tsx";
 import { RootState } from "../../redux/Store.tsx";
 import { deletePlayer } from "../../redux/UserSlice.tsx";
@@ -20,14 +20,6 @@ interface Props {
     client: Client | undefined
 }
 
-
-interface ActionData {
-    actionType: string
-    username: string
-    target: string | null // 위치
-    direction: string
-}
-
 const slimeReducer = (state: SlimesState, action: SlimesAction) => {
     switch (action.type) {
         case 'ADD':
@@ -36,7 +28,7 @@ const slimeReducer = (state: SlimesState, action: SlimesAction) => {
             const newState = { ...state }
             delete newState[action.payload]
             return newState
-        case 'MOVE':
+        case 'ACTION':
             const slime = state[action.payload.username];
             if (slime) {
                 const moveSlime = {
@@ -60,7 +52,7 @@ type SlimesState = { [key: string]: SlimeDTO };
 type SlimesAction =
     | { type: 'ADD'; payload: SlimeDTO }
     | { type: 'DELETE'; payload: string }
-    | { type: 'MOVE'; payload: ActionData }
+    | { type: 'ACTION'; payload: ActionData }
     | { type: 'INIT'; payload: SlimesState }
 
 
@@ -70,7 +62,6 @@ export default function SlimeSet({ client }: Props) {
     const slimeset: { [key: string]: SlimeDTO } = useSelector((state: RootState) => state.game.slimeset); // 초기화용
 
     const [slimes, setSlime] = useReducer(slimeReducer, {})// 렌더링용
-    const slimesetRef = useRef(slimes); // 업데이트용
 
     // 플레이어 아이디(게임 참가시)
     const username = useSelector((state: RootState) => state.user.username);
@@ -89,14 +80,6 @@ export default function SlimeSet({ client }: Props) {
         setSlime({ type: 'INIT', payload: slimeset })
 
     }, [slimeset])
-
-
-    // slimeset이 변경될 때마다 slimesetRef를 업데이트
-    useEffect(() => {
-
-        slimesetRef.current = slimes
-
-    }, [slimes]);
 
 
     // 옵저버가 변경될 때마다 
@@ -128,7 +111,7 @@ export default function SlimeSet({ client }: Props) {
 
                 const ActionData = JSON.parse(msg.body) as ActionData
 
-                setSlime({ type: 'MOVE', payload: ActionData })
+                setSlime({ type: 'ACTION', payload: ActionData })
 
                 // 옵저버 시점 업데이트
                 if (observerRef.current?.username === ActionData.username && ActionData.target !== null) {
@@ -163,13 +146,6 @@ export default function SlimeSet({ client }: Props) {
             })
 
         }
-
-        return () => {
-            client?.unsubscribe('/topic/game/move')
-            client?.unsubscribe('/topic/game/addSlime')
-            client?.unsubscribe('/topic/game/deleteSlime')
-        }
-
     }, [client])
 
 

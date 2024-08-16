@@ -6,7 +6,7 @@ import './Cube.css'
 interface Props {
     name: string
     hasPlayer: boolean
-    attr: string
+    attr: string | undefined
 }
 
 

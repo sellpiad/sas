@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { PURGE } from "redux-persist";
 
-
 export interface ObserverType {
     username: string
     nickname: string
@@ -9,6 +8,7 @@ export interface ObserverType {
     attr: string
     kill: number
     conquer: number
+    ranking: number
 }
 
 export interface observerStatus {
@@ -45,18 +45,23 @@ export const cube = createSlice({
         updateObserverPos(state, action: PayloadAction<{ observerPos: string }>) {
             state.observerPos = action.payload.observerPos
         },
-        incKill(state) {
+        updateKill(state, action: PayloadAction<{ kill: number }>) {
             if (state.observer !== null) {
-                state.observer.kill = state.observer.kill + 1
+                state.observer.kill = action.payload.kill
             }
-        }
+        },
+        updateRanking(state, action: PayloadAction<{ ranking: number }>) {
+            if (state.observer !== null) {
+                state.observer.ranking = action.payload.ranking
+            }
+        },
     },
     extraReducers: builder => {
         builder.addCase(PURGE, () => initialState)
     }
 })
 
-export const { updateScale, updateObserver, updateObserverCoor, updateObserverPos, incKill } = cube.actions
+export const { updateScale, updateObserver, updateObserverCoor, updateObserverPos, updateKill, updateRanking } = cube.actions
 
 export default cube.reducer
 

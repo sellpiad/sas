@@ -27,7 +27,6 @@ public class WebSecureConfig {
                 .formLogin((formLogin) -> formLogin.successForwardUrl("/signin").failureForwardUrl("/failed"))
                 .authorizeHttpRequests(
                         (authorizeHttpRequests) -> authorizeHttpRequests
-                                .requestMatchers("/ws/**").permitAll()
                                 .requestMatchers("/signin/**").permitAll()
                                 .anyRequest().hasRole("USER"));
 

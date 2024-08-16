@@ -10,3 +10,16 @@
     position: relative;
     margin: 0;
 }
+
+@media (max-width: 600px) {
+    .observer-window {
+        height: 50vh
+    }
+}
+
+@media (max-width: 1440px) {
+    .observer-window {
+        height: 80vh
+    }
+}
+

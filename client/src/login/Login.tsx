@@ -123,6 +123,7 @@ export default function Login({ client }: Props) {
     useEffect(() => {
 
         if (isLogin && client) {
+
             setMsg(getCubeset)
 
             //초기 큐브셋 받아오기

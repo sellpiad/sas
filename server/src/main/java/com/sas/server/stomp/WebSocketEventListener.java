@@ -20,7 +20,7 @@ public class WebSocketEventListener {
 
         StompHeaderAccessor header = StompHeaderAccessor.wrap(event.getMessage());
 
-        log.info("connected!");
+        log.info("connected {}", header.getUser());
     }
 
     // session이 disconnected 되었을 때.

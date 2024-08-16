@@ -84,16 +84,13 @@ public class PlayerService {
      * @param playerId
      * @return 갱신한 유저 객체 리턴
      */
-    public PlayerEntity incKill(String playerId) throws NullPointerException {
+    public PlayerEntity incKill(PlayerEntity player) throws NullPointerException {
 
-        PlayerEntity user = repo.findById(playerId)
-                .orElseThrow(() -> new NullPointerException("There's no matched user"));
-
-        repo.save(user.toBuilder()
-                .totalKill(user.totalKill + 1)
+        PlayerEntity updatedUser = repo.save(player.toBuilder()
+                .totalKill(player.totalKill + 1)
                 .build());
 
-        return user;
+        return updatedUser;
     }
 
     public List<PlayerEntity> findAll() {

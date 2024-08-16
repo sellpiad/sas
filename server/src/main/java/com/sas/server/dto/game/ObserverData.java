@@ -14,7 +14,6 @@ public class ObserverData {
     @NonNull
     String nickname;
 
-    @NonNull
     String position;
 
     @NonNull

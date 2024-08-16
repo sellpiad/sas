@@ -20,19 +20,9 @@ public class CubeController {
     
     private final CubeService cubeService;
 
-    @MessageMapping("/cube/totalPlayer")
-    @SendToUser("/queue/totalPlayer")
-    public int getTotalPlayer(SimpMessageHeaderAccessor simpMessageHeaderAccessor){
-
-        String sessionId = simpMessageHeaderAccessor.getSessionId();
-
-        return 0;
-
-    }
-
     @MessageMapping("/cube/cubeSet")
     @SendToUser("/queue/cube/cubeSet")
-    public List<CubeDAO> getCubeSet(SimpMessageHeaderAccessor simpMessageHeaderAccessor) {
+    public List<CubeDAO> getCubeSet() {
 
         return cubeService.findAllCubeDAO();
     }

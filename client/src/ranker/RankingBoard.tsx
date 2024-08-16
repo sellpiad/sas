@@ -31,14 +31,6 @@ export default function RankingBoard({ client, show, onHide }: Props) {
             })
 
         }
-
-        return () => {
-            if(client){
-                client.unsubscribe('/topic/game/ranker')
-                client.unsubscribe('/user/queue/game/ranker')
-            }
-        }
-
     }, [client])
 
 

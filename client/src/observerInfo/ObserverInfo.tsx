@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { Col, Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import Slime from "../gamefield/slimeset/Slime.tsx";
-import { incKill, ObserverType, updateObserver, updateObserverPos } from "../redux/ObserverSlice.tsx";
+import { incKill, ObserverType, updateKill, updateObserver, updateObserverPos, updateRanking } from "../redux/ObserverSlice.tsx";
 import { RootState } from "../redux/Store.tsx";
 import { updateUsername } from "../redux/UserSlice.tsx";
 import './ObserverInfo.css';
@@ -73,11 +73,15 @@ export default function ObserverControl({ client }: Props) {
 
             })
 
-            client.subscribe('/topic/game/incKill', (msg:IMessage) => {
+            client.subscribe('/user/queue/game/incKill', (msg: IMessage) => {
 
-                if(msg.body === observer?.username){
-                    dispatch(incKill())
-                }
+                dispatch(updateKill({kill: parseInt(msg.body)}))
+
+            })
+
+            client.subscribe('/user/queue/game/newRanking', (msg: IMessage) => {
+
+                dispatch(updateRanking({ranking: parseInt(msg.body)}))
 
             })
 
@@ -85,16 +89,6 @@ export default function ObserverControl({ client }: Props) {
             if (username === null) {
                 client?.publish({ destination: '/app/player/anyObserver' })
             }
-        }
-
-        return () => {
-
-            if (client) {
-                client.unsubscribe('/topic/player/anyObserver')
-                client.unsubscribe('/topic/game/deleteSlime"')
-                client.unsubscribe('/user/queue/player/ingame')
-            }
-
         }
 
     }, [isReady])

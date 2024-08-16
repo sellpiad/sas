@@ -24,6 +24,7 @@ import com.sas.server.dto.queue.IngameData;
 import com.sas.server.entity.CubeEntity;
 import com.sas.server.entity.GameEntity;
 import com.sas.server.entity.PlayerEntity;
+import com.sas.server.entity.RankerEntity;
 import com.sas.server.exception.LockAcquisitionException;
 import com.sas.server.game.message.MessengerBroker;
 import com.sas.server.game.rule.ActionSystem;
@@ -219,12 +220,14 @@ public class GameService {
      * @param direction
      * @return MoveData형식으로 슬라임 닉네임, 위치 리턴. 실패시 null
      */
-    //@Retryable(value = { LockAcquisitionException.class }, maxAttempts = 15, backoff = @Backoff(delay = 200))
-    //@DistributedLock(key = "'lock:user:' + #username", watingTime = 500, timeUnit = TimeUnit.MILLISECONDS)
+    // @Retryable(value = { LockAcquisitionException.class }, maxAttempts = 15,
+    // backoff = @Backoff(delay = 200))
+    // @DistributedLock(key = "'lock:user:' + #username", watingTime = 500, timeUnit
+    // = TimeUnit.MILLISECONDS)
     public ActionData updateMove(String username, String direction) {
 
         PlayerEntity player = playerService.findById(username);
-        
+
         if (actionSystem.isLocked(username)) {
             return ActionData.builder()
                     .actionType("LOCKED")
@@ -278,29 +281,31 @@ public class GameService {
 
         // 적이 존재하지 않을시 MOVE.
         // 승리했다면 ATTACK
-        // 졌다면 DIED
+        // 천적이라면 FEARED
         // 무승부라면 DRAW
         actionType = battleSystem.attrJudgment(player, enemy);
 
         // 전투가 일어났을 때만 반영
-        if (actionType.equals("ATTACK") || actionType.equals("DIED")) {
-
-            PlayerEntity winner = actionType.equals("ATTACK") ? player : enemy;
-            PlayerEntity loser = actionType.equals("ATTACK") ? enemy : player;
+        if (actionType.equals("ATTACK")) {
 
             // 패배자 삭제
-            redisTemplate.delete("lock:cube:" + loser.position);
-            playerService.deleteById(loser.username);
+            redisTemplate.delete("lock:cube:" + enemy.position);
+            playerService.deleteById(enemy.username);
+
+            player = playerService.incKill(player);
 
             // 랭킹 기록
-            rankerService.save(playerService.incKill(winner.username));
+            rankerService.save(player);
+            rankerService.updatePlayerRank(player.username, player.totalKill);
+
+            RankerEntity ranking = rankerService.findById(player.username);
 
             simpMessagingTemplate.convertAndSend("/topic/game/deleteSlime",
-                    loser.username);
+                    enemy.username);
             simpMessagingTemplate.convertAndSend("/topic/game/ranker",
                     rankerService.getRankerList());
-            simpMessagingTemplate.convertAndSend("/topic/game/incKill",
-                    winner.username);
+            simpMessagingTemplate.convertAndSendToUser(player.username, "/queue/game/incKill", player.totalKill);
+            simpMessagingTemplate.convertAndSendToUser(player.username, "/queue/game/newRanking", rankerService.getPlayerRank(player.username));
 
         }
 
@@ -310,8 +315,8 @@ public class GameService {
             redisTemplate.opsForSet().add("lock:cube:" + target.name, "");
         }
 
-        // 무승부
-        if (actionType.equals("DRAW")) {
+        // 같은 속성이거나, 천적을 공격하려 했을 때.
+        if (actionType.equals("DRAW") || actionType.equals("FEARED")) {
             redisTemplate.opsForSet().add("lock:cube:" + player.position, "");
         }
 
@@ -319,7 +324,7 @@ public class GameService {
                 .actionType(actionType)
                 .username(player.username)
                 .direction(direction)
-                .target(actionType.equals("DRAW") ? player.position : target.name)
+                .target(actionType.equals("DRAW") || actionType.equals("FEARED") ? player.position : target.name)
                 .lockTime(lockTime)
                 .build();
     }

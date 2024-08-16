@@ -32,11 +32,11 @@ public class BattleSystem {
 
         switch (player.attr) {
             case "WATER":
-                return enemy.attr.equals("FIRE") ? "ATTACK" : "DIED";
+                return enemy.attr.equals("FIRE") ? "ATTACK" : "FEARED";
             case "GRASS":
-                return enemy.attr.equals("WATER") ? "ATTACK" : "DIED";
+                return enemy.attr.equals("WATER") ? "ATTACK" : "FEARED";
             case "FIRE":
-                return enemy.attr.equals("GRASS") ? "ATTACK" : "DIED";
+                return enemy.attr.equals("GRASS") ? "ATTACK" : "FEARED";
             default:
                 throw new IllegalArgumentException("Wrong Attribute!");
         }

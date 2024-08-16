@@ -1,13 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Button, Container, Modal, ModalBody, ModalFooter, Row, Stack } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/Store";
 import './PlayResultModal.css'
-import { Client } from "@stomp/stompjs";
+import { Client, IMessage } from "@stomp/stompjs";
 import { updateDead } from "../redux/UserSlice.tsx";
 
 interface Props {
-    client: Client
+    client: Client | undefined
     show: boolean
     onHide: () => void
 }
@@ -23,6 +23,7 @@ export default function PlayResultModal({ client, show, onHide }: Props) {
         dispatch(updateDead({isDead: false}))
         onHide()
     }
+
 
     return (
         <Modal show={show} onHide={onHide} centered size="sm" style={{ fontFamily: "DNFBitBitv2" }}>
@@ -59,7 +60,7 @@ export default function PlayResultModal({ client, show, onHide }: Props) {
                     </Row>
                     <Row>
                         <p className="rs-text">랭크</p>
-                        <p className="rs-text">{'NOT RANKED'}</p>
+                        <p className="rs-text">{observer?.ranking}</p>
                     </Row>
                 </Container>
             </ModalBody>

@@ -10,6 +10,20 @@ export interface SlimeDTO {
     direction: string
 }
 
+
+export interface EffectData{
+    actionType: string
+    target: string
+}
+
+export interface ActionData {
+    actionType: string
+    username: string
+    target: string | null // 위치
+    direction: string
+}
+
+
 export interface gameState {
     size: number
     slimeset: {[key:string]: SlimeDTO}
