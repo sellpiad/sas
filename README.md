@@ -47,7 +47,7 @@
 2. **실행**
    ```bash
    cd sas
-   docker-compose up --build
+   docker-compose -f docker-compose.git.yml up --build
    ```
 4. localhost:3000 접속 후 플레이.
 
