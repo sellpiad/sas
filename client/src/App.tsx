@@ -77,7 +77,7 @@ function App() {
 
     if (isLogin) {
       const client = new Client({
-        webSocketFactory: () => new SockJS(wsTarget+'/ws'),
+        webSocketFactory: () => new SockJS(wsTarget + '/ws'),
         onConnect: () => {
           console.log("Conneted!")
           setIsConn(true)

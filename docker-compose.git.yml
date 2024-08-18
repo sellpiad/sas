@@ -4,7 +4,7 @@ services:
     container_name: frontend
     environment:
       - REACT_APP_API_TARGET=http://backend:8080
-      - REACT_APP_WS_TARGET=http://127.0.0.1:8080
+      - REACT_APP_WS_TARGET=http://localhost:8080
     ports:
       - "3000:3000"
 
