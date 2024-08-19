@@ -41,23 +41,27 @@ export default function GameField({ client }: Props) {
     const observerPos = useSelector((state: RootState) => state.observer.observerPos)
 
     // 옵저버 이동 한계 좌표
-    const [limitXY, setLimitXY] = useState<number>(0)
+    const [limitX, setLimitX] = useState<number>(0)
+    const [limitY, setLimitY] = useState<number>(0)
 
     // redux state 수정용
     const dispatch = useDispatch()
 
     // 옵저버용 화면 크기 구하기
-    const getWidth = () => {
+    const getWindowSize = () => {
         const width = document.getElementById('observer-window')?.offsetWidth;
         const height = document.getElementById('observer-window')?.offsetHeight;
+        const fullWidth = document.getElementById('root')?.offsetWidth
 
         if (width != undefined && height != undefined) {
             setWidth(width)
             setHeight(height)
         }
 
-        if(width != undefined && width < 576){
-            dispatch(updateScale({ scale: 4.5 }))
+        if(fullWidth != undefined && fullWidth < 576){
+            dispatch(updateScale({ scale: 3.5 }))
+        } else if(fullWidth != undefined && fullWidth < 996){
+            dispatch(updateScale({ scale: 2.5 }))
         } else {
             dispatch(updateScale({ scale: 2.5 }))
         }
@@ -77,8 +81,8 @@ export default function GameField({ client }: Props) {
 
             const x = width / 2 - (boxLeft + ((boxWidth) / 2))
             const y = width / 2 - (boxTop + ((boxHeight) / 2))
-
-            dispatch(updateObserverCoor({ observeX: Math.abs(x) < limitXY ? x : Math.sign(x) * limitXY, observeY: Math.abs(y) < limitXY ? y : Math.sign(y) * limitXY }))
+        
+            dispatch(updateObserverCoor({ observeX: Math.abs(x) < limitX ? x : Math.sign(x) * limitX, observeY: Math.abs(y) < limitY ? y : Math.sign(y) * limitY }))
         }
 
     }
@@ -86,12 +90,12 @@ export default function GameField({ client }: Props) {
     // 초기화 
     useEffect(() => {
 
-        getWidth() // 초기 화면 크기 구하기
+        getWindowSize() // 초기 화면 크기 구하기
  
-        window.addEventListener('resize', getWidth)
+        window.addEventListener('resize', getWindowSize)
 
         return () => {
-            window.removeEventListener('resize', getWidth)
+            window.removeEventListener('resize', getWindowSize)
         }
 
 
@@ -100,9 +104,18 @@ export default function GameField({ client }: Props) {
     // 시점 및 스케일 업데이트에 의한 큐브 표시 범위 업데이트 
     useEffect(() => {
 
-        setLimitXY((((scale * width) - width) / 2) / scale)
+        // observer window와 scale된 gamefield window와의 크기 차이
+        // gamefield window는 정사각형을 유지해야하기 때문에 width=height
+        const gapWidth = width - width*scale
+        const gapHeight = height - width*scale 
 
-    }, [scale, width])
+        // 0.5 = 두 윈도우 간의 크기 차이에서 1/2배를 해줘야 이동 한계 좌표가 나오기 때문.
+        // 1/scale = scale이 적용된 element는 1px 이동시 (1*scale)px만큼 이동하므로 그를 보정
+        setLimitX(Math.abs(gapWidth*0.5*(1/scale)))
+        setLimitY(Math.abs(gapHeight*0.5*(1/scale)))
+
+
+    }, [scale, width, height])
 
 
     // 옵저버 포지션이 변할 때 화면 중심 이동
@@ -111,12 +124,12 @@ export default function GameField({ client }: Props) {
         if (observerPos !== null)
             setObserveCenter(observerPos)
 
-    }, [observerPos, limitXY])
+    }, [observerPos, limitX, limitY])
 
 
     return (
         <div id="observer-window" className="observer-window">
-            <Row id="field-parent" className="field-parent" style={{ height: width, transform: `translate(${observeX}px, ${observeY}px)`, transition: 'transform 0.5s ease' }}>
+            <Row id="gamefield-window" className="gamefield-window" style={{ width: width, height: width, transform: `translate(${observeX}px, ${observeY}px)`, transition: 'transform 0.5s ease' }}>
                 <CubeSet client={client} />
                 <SlimeSet client={client} />
                 <EffectSet client={client} />

@@ -32,6 +32,7 @@ import com.sas.server.game.rule.BattleSystem;
 import com.sas.server.repository.GameRepository;
 import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.player.PlayerService;
+import com.sas.server.service.player.PlaylogService;
 import com.sas.server.service.ranker.RankerService;
 
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,7 @@ public class GameService {
     private final PlayerService playerService;
     private final CubeService cubeService;
     private final RankerService rankerService;
+    private final PlaylogService playlogService;
 
     private final BattleSystem battleSystem;
     private final ActionSystem actionSystem;
@@ -291,6 +293,10 @@ public class GameService {
             // 패배자 삭제
             redisTemplate.delete("lock:cube:" + enemy.position);
             playerService.deleteById(enemy.username);
+
+            if(!enemy.ai)
+                playlogService.save(enemy);
+           
 
             player = playerService.incKill(player);
 

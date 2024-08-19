@@ -8,19 +8,36 @@
     border-radius: 1rem;
 }
 
-.field-parent {
+.gamefield-window {
     width: 100%;
     position: relative;
     margin: 0;
 }
 
 
-
-@media (max-width: 1440px) {
+@media (min-width: 1440px) {
     .observer-window {
         height: 80vh
     }
-    .field-parent {
+    .gamefield-window {
+        scale: 2.5
+    }
+}
+
+@media (min-width: 992px) {
+    .observer-window {
+        height: 80vh
+    }
+    .gamefield-window {
+        scale: 2.5
+    }
+}
+
+@media (min-width: 576px) {
+    .observer-window {
+        height: 80vh
+    }
+    .gamefield-window {
         scale: 2.5
     }
 }
@@ -29,10 +46,11 @@
     .observer-window {
         height: 50vh
     }
-    .field-parent {
-        scale: 4.5
+    .gamefield-window {
+        scale: 3.5
     }
 }
+
 
 
 

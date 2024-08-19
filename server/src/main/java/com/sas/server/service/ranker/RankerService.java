@@ -82,7 +82,7 @@ public class RankerService {
         rankerList.sort(Comparator.comparingInt(RankerDTO::getKill).reversed());
 
         if (rankerList.size() > 100) {
-            rankerList.subList(0, 99);
+            return rankerList.subList(0, 99);
         }
 
         return rankerList;
