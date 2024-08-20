@@ -5,6 +5,7 @@ type State = {
     isLogin: boolean
     isPlaying: boolean
     isDead: boolean
+    auth: string | null
     username: string | null
     attr: string | null
 }
@@ -13,6 +14,7 @@ const initialState: State = {
     isLogin: false,
     isPlaying: false,
     isDead: false,
+    auth: null,
     username: null,
     attr: null,
 }
@@ -34,6 +36,9 @@ export const user = createSlice({
         updateAttr(state, action: PayloadAction<{ attr: string | null }>) {
             state.attr = action.payload.attr
         },
+        updateAuth(state,action:PayloadAction<{ auth: string | null}>){
+            state.auth = action.payload.auth
+        },
         updateUsername(state, action: PayloadAction<{ username: string | null }>) {
             state.username = action.payload.username
         },
@@ -54,7 +59,7 @@ export const user = createSlice({
     }
 })
 
-export const { changeLogin, addPlayer, deletePlayer, updatePlaying, updateDead, updateUsername, updateAttr } = user.actions
+export const { changeLogin, addPlayer, deletePlayer, updateAuth, updatePlaying, updateDead, updateUsername, updateAttr } = user.actions
 
 export default user.reducer
 

@@ -30,10 +30,12 @@ import com.sas.server.game.message.MessengerBroker;
 import com.sas.server.game.rule.ActionSystem;
 import com.sas.server.game.rule.BattleSystem;
 import com.sas.server.repository.GameRepository;
+import com.sas.server.service.admin.LogService;
 import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.player.PlayerService;
 import com.sas.server.service.player.PlaylogService;
 import com.sas.server.service.ranker.RankerService;
+import com.sas.server.util.ActivityType;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +50,7 @@ public class GameService {
     private final CubeService cubeService;
     private final RankerService rankerService;
     private final PlaylogService playlogService;
+    private final LogService logService;
 
     private final BattleSystem battleSystem;
     private final ActionSystem actionSystem;
@@ -194,6 +197,10 @@ public class GameService {
                         .position(position)
                         .build());
 
+                // 플레이어라면 시작 로그 기록
+                if(!player.ai)
+                    logService.save(player.username, ActivityType.PLAY);
+
                 SlimeDTO slime = SlimeDTO.builder()
                         .username(player.username)
                         .attr(player.attr)
@@ -294,10 +301,13 @@ public class GameService {
             redisTemplate.delete("lock:cube:" + enemy.position);
             playerService.deleteById(enemy.username);
 
-            if(!enemy.ai)
+            // ai가 아닐때만 플레이 로그 저장
+            if(!enemy.ai){
                 playlogService.save(enemy);
+                logService.save(enemy.username,ActivityType.STOP);
+            }
+               
            
-
             player = playerService.incKill(player);
 
             // 랭킹 기록

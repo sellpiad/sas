@@ -5,7 +5,7 @@ import './Login.css';
 import Signup from "./Signup.tsx";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/Store.tsx";
-import { changeLogin } from "../redux/UserSlice.tsx";
+import { changeLogin, updateAuth } from "../redux/UserSlice.tsx";
 import { Client, IMessage } from "@stomp/stompjs";
 import { initialCubeSet, initialGameSize, initialSlimeSet, SlimeDTO, setReady } from "../redux/GameSlice.tsx";
 import { persistor } from "../index.js";
@@ -84,6 +84,7 @@ export default function Login({ client }: Props) {
             .then((res) => {
                 if (res.data) {
                     dispatch(changeLogin({ isLogin: true }))
+                    dispatch(updateAuth({ auth: res.data }))
                 } else {
                     alarmErr(invalidInfo)
                 }

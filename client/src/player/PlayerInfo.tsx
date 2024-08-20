@@ -18,8 +18,9 @@ interface playlog {
 export default function PlayerInfo({ show, onHide }) {
 
     const [id, setId] = useState<string>('')
+    const [highestRanking,setHighestRanking] = useState<number>()
     const [killMax, setKillMax] = useState<number>()
-    const [conquerMax, setConquerMax] = useState<number>();
+    const [conquerMax, setConquerMax] = useState<number>()
     const [mainAttr, setMainAttr] = useState<string>()
 
     const [log, setLog] = useState([])
@@ -30,6 +31,7 @@ export default function PlayerInfo({ show, onHide }) {
             axios.get('/api/userInfo')
                 .then((res) => {
                     setId(res.data.username)
+                    setHighestRanking(res.data.highestRanking)
                     setKillMax(res.data.killMax)
                     setConquerMax(res.data.conquerMax)
                     setMainAttr(res.data.mainAttr)
@@ -59,11 +61,15 @@ export default function PlayerInfo({ show, onHide }) {
                     </Row>
                     <Row>
                         <p />
-                        <span style={{ width: "20%" }}>주속성 </span> <span style={{ width: "20%", paddingRight: 0 }}>{mainAttr}</span>
+                        <span style={{ width: "20%" }}>주속성 </span> <span style={{ width: "40%", paddingRight: 0 }}>{mainAttr}</span>
                         <p />
-                        <span style={{ width: "20%" }}>최다킬 </span> <span style={{ width: "20%", paddingRight: 0 }}>{killMax}</span>
+                        <span style={{ width: "20%" }}>최다킬 </span> <span style={{ width: "40%", paddingRight: 0 }}>{killMax} 번</span>
                         <p />
-                        <span style={{ width: "20%" }}>최다정복 </span> <span style={{ width: "20%", paddingRight: 0 }}>{conquerMax}</span>
+                        <span style={{ width: "20%" }}>최고랭킹 </span> <span style={{ width: "40%", paddingRight: 0 }}>
+                            {highestRanking === -1 ? "OUT OF RANK" : `${highestRanking} 위`}
+                        </span>
+                        <p />
+                        <span style={{ width: "20%" }}>최다정복 </span> <span style={{ width: "40%", paddingRight: 0 }}>{conquerMax} 번</span>
                         <p />
                     </Row>
                     <Row>
@@ -81,7 +87,7 @@ export default function PlayerInfo({ show, onHide }) {
                             return (
                                 <li key={"playlog" + index} style={{ display: "flex", justifyContent: "space-between", padding: "3px" }}>
                                     <span className="playTime-col" style={{fontSize:"0.5rem"}}>{value['playTime']}</span>
-                                    <span className="username-col">{value['username']}</span>
+                                    <span className="username-col">{value['nickname']}</span>
                                     <span className="attr-col">{value['attr']}</span>
                                     <span className="totalKill-col">{value['totalKill']}</span>
                                 </li>

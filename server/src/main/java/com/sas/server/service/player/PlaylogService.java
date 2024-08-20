@@ -20,6 +20,7 @@ public class PlaylogService {
 
         PlaylogEntity log = PlaylogEntity.builder()
                 .username(player.username)
+                .nickname(player.nickname)
                 .attr(player.attr)
                 .totalKill(player.totalKill)
                 .build();
@@ -30,7 +31,21 @@ public class PlaylogService {
 
     }
 
-    public List<PlaylogEntity> findAllByUsername(String username){
+    public int findKillMaxByUsername(String username) {
+        PlaylogEntity log = repo.findTopByUsernameOrderByTotalKillDesc(username)
+                .orElseGet(null);
+
+        if (log == null)
+            return 0;
+
+        return log.getTotalKill();
+    }
+
+    public String findMostFrequentAttrByUsername(String username) {
+        return repo.findMostFrequentAttrByUsername(username).orElse(new String("NOT PLAY EVER"));
+    }
+
+    public List<PlaylogEntity> findAllByUsername(String username) {
         return repo.findAllByUsername(username);
     }
 

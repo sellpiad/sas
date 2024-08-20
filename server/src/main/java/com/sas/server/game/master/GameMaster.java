@@ -23,6 +23,7 @@ import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.game.GameService;
 import com.sas.server.service.member.MemberService;
 import com.sas.server.service.player.PlayerService;
+import com.sas.server.util.Role;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,8 +61,16 @@ public class GameMaster {
 
         //테스트 아이디
         try{
-            memberService.save("test","1234");
+            memberService.save("test","1234",Role.USER);
+           
         } catch(UserAlreadyExistsException E){
+            log.info("이미 있는 아이디이므로 추가 X");
+        } 
+
+        //어드민 아이디
+        try{
+            memberService.save("admin","k10241024",Role.ADMIN);
+        }catch(UserAlreadyExistsException E){
             log.info("이미 있는 아이디이므로 추가 X");
         } 
       

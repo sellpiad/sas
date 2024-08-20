@@ -14,6 +14,8 @@ public class UserData {
     @NonNull
     int killMax;
 
+    int highestRanking;
+
     @NonNull
     int conquerMax;
 

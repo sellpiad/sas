@@ -27,15 +27,11 @@ public class RankerService {
 
     private static final String LEADERBOARD_KEY = "leaderboard:";
 
-    public Long getPlayerRank(String username) {
-       
-        Long rank = redisTemplate.opsForZSet().reverseRank(LEADERBOARD_KEY, username);
+    public int getPlayerRank(String username) {
 
-        if (rank != null) {
-            return rank + 1; // 순위는 0부터 시작하므로 +1
-        } else {
-            throw new NullPointerException("Player not found");
-        }
+        Long ranking = redisTemplate.opsForZSet().reverseRank(LEADERBOARD_KEY, username);
+
+        return (ranking != null) ? ranking.intValue() + 1 : -1;
     }
 
     public void save(PlayerEntity user) {

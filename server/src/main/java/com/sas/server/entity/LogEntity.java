@@ -19,36 +19,25 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "playlog")
+@Table(name = "log")
 @Entity
 @Data
-public class PlaylogEntity {
+public class LogEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "play_time", nullable = false)
+    @Column(name = "time", nullable = false)
     @CreationTimestamp
-    Date playTime;
+    Date time;
 
     @Indexed
-    @Column(name = "username", nullable = false)
     String username;
 
-    @Column(name = "nickname", nullable = false)
-    String nickname;
+    @Column(name = "activityType", nullable = false)
+    String activityType;
 
-    @Column(name = "attr", nullable = false)
-    String attr;
-
-    @Column(name = "total_kill", nullable = false)
-    int totalKill;
-
-    @Column(name = "total_move", nullable = true)
-    int totalMove;
-
-    @Column(name = "total_conquered_cubes", nullable = true)
-    int totalConqueredCubes;
 
 }
+

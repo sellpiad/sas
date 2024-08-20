@@ -12,6 +12,9 @@ import { persistor } from './index.js';
 import { RootState } from './redux/Store.tsx';
 import { changeLogin } from './redux/UserSlice.tsx';
 
+import Admin from './admin/Admin.tsx';
+import Board from './board/Board.tsx';
+import ControlPanel from './controlPanel/ControlPanel.tsx';
 import CreateModal from './createModal/CreateModal.tsx';
 import GameField from './gamefield/GameField.tsx';
 import Slime from './gamefield/slimeset/Slime.tsx';
@@ -19,15 +22,13 @@ import Login from './login/Login.tsx';
 import ObserverInfo from './observerInfo/ObserverInfo.tsx';
 import PlayerInfo from './player/PlayerInfo.tsx';
 import PlayResultModal from './playResultModal/PlayResultModal.tsx';
-import Board from './board/Board.tsx';
 import RankingBoard from './ranker/RankingBoard.tsx';
-import ControlPanel from './controlPanel/ControlPanel.tsx';
-import { Root } from 'react-dom/client';
+import axios from 'axios';
 
 
 function App() {
 
-  const wsTarget= process.env.REACT_APP_WS_TARGET || 'http://localhost:8080'
+  const wsTarget = process.env.REACT_APP_WS_TARGET || 'http://localhost:8080'
 
   const [isConn, setIsConn] = useState<boolean>(false)
 
@@ -40,11 +41,13 @@ function App() {
   const [boardModal, setBoardModal] = useState(false)
   const [playerModal, setPlayerModal] = useState(false)
   const [playResultModal, setPlayResultModal] = useState(false)
+  const [adminModal, setAdminModal] = useState(false)
 
   const isLogin = useSelector((state: RootState) => state.user.isLogin)
   const isReady = useSelector((state: RootState) => state.game.isReady)
-  const isPlaying = useSelector((state:RootState) => state.user.isPlaying)
+  const isPlaying = useSelector((state: RootState) => state.user.isPlaying)
   const isDead = useSelector((state: RootState) => state.user.isDead)
+  const auth = useSelector((state: RootState) => state.user.auth)
 
   // 모달 관리 메소드들
   const showCreateModal = () => {
@@ -67,8 +70,16 @@ function App() {
     setPlayResultModal(true)
   }
 
+  const showAdminModal = () => {
+    setAdminModal(true)
+  }
+
   const handleLogout = () => {
-    persistor.purge()
+    axios.get('/api/logout')
+      .then((res) => {
+        persistor.purge()
+      })
+      .catch((err) => { })
   }
 
 
@@ -167,6 +178,7 @@ function App() {
                 isConn && <>
                   <Col xs={12} sm={3}>
                     <ObserverInfo client={ws.current}></ObserverInfo>
+                    {(auth === 'ADMIN' || auth === 'MANAGER') && <Button className="Admin-Btn" variant="outline-light" onClick={showAdminModal}>관리모드</Button>}
                   </Col>
                   <Col xs={12} sm={9}>
                     <Stack gap={4} style={{ alignItems: "center" }}>
@@ -184,6 +196,7 @@ function App() {
           <Board show={boardModal} onHide={() => setBoardModal(false)}></Board>
           <PlayerInfo show={playerModal} onHide={() => setPlayerModal(false)}></PlayerInfo>
           <PlayResultModal show={playResultModal} onHide={() => setPlayResultModal(false)} client={ws.current}></PlayResultModal>
+          <Admin show={adminModal} onHide={() => setAdminModal(false)} client={ws.current}></Admin>
         </>
       }
 

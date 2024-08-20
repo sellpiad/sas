@@ -1,10 +1,14 @@
 package com.sas.server.service.player;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import org.springframework.stereotype.Service;
 
+import com.sas.server.dto.admin.MemberData;
 import com.sas.server.dto.game.ObserverData;
 import com.sas.server.entity.PlayerEntity;
 import com.sas.server.repository.PlayerRepository;
@@ -72,6 +76,30 @@ public class PlayerService {
 
     public List<PlayerEntity> findAllByInGame() {
         return repo.findAllByInQueue(false);
+    }
+
+    public List<MemberData> udpateIsPlayingOrNot(List<MemberData> list) {
+
+        // 현재 플레이 중인 유저 리스트
+        List<PlayerEntity> playerList = findAllByInGame(); 
+
+        // 검색 시간 복잡도를 최소화 하기 위해 HashMap으로 변환
+        Map<String, MemberData> memberMap = new HashMap<>();
+
+        for (MemberData member : list) {
+            memberMap.put(member.getUsername(), member);
+        }
+
+        for (PlayerEntity player : playerList) {
+            
+            MemberData member = memberMap.get(player.username);
+
+            if (member != null) {
+                memberMap.put(member.getUsername(),member.toBuilder().isPlaying(true).build());
+            }
+        }
+
+        return new ArrayList<>(memberMap.values());
     }
 
     public void deleteById(String playerId) {
