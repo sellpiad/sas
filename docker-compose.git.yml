@@ -21,6 +21,8 @@ services:
       - SPRING_DATA_REDIS_REPOSITORIES_ENABLED=true
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_JPA_HIBERNATE_DIALECT=org.hibernate.dialect.MySQL8Dialect
+      - SERVER_ACCOUNT_ADMIN_ID=admin
+      - SERVER_ACCOUNT_ADMIN_PWD=1234
     ports: 
       - "8080:8080"
     depends_on:
