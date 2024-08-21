@@ -5,6 +5,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.connection.DefaultStringRedisConnection;
@@ -47,6 +48,12 @@ public class GameMaster {
 
     private final StringRedisTemplate redisTemplate;
 
+    @Value("${server.account.admin.id}")
+    private String adminId;
+
+    @Value("${server.account.admin.pwd}")
+    private String adminPwd;
+
     @EventListener
     public void onApplicationEvent(ApplicationReadyEvent event) {
 
@@ -62,14 +69,13 @@ public class GameMaster {
         //테스트 아이디
         try{
             memberService.save("test","1234",Role.USER);
-           
         } catch(UserAlreadyExistsException E){
             log.info("이미 있는 아이디이므로 추가 X");
         } 
 
         //어드민 아이디
         try{
-            memberService.save("admin","k10241024",Role.ADMIN);
+            memberService.save(adminId,adminPwd,Role.ADMIN);
         }catch(UserAlreadyExistsException E){
             log.info("이미 있는 아이디이므로 추가 X");
         } 
