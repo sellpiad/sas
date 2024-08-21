@@ -12,7 +12,7 @@
 ![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
 
 ## 실행 모습
-![slime](https://github.com/sellpiad/sas-server/assets/17512385/beb491f3-c5de-4ee0-b635-a14833ca195a)
+![play](https://github.com/user-attachments/assets/5f4d65f5-85c3-4cb9-8224-b17ad660ef2c)
 
 [배포 사이트](http://ec2-3-36-112-146.ap-northeast-2.compute.amazonaws.com/)
 
@@ -20,7 +20,8 @@
 **슬라임으로 살아남기**는 JAVA와 SPRING, 그리고 REDIS 등을 활용해 만든 웹게임입니다. </br>
 현재 슬라임은 풀, 물, 불 속성으로 이루어져 서로 상성관계를 이루고 있으며, 같은 타일에서 마주했을 시 상성관계에 따라 불리한 측이 사망합니다.
 
-최초 버전 제작기간 2024.05.14~2024.06.26
+최초 버전 제작기간 2024.05.14~2024.06.26!
+
 
 ## 기능
 - 플레이어 슬라임 추가
