@@ -20,6 +20,7 @@ export default function RankingBoard({ client, show, onHide }: Props) {
 
             // 업데이트용
             client.subscribe('/topic/game/ranker', (msg: IMessage) => {
+                
                 const parser = JSON.parse(msg.body)
                 setList(Array.from(parser))
             })

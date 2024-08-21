@@ -12,5 +12,6 @@ public interface PlayerRepository extends CrudRepository<PlayerEntity,String>{
     public List<PlayerEntity> findAllByAi(boolean ai);
     public List<PlayerEntity> findAllByInQueue(boolean inQueue);
     public Optional<PlayerEntity> findByPosition(String position);
+    public Optional<PlayerEntity> findByNickname(String nickname);
     public Optional<PlayerEntity> findByUsernameAndInQueue(String username, boolean inQueue);
 }

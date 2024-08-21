@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import com.sas.server.dao.CustomUserDetails;
 import com.sas.server.dto.game.ActionData;
+import com.sas.server.dto.game.PlayerCardData;
 import com.sas.server.dto.game.RankerDTO;
 import com.sas.server.dto.game.SlimeDTO;
 import com.sas.server.service.game.GameService;
@@ -58,7 +59,14 @@ public class GameController {
     @SendToUser("/queue/game/ranker")
     public List<RankerDTO> getRankerList() {
 
-        return rankerService.getRankerList();
+        return rankerService.getAlltimeRank();
+    }
+
+    @MessageMapping("/game/realtimeRanker")
+    @SendToUser("/queue/game/realtimeRanker")
+    public List<PlayerCardData> getRealtimeRanker() {
+
+        return rankerService.getRealtimeRank();
     }
 
 }

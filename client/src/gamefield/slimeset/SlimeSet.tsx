@@ -20,6 +20,15 @@ interface Props {
     client: Client | undefined
 }
 
+type SlimesState = { [key: string]: SlimeDTO };
+
+type SlimesAction =
+    | { type: 'ADD'; payload: SlimeDTO }
+    | { type: 'DELETE'; payload: string }
+    | { type: 'ACTION'; payload: ActionData }
+    | { type: 'INIT'; payload: SlimesState }
+
+
 const slimeReducer = (state: SlimesState, action: SlimesAction) => {
     switch (action.type) {
         case 'ADD':
@@ -46,15 +55,6 @@ const slimeReducer = (state: SlimesState, action: SlimesAction) => {
             return state
     }
 };
-
-type SlimesState = { [key: string]: SlimeDTO };
-
-type SlimesAction =
-    | { type: 'ADD'; payload: SlimeDTO }
-    | { type: 'DELETE'; payload: string }
-    | { type: 'ACTION'; payload: ActionData }
-    | { type: 'INIT'; payload: SlimesState }
-
 
 export default function SlimeSet({ client }: Props) {
 

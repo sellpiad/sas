@@ -5,11 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.sas.server.dto.admin.MemberData;
 import com.sas.server.dto.game.ObserverData;
+import com.sas.server.dto.game.PlayerCardData;
 import com.sas.server.entity.PlayerEntity;
 import com.sas.server.repository.PlayerRepository;
 
@@ -78,10 +81,29 @@ public class PlayerService {
         return repo.findAllByInQueue(false);
     }
 
+    public List<PlayerCardData> findAllPlayerCard() {
+
+        List<PlayerEntity> playerList = findAllByInGame().stream()
+                .sorted((p1, p2) -> Integer.compare(p2.totalKill, p1.totalKill))
+                .collect(Collectors.toList());
+
+        List<PlayerCardData> cardList = new ArrayList<>();
+
+        for (PlayerEntity player : playerList) {
+            cardList.add(PlayerCardData.builder()
+                    .attr(player.attr)
+                    .nickname(player.nickname)
+                    .kill(player.totalKill)
+                    .build());
+        }
+
+        return cardList;
+    }
+
     public List<MemberData> udpateIsPlayingOrNot(List<MemberData> list) {
 
         // 현재 플레이 중인 유저 리스트
-        List<PlayerEntity> playerList = findAllByInGame(); 
+        List<PlayerEntity> playerList = findAllByInGame();
 
         // 검색 시간 복잡도를 최소화 하기 위해 HashMap으로 변환
         Map<String, MemberData> memberMap = new HashMap<>();
@@ -91,11 +113,11 @@ public class PlayerService {
         }
 
         for (PlayerEntity player : playerList) {
-            
+
             MemberData member = memberMap.get(player.username);
 
             if (member != null) {
-                memberMap.put(member.getUsername(),member.toBuilder().isPlaying(true).build());
+                memberMap.put(member.getUsername(), member.toBuilder().isPlaying(true).build());
             }
         }
 
@@ -157,10 +179,25 @@ public class PlayerService {
                 .build();
     }
 
-    public ObserverData findObserverById(String playerId) {
+    public ObserverData findObserverById(String username) {
 
-        PlayerEntity player = repo.findById(playerId)
-                .orElseThrow(() -> new NullPointerException("PlayerEntity not found with " + playerId));
+        PlayerEntity player = repo.findById(username)
+                .orElseThrow(() -> new NullPointerException("PlayerEntity not found with " + username));
+
+        return ObserverData.builder()
+                .username(player.username)
+                .nickname(player.nickname)
+                .position(player.position)
+                .attr(player.attr)
+                .kill(player.totalKill)
+                .conquer(0)
+                .build();
+
+    }
+
+    public ObserverData findObserverByNickname(String nickname) {
+        PlayerEntity player = repo.findByNickname(nickname)
+                .orElseThrow(() -> new NullPointerException("PlayerEntity not found with username = " + nickname));
 
         return ObserverData.builder()
                 .username(player.username)

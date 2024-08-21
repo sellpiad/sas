@@ -1,20 +1,24 @@
 package com.sas.server.entity;
 
-import java.util.UUID;
+import java.io.Serializable;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
 import jakarta.annotation.Nonnull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @RedisHash("ranker")
 @Builder
-public class RankerEntity {
+@NoArgsConstructor
+@AllArgsConstructor
+public class RankerEntity implements Serializable {
 
     @Id
     @Nonnull
-    String playerId;
+    public String username;
 
     @Nonnull
     public String nickname;

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.sas.server.dao.CustomUserDetails;
 import com.sas.server.dto.game.ObserverData;
+import com.sas.server.dto.game.PlayerCardData;
 import com.sas.server.dto.queue.CreationInfo;
 import com.sas.server.entity.PlaylogEntity;
 import com.sas.server.service.player.PlayerService;
@@ -20,6 +21,8 @@ import com.sas.server.service.player.PlaylogService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @Controller
@@ -42,6 +45,12 @@ public class PlayerController {
         return playerService.findObserverById(username);
     }
 
+    @MessageMapping("/player/findObserverByNickname")
+    @SendTo("/queue/player/findObserverByNickname")
+    public ObserverData findObserverByNickname(@RequestBody String nickname) {
+        return playerService.findObserverByNickname(nickname);
+    }
+
     @PostMapping("/player/register")
     @ResponseBody
     public ObserverData register(@RequestBody CreationInfo info, @AuthenticationPrincipal CustomUserDetails user) {
@@ -60,6 +69,6 @@ public class PlayerController {
 
         return list;
     }
-    
+
 
 }

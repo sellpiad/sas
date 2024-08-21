@@ -73,6 +73,13 @@ export default function ObserverControl({ client }: Props) {
 
             })
 
+            client.subscribe('/queue/player/findObserverByNickname', (msg: IMessage) => {
+
+                const parser = JSON.parse(msg.body) as ObserverType
+
+                dispatch(updateObserver({ observer: parser })) // 옵저버 정보 셋팅
+            })
+
             client.subscribe('/user/queue/game/incKill', (msg: IMessage) => {
 
                 dispatch(updateKill({kill: parseInt(msg.body)}))

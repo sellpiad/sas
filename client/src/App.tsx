@@ -24,6 +24,7 @@ import PlayerInfo from './player/PlayerInfo.tsx';
 import PlayResultModal from './playResultModal/PlayResultModal.tsx';
 import RankingBoard from './ranker/RankingBoard.tsx';
 import axios from 'axios';
+import ObserverPanel from './observerInfo/ObserverPanel.tsx';
 
 
 function App() {
@@ -162,7 +163,7 @@ function App() {
                 <Col xs={12} sm={6} style={{ alignContent: "center" }}>
                   <Row className='Btn-Container'>
                     <Button className="Menu-Btn" variant="outline-light" onClick={showCreateModal}>플레이</Button>
-                    <Button className="Menu-Btn" variant="outline-light" onClick={showRankingModal}>랭킹</Button>
+                    <Button className="Menu-Btn" variant="outline-light" onClick={showRankingModal}>역대 랭킹</Button>
                     <Button className="Menu-Btn" variant="outline-light" onClick={showBoardModal}>게시판</Button>
                     <Button className="Menu-Btn" variant="outline-light" onClick={showPlayerModal}>플레이어</Button>
                     {isLogin && <Button className="Menu-Btn" variant="outline-light" onClick={handleLogout}>로그아웃</Button>}
@@ -177,7 +178,8 @@ function App() {
               {
                 isConn && <>
                   <Col xs={12} sm={3}>
-                    <ObserverInfo client={ws.current}></ObserverInfo>
+                    <ObserverInfo client={ws.current}/>
+                    <ObserverPanel client={ws.current}/>
                     {(auth === 'ADMIN' || auth === 'MANAGER') && <Button className="Admin-Btn" variant="outline-light" onClick={showAdminModal}>관리모드</Button>}
                   </Col>
                   <Col xs={12} sm={9}>

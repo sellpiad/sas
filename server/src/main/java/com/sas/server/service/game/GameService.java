@@ -196,6 +196,9 @@ public class GameService {
                         .inQueue(false)
                         .position(position)
                         .build());
+                
+                // 실시간 랭킹에 추가
+                rankerService.updateRealtimeRank(player);
 
                 // 플레이어라면 시작 로그 기록
                 if(!player.ai)
@@ -297,29 +300,29 @@ public class GameService {
         // 전투가 일어났을 때만 반영
         if (actionType.equals("ATTACK")) {
 
-            // 패배자 삭제
+            // 패배자 삭제 및 리얼타임 랭크에서 삭제, 그 후 올타임 랭크에 기록
             redisTemplate.delete("lock:cube:" + enemy.position);
             playerService.deleteById(enemy.username);
-
+            rankerService.removeRealtimeRank(enemy.username);
+            rankerService.updateAlltimeRank(enemy);
+            
             // ai가 아닐때만 플레이 로그 저장
             if(!enemy.ai){
                 playlogService.save(enemy);
                 logService.save(enemy.username,ActivityType.STOP);
             }
                
-           
             player = playerService.incKill(player);
 
-            // 랭킹 기록
-            rankerService.save(player);
-            rankerService.updatePlayerRank(player.username, player.totalKill);
-
-            RankerEntity ranking = rankerService.findById(player.username);
+            // 리얼타임 랭킹 기록
+            rankerService.updateRealtimeRank(player);
 
             simpMessagingTemplate.convertAndSend("/topic/game/deleteSlime",
                     enemy.username);
             simpMessagingTemplate.convertAndSend("/topic/game/ranker",
-                    rankerService.getRankerList());
+                    rankerService.getAlltimeRank());
+            simpMessagingTemplate.convertAndSend("/topic/game/realtimeRanker",
+                    rankerService.getRealtimeRank());
             simpMessagingTemplate.convertAndSendToUser(player.username, "/queue/game/incKill", player.totalKill);
             simpMessagingTemplate.convertAndSendToUser(player.username, "/queue/game/newRanking", rankerService.getPlayerRank(player.username));
 

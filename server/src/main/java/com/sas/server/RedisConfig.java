@@ -2,6 +2,7 @@ package com.sas.server;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.EventListener;
@@ -9,7 +10,11 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericToStringSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+import com.sas.server.entity.RankerEntity;
 
 @Configuration
 public class RedisConfig {
@@ -34,6 +39,22 @@ public class RedisConfig {
 
         redisTemplate.setHashKeySerializer(new StringRedisSerializer());
         redisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+
+        return redisTemplate;
+    }
+
+    @Bean(name = "rankerRedisTemplate")
+    public RedisTemplate<String, RankerEntity> rankerRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        
+        RedisTemplate<String, RankerEntity> redisTemplate = new RedisTemplate<>();
+
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+        redisTemplate.setEnableTransactionSupport(true);
+
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(RankerEntity.class));
+        redisTemplate.setHashValueSerializer(new Jackson2JsonRedisSerializer<>(RankerEntity.class));
+        redisTemplate.setHashKeySerializer(new StringRedisSerializer());
 
         return redisTemplate;
     }
