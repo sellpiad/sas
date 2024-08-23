@@ -67,3 +67,21 @@
 .observerPanel-kill-col {
     width: 10%
 }
+
+.skeleton {
+    background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    height: 80%;
+    border-radius: 0.3rem;
+    margin: 2px;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}

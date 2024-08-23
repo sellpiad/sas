@@ -88,13 +88,6 @@ interface Props {
 
 function EditUser({ show, onHide, username }: Props) {
 
-    axios.get('/api/admin/userInfo')
-        .then((res) => {
-
-        }).catch((err) => {
-
-        })
-
     return (
         <Modal show={show} onHide={onHide} centered>
             <ModalBody>

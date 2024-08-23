@@ -1,8 +1,8 @@
-import { Client, IMessage } from "@stomp/stompjs"
-import { useEffect, useReducer } from "react"
-import { EffectData } from "../../redux/GameSlice";
+import { Client, IMessage } from "@stomp/stompjs";
+import React, { useEffect, useReducer } from "react";
+import { useDispatch } from "react-redux";
+import { EffectData } from "../../redux/GameSlice.tsx";
 import Effect from "./Effect.tsx";
-import React from "react";
 
 
 interface Props {
@@ -34,6 +34,8 @@ export default function EffectSet({ client }: Props) {
 
     const [effects, setEffects] = useReducer(effectReducer, {})// 렌더링용
 
+    const dispatch = useDispatch()
+
     const getActionText = (action: string) => {
 
         switch (action) {
@@ -48,8 +50,9 @@ export default function EffectSet({ client }: Props) {
     }
 
     useEffect(() => {
-        if (client) {
+        if (client?.connected) {
             // 이펙트 추가
+
             client.subscribe("/topic/game/move", (msg: IMessage) => {
 
                 const Effect = JSON.parse(msg.body) as EffectData

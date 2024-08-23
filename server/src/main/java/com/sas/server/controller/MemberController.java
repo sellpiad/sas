@@ -61,8 +61,8 @@ public class MemberController {
         return null;
     }
 
-    @GetMapping("/member/logout")
-    public Boolean logout(@RequestBody HttpRequest request) {
+    @GetMapping("/signout")
+    public Boolean logout() {
         return true;
     }
 

@@ -11,7 +11,7 @@ export interface SlimeDTO {
 }
 
 
-export interface EffectData{
+export interface EffectData {
     actionType: string
     target: string
 }
@@ -26,7 +26,7 @@ export interface ActionData {
 
 export interface gameState {
     size: number
-    slimeset: {[key:string]: SlimeDTO}
+    slimeset: { [key: string]: SlimeDTO }
     cubeset: []
     isReady: boolean
 }

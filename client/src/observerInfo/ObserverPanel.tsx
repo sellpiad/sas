@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Button, OverlayTrigger, Placeholder, Row, Tooltip } from "react-bootstrap";
-import './ObserverPanel.css'
-import Slime from "../gamefield/slimeset/Slime.tsx";
 import { Client, IMessage } from "@stomp/stompjs";
+import React, { useEffect, useState } from "react";
+import { Row } from "react-bootstrap";
+import { useDispatch } from "react-redux";
+import Slime from "../gamefield/slimeset/Slime.tsx";
+import './ObserverPanel.css';
 
 
 interface CardData {
@@ -23,7 +24,7 @@ interface PlayerCard {
 }
 
 interface Props {
-    client: Client
+    client: Client | undefined
 }
 
 export default function ObserverPanel({ client }: Props) {
@@ -31,14 +32,17 @@ export default function ObserverPanel({ client }: Props) {
     const [list, setList] = useState<CardData[]>()
     const [selectedCard, setSelectedCard] = useState<string>('')
 
+    const dispatch = useDispatch()
+
     const getObserver = (nickname: string) => {
         setSelectedCard(nickname)
-        client.publish({ destination: '/app/player/findObserverByNickname', body: nickname })
+        client?.publish({ destination: '/app/player/findObserverByNickname', body: nickname })
     }
 
     useEffect(() => {
 
-        if (client) {
+        if (client?.connected) {
+
             client.subscribe('/topic/game/realtimeRanker', (msg: IMessage) => {
 
                 const parser = JSON.parse(msg.body)
@@ -48,7 +52,6 @@ export default function ObserverPanel({ client }: Props) {
 
             client.publish({ destination: '/app/game/realtimeRanker' })
         }
-
 
     }, [client])
 
@@ -73,7 +76,7 @@ export default function ObserverPanel({ client }: Props) {
                         )
                     })
                 }
-                {list === undefined && Array.from({ length: 6 }, (_, index) => {
+                {list === undefined && Array.from({ length: 10 }, (_, index) => {
                     return <EmptyCard key={'emptycard-' + index + 1} />
                 })
                 }
@@ -85,7 +88,7 @@ export default function ObserverPanel({ client }: Props) {
 
 function PlayerCard({ ranking, attr, nickname, kill, onClick, selected }: PlayerCard) {
 
-  
+
     return (
         <div className={`observerPanel-card player-card ${selected ? 'selected' : ''}`} onClick={onClick}>
             <span className="observerPanel-ranking-col">{ranking}</span>
@@ -99,10 +102,10 @@ function PlayerCard({ ranking, attr, nickname, kill, onClick, selected }: Player
 function EmptyCard() {
     return (
         <div className="observerPanel-card">
-            <Placeholder.Button xs={2} animation="wave" bg="success" />
-            <Placeholder.Button xs={4} animation="wave" bg="success" />
-            <Placeholder.Button xs={2} animation="wave" bg="success" />
-            <Placeholder.Button xs={2} animation="wave" bg="success" />
+            <span className="observerPanel-ranking-col skeleton" />
+            <span className="observerPanel-slime-col skeleton" />
+            <span className="observerPanel-nickname-col skeleton" />
+            <span className="observerPanel-kill-col skeleton" />
         </div>
     )
 }

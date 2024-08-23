@@ -1,6 +1,7 @@
 import { Client, IMessage } from "@stomp/stompjs";
 import React, { useEffect, useState } from "react";
 import { Modal, ModalBody } from "react-bootstrap";
+import { useDispatch } from "react-redux";
 import './RankingBoard.css';
 
 interface Props {
@@ -13,14 +14,14 @@ export default function RankingBoard({ client, show, onHide }: Props) {
 
     const [list, setList] = useState([])
 
+    const dispatch = useDispatch()
 
     useEffect(() => {
 
-        if (client) {
+        if (client?.connected) {
 
             // 업데이트용
             client.subscribe('/topic/game/ranker', (msg: IMessage) => {
-                
                 const parser = JSON.parse(msg.body)
                 setList(Array.from(parser))
             })
@@ -32,12 +33,13 @@ export default function RankingBoard({ client, show, onHide }: Props) {
             })
 
         }
+
     }, [client])
 
 
     useEffect(() => {
 
-        if (client) {
+        if (client?.connected) {
             client.publish({ destination: '/app/game/ranker' });
         }
 
@@ -46,7 +48,7 @@ export default function RankingBoard({ client, show, onHide }: Props) {
 
     return (
         <Modal show={show} onHide={onHide} centered >
-            <ModalBody style={{ height: "40vh",  fontFamily:"DNFBitBitv2", fontSize:"0.9rem"}}>
+            <ModalBody style={{ height: "40vh", fontFamily: "DNFBitBitv2", fontSize: "0.9rem" }}>
                 <div style={{ height: "15%" }}>
                     <strong>실시간 플레이어 랭킹</strong>
                     <div style={{ display: "flex", padding: "0 3px" }}>

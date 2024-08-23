@@ -1,7 +1,5 @@
 package com.sas.server.game.ai;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -12,13 +10,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.stereotype.Component;
 
-import com.sas.server.annotation.DistributedLock;
-import com.sas.server.entity.GameEntity;
 import com.sas.server.entity.PlayerEntity;
 import com.sas.server.exception.LockAcquisitionException;
 import com.sas.server.service.cube.CubeService;
@@ -91,7 +86,6 @@ public class AIController {
                         
                     }).thenAccept((isAlive) -> {
                         if (!isAlive) {
-                            log.info("{} 정지",sessionId);
                             stop(sessionId);
                         }
                     });

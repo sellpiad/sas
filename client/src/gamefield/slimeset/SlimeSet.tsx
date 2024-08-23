@@ -1,5 +1,5 @@
 import { Client, IMessage } from "@stomp/stompjs";
-import React, { useEffect, useReducer, useRef, useState } from "react";
+import React, { useEffect, useReducer, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionData, SlimeDTO } from "../../redux/GameSlice.tsx";
 import { ObserverType, updateObserverPos } from "../../redux/ObserverSlice.tsx";
@@ -104,7 +104,7 @@ export default function SlimeSet({ client }: Props) {
     // client 구독 관리
     useEffect(() => {
 
-        if (client) {
+        if (client?.connected) {
 
             // 슬라임 위치 업데이트
             client.subscribe("/topic/game/move", (msg: IMessage) => {
@@ -136,16 +136,18 @@ export default function SlimeSet({ client }: Props) {
 
                 setSlime({ type: 'DELETE', payload: id })
 
-                if (id === usernameRef.current) {
+
+                if (id === usernameRef.current) {   // 플레이어 사망 처리
                     dispatch(deletePlayer())
-                    // 옵저버 사망 시, 새로운 옵저버 요청
-                } else if (id === observerRef.current?.username) {
+
+                } else if (id === observerRef.current?.username) {   // 옵저버 사망 처리
                     client?.publish({ destination: '/app/player/anyObserver' })
                 }
 
             })
 
         }
+
     }, [client])
 
 

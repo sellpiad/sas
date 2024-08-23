@@ -5,6 +5,8 @@ import { RootState } from "../redux/Store";
 import './PlayResultModal.css'
 import { Client, IMessage } from "@stomp/stompjs";
 import { updateDead } from "../redux/UserSlice.tsx";
+import axios from "axios";
+import { updateRanking } from "../redux/ObserverSlice.tsx";
 
 interface Props {
     client: Client | undefined
@@ -15,14 +17,29 @@ interface Props {
 export default function PlayResultModal({ client, show, onHide }: Props) {
 
     const observer = useSelector((state: RootState) => state.observer.observer)
-    
+
     const dispatch = useDispatch()
 
     const handleObserveBtn = () => {
-        client?.publish({ destination: '/app/player/anyObserver' })
-        dispatch(updateDead({isDead: false}))
+
+        dispatch(updateDead({ isDead: false }))
         onHide()
     }
+
+    useEffect(() => {
+
+        if (!show && client?.connected) {
+            client?.publish({ destination: '/app/player/anyObserver' })
+        }  
+        
+        if (show) {
+            axios.get('/api/game/alltimeRanking')
+            .then((res)=>{
+                dispatch(updateRanking({ranking: parseInt(res.data)}))
+            }).catch((err)=>{})
+        }
+
+    }, [show])
 
 
     return (
@@ -60,7 +77,7 @@ export default function PlayResultModal({ client, show, onHide }: Props) {
                     </Row>
                     <Row>
                         <p className="rs-text">랭크</p>
-                        <p className="rs-text">{observer?.ranking}</p>
+                        <p className="rs-text">{observer?.ranking !== undefined || observer?.ranking !== -1 ? observer?.ranking : 'OUT OF RANK'}</p>
                     </Row>
                 </Container>
             </ModalBody>

@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { Col, Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import Slime from "../gamefield/slimeset/Slime.tsx";
-import { incKill, ObserverType, updateKill, updateObserver, updateObserverPos, updateRanking } from "../redux/ObserverSlice.tsx";
+import { ObserverType, updateKill, updateObserver, updateObserverPos, updateRanking } from "../redux/ObserverSlice.tsx";
 import { RootState } from "../redux/Store.tsx";
 import { updateUsername } from "../redux/UserSlice.tsx";
 import './ObserverInfo.css';
@@ -36,15 +36,13 @@ export default function ObserverControl({ client }: Props) {
     // 플레이어 아이디
     const username = useSelector((state: RootState) => state.user.username)
 
-    const slimeset = useSelector((state: RootState) => state.game.slimeset)
-
     const isReady = useSelector((state: RootState) => state.game.isReady)
 
     const dispatch = useDispatch()
 
     useEffect(() => {
 
-        if (client && isReady) {
+        if (client?.connected && isReady) {
 
             // 유저 아이디 
             client.subscribe("/user/queue/player/ingame", (msg: IMessage) => {
@@ -97,6 +95,7 @@ export default function ObserverControl({ client }: Props) {
                 client?.publish({ destination: '/app/player/anyObserver' })
             }
         }
+
 
     }, [isReady])
 

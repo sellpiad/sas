@@ -1,19 +1,14 @@
 package com.sas.server.service.ranker;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
-import org.springframework.data.redis.core.ZSetOperations.TypedTuple;
-import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Service;
 
 import com.sas.server.dto.game.PlayerCardData;
@@ -59,8 +54,13 @@ public class RankerService {
                 .findFirst()
                 .orElse(null);
 
-        // 100위의 점수가 null이거나, 현재 플레이어의 점수가 100위보다 높을 경우에만 저장
-        if (rankerOf100th == null || user.totalKill > zSetOps.score(LEADERBOARD_ALLTIME_ZSETKEY, rankerOf100th)) {
+        Double scoreOf100th = null;
+
+        if (rankerOf100th != null)
+            scoreOf100th = zSetOps.score(LEADERBOARD_ALLTIME_ZSETKEY, rankerOf100th);
+
+        if (rankerOf100th == null ||
+                user.totalKill > (scoreOf100th != null ? scoreOf100th : Double.NEGATIVE_INFINITY)) {
 
             RankerEntity ranker = RankerEntity.builder()
                     .username(user.username)
@@ -69,10 +69,11 @@ public class RankerService {
                     .kill(user.totalKill)
                     .build();
 
+            // 새롭게 랭커 추가
             zSetOps.add(LEADERBOARD_ALLTIME_ZSETKEY, ranker.username, ranker.kill);
             hashOps.put(LEADERBOARD_ALLTIME_HASHKEY, ranker.username, ranker);
 
-            // 상위 100위까지만 유지 (100위 밖의 플레이어는 삭제)
+            // 기존 랭커 삭제
             if (rankerOf100th != null) {
                 zSetOps.remove(LEADERBOARD_ALLTIME_ZSETKEY, rankerOf100th);
                 hashOps.delete(LEADERBOARD_ALLTIME_HASHKEY, rankerOf100th);
@@ -161,35 +162,4 @@ public class RankerService {
                 })
                 .collect(Collectors.toList());
     }
-
-    /*
-     * public List<RankerDTO> getRealtimeRank(){}
-     * 
-     * public List<RankerDTO> getRankerList() {
-     * 
-     * Iterator<RankerEntity> rankerIter = rankerRepo.findAll().iterator();
-     * List<RankerDTO> rankerList = new ArrayList<>();
-     * 
-     * while (rankerIter.hasNext()) {
-     * 
-     * RankerEntity ranker = rankerIter.next();
-     * 
-     * RankerDTO rankerDTO = RankerDTO.builder()
-     * .attr(ranker.attr)
-     * .nickname(ranker.nickname)
-     * .kill(ranker.kill)
-     * .build();
-     * 
-     * rankerList.add(rankerDTO);
-     * }
-     * 
-     * rankerList.sort(Comparator.comparingInt(RankerDTO::getKill).reversed());
-     * 
-     * if (rankerList.size() > 100) {
-     * return rankerList.subList(0, 99);
-     * }
-     * 
-     * return rankerList;
-     * }
-     */
 }

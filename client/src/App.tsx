@@ -12,6 +12,7 @@ import { persistor } from './index.js';
 import { RootState } from './redux/Store.tsx';
 import { changeLogin } from './redux/UserSlice.tsx';
 
+import axios from 'axios';
 import Admin from './admin/Admin.tsx';
 import Board from './board/Board.tsx';
 import ControlPanel from './controlPanel/ControlPanel.tsx';
@@ -20,11 +21,10 @@ import GameField from './gamefield/GameField.tsx';
 import Slime from './gamefield/slimeset/Slime.tsx';
 import Login from './login/Login.tsx';
 import ObserverInfo from './observerInfo/ObserverInfo.tsx';
+import ObserverPanel from './observerInfo/ObserverPanel.tsx';
 import PlayerInfo from './player/PlayerInfo.tsx';
 import PlayResultModal from './playResultModal/PlayResultModal.tsx';
 import RankingBoard from './ranker/RankingBoard.tsx';
-import axios from 'axios';
-import ObserverPanel from './observerInfo/ObserverPanel.tsx';
 
 
 function App() {
@@ -76,11 +76,18 @@ function App() {
   }
 
   const handleLogout = () => {
+
     axios.get('/api/logout')
       .then((res) => {
+
+        setIsConn(false)
+        ws.current?.deactivate()
         persistor.purge()
+
       })
-      .catch((err) => { })
+      .catch((err) => {
+        console.log(err)
+      })
   }
 
 
@@ -91,19 +98,14 @@ function App() {
       const client = new Client({
         webSocketFactory: () => new SockJS(wsTarget + '/ws'),
         onConnect: () => {
-          console.log("Conneted!")
           setIsConn(true)
         },
         onStompError: (error) => {
-          console.log("Address Error " + error)
         },
         onDisconnect: (error) => {
-          console.log("Disconnetd! " + error)
           setIsConn(false)
         },
-        onWebSocketClose: (error) => {
-          console.log("WebSocketError! ")
-          console.dir(error)
+        onWebSocketClose: (close) => {
           dispatch(changeLogin({ isLogin: false }))
         },
         reconnectDelay: 15000, // 재연결 딜레이 (밀리초)
@@ -118,7 +120,7 @@ function App() {
       }
 
       return () => {
-        if (client) {
+        if (client.connected) {
           client.deactivate();
         }
       };
@@ -178,8 +180,8 @@ function App() {
               {
                 isConn && <>
                   <Col xs={12} sm={3}>
-                    <ObserverInfo client={ws.current}/>
-                    <ObserverPanel client={ws.current}/>
+                    <ObserverInfo client={ws.current} />
+                    <ObserverPanel client={ws.current} />
                     {(auth === 'ADMIN' || auth === 'MANAGER') && <Button className="Admin-Btn" variant="outline-light" onClick={showAdminModal}>관리모드</Button>}
                   </Col>
                   <Col xs={12} sm={9}>

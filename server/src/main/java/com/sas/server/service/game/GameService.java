@@ -324,8 +324,6 @@ public class GameService {
             simpMessagingTemplate.convertAndSend("/topic/game/realtimeRanker",
                     rankerService.getRealtimeRank());
             simpMessagingTemplate.convertAndSendToUser(player.username, "/queue/game/incKill", player.totalKill);
-            simpMessagingTemplate.convertAndSendToUser(player.username, "/queue/game/newRanking", rankerService.getPlayerRank(player.username));
-
         }
 
         // 승리하거나, 이동했을 때만.

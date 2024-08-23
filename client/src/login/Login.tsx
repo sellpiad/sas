@@ -1,14 +1,13 @@
+import { Client, IMessage } from "@stomp/stompjs";
 import axios from "axios";
-import React, { KeyboardEventHandler, useEffect, useState } from "react";
-import { Button, Col, Container, FloatingLabel, Form, Modal, ModalBody, Row, Spinner, Stack, Toast, ToastContainer } from "react-bootstrap";
-import './Login.css';
-import Signup from "./Signup.tsx";
+import React, { useEffect, useState } from "react";
+import { Button, Col, Container, FloatingLabel, Form, Modal, ModalBody, Row, Stack } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
+import { initialCubeSet, initialSlimeSet, setReady, SlimeDTO } from "../redux/GameSlice.tsx";
 import { RootState } from "../redux/Store.tsx";
 import { changeLogin, updateAuth } from "../redux/UserSlice.tsx";
-import { Client, IMessage } from "@stomp/stompjs";
-import { initialCubeSet, initialGameSize, initialSlimeSet, SlimeDTO, setReady } from "../redux/GameSlice.tsx";
-import { persistor } from "../index.js";
+import './Login.css';
+import Signup from "./Signup.tsx";
 
 
 interface Props {
@@ -123,7 +122,7 @@ export default function Login({ client }: Props) {
     // 1. 큐브셋 요청
     useEffect(() => {
 
-        if (isLogin && client) {
+        if (isLogin && client?.connected) {
 
             setMsg(getCubeset)
 
@@ -152,12 +151,13 @@ export default function Login({ client }: Props) {
             client.publish({ destination: '/app/cube/cubeSet' })
         }
 
+
     }, [isLogin, client])
 
     // 2. 슬라임 소환
     useEffect(() => {
 
-        if (cubeset && client) {
+        if (isLogin && cubeset && client) {
             setMsg(getSlime)
 
             // 초기 슬라임들 받아오기
@@ -193,6 +193,17 @@ export default function Login({ client }: Props) {
         }
 
     }, [isReady])
+
+
+    // 로그아웃 시
+    useEffect(() => {
+
+        if (!isLogin) {
+            setMsg('')
+            setMsgType('')
+        }
+
+    }, [isLogin])
 
 
     return (

@@ -10,7 +10,9 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.sas.server.dao.CustomUserDetails;
 import com.sas.server.dto.game.ActionData;
@@ -67,6 +69,13 @@ public class GameController {
     public List<PlayerCardData> getRealtimeRanker() {
 
         return rankerService.getRealtimeRank();
+    }
+
+    @GetMapping("/game/alltimeRanking")
+    @ResponseBody
+    public Integer getAlltimeRanking(@AuthenticationPrincipal CustomUserDetails user) {
+
+        return rankerService.getPlayerRank(user.getUsername());
     }
 
 }

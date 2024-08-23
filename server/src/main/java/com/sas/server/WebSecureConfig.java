@@ -27,16 +27,19 @@ public class WebSecureConfig {
         http
                 .csrf((csrf) -> csrf.disable())
                 .cors((cors) -> cors.disable())
-                .formLogin((formLogin) -> formLogin.successForwardUrl("/signin").failureForwardUrl("/failed"))
+                .formLogin((formLogin) -> formLogin
+                        .successForwardUrl("/signin")
+                        .failureForwardUrl("/failed"))
                 .logout((logout) -> logout
                         .logoutUrl("/logout") // 로그아웃 요청을 받을 URL
-                        .logoutSuccessUrl("/member/logout") // 로그아웃 성공 후 리다이렉트할 URL
+                        .logoutSuccessUrl("/signout") // 로그아웃 성공 후 리다이렉트할 URL
                         .invalidateHttpSession(true) // 세션 무효화
                         .deleteCookies("JSESSIONID")) // 쿠키 삭제
                 .authorizeHttpRequests(
                         (authorizeHttpRequests) -> authorizeHttpRequests
                                 .requestMatchers("/admin/**").hasRole("ADMIN")
                                 .requestMatchers("/signin/**").permitAll()
+                                .requestMatchers("/signout/**").permitAll()
                                 .anyRequest().hasRole("USER"))
                 .sessionManagement(
                         (sessionManagement) -> sessionManagement
