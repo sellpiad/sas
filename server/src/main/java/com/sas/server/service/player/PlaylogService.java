@@ -33,7 +33,7 @@ public class PlaylogService {
 
     public int findKillMaxByUsername(String username) {
         PlaylogEntity log = repo.findTopByUsernameOrderByTotalKillDesc(username)
-                .orElseGet(null);
+                .orElse(null);
 
         if (log == null)
             return 0;
