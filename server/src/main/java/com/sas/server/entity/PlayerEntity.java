@@ -60,6 +60,6 @@ public class PlayerEntity {
      * 1포인트가 충전되는 속도. ms단위. 기본 20ms.
      */
     @Builder.Default
-    public int rechargingSpeed = 20;
+    public int rechargingSpeed = 15;
 
 }

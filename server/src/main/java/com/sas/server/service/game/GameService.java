@@ -17,6 +17,7 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.sas.server.dto.game.ActionData;
 import com.sas.server.dto.game.SlimeDTO;
@@ -273,6 +274,8 @@ public class GameService {
      * @param direction
      * @return ActionData
      */
+
+    @Transactional
     private ActionData processMove(PlayerEntity player, String direction) {
 
         // position 예시 slimebox##

@@ -9,8 +9,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -27,6 +27,12 @@ public class RedisConfig {
 
     @Autowired
     private RedisConnectionFactory redisConnectionFactory;
+
+    public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory connectionFactory) {
+        StringRedisTemplate template = new StringRedisTemplate(connectionFactory);
+        template.setEnableTransactionSupport(true); // 트랜잭션 지원 활성화
+        return template;
+    }
 
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
@@ -45,7 +51,7 @@ public class RedisConfig {
 
     @Bean(name = "rankerRedisTemplate")
     public RedisTemplate<String, RankerEntity> rankerRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        
+
         RedisTemplate<String, RankerEntity> redisTemplate = new RedisTemplate<>();
 
         redisTemplate.setConnectionFactory(redisConnectionFactory);
@@ -69,6 +75,5 @@ public class RedisConfig {
             ((LettuceConnectionFactory) redisConnectionFactory).destroy();
         }
     }
-    
 
 }
