@@ -29,14 +29,22 @@ public class PlayerEntity {
 
     @Indexed
     @Builder.Default
-    public boolean ai = false;
-
-    @Indexed
-    @Builder.Default
     public boolean inQueue = true;
 
     @CreationTimestamp
     public Date createdTime;
+
+     /*
+     * AI 관련 flags
+     */
+    @Indexed
+    @Builder.Default
+    public boolean ai = false;
+    public boolean isDumb;  // 벽 감지 유무
+    public boolean isDefensive; // 적 감지 유무
+    public boolean isAggressive; // 먹이 감지 유무
+    public boolean isFriendly; // 동족 감지 유무
+    public int scanableRange; // 주위 영역 스캔 가능 범위.
 
     /*
      * 게임 관련 불변 속성들

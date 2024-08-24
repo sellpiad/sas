@@ -8,8 +8,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -106,6 +106,7 @@ public class CubeService {
 
     }
 
+    @Cacheable(value = "cubeCache")
     public List<CubeEntity> findAll() {
         return (List<CubeEntity>) cubeRepo.findAll();
     }
@@ -119,6 +120,7 @@ public class CubeService {
 
     }
 
+    @Cacheable(value = "cubeCache")
     public List<CubeDAO> findAllCubeDAO() {
 
         Iterator<CubeEntity> cubeSet = cubeRepo.findAll().iterator();
@@ -155,19 +157,22 @@ public class CubeService {
 
     }
 
+    @Cacheable(value = "cubeCache")
     public CubeEntity findByPosition(int posX, int posY) {
 
         return cubeRepo.findByPosXAndPosY(posX, posY)
-                .orElseThrow(() -> new IllegalArgumentException("Wrong cube position!"));
+                .orElse(null);
 
     }
 
+    @Cacheable(value = "cubeCache")
     public CubeEntity findByName(String name) {
         return cubeRepo.findByName(name)
-                .orElseThrow(() -> new NullPointerException("CubeEntity not found with name = " + name));
+                .orElse(null);
 
     }
 
+    @Cacheable(value = "cubeCache")
     public CubeEntity findById(String cubeId) {
 
         if (cubeId.equals("null")) {
@@ -180,6 +185,44 @@ public class CubeService {
     }
 
     /**
+     * 주위에 존재하는 CubeEntity 반환.
+     * @param name
+     * @return
+     */
+    public Set<CubeEntity> getMovableArea(String name){
+        
+        CubeEntity cube = findByName(name);
+        Set<CubeEntity> areas = new HashSet<>();
+
+        areas.add(findByPosition(cube.posX,cube.posY-1)); // UP
+        areas.add(findByPosition(cube.posX,cube.posY+1)); // DOWN
+        areas.add(findByPosition(cube.posX-1,cube.posY)); // LEFT
+        areas.add(findByPosition(cube.posX+1,cube.posY)); // RIGHT
+
+        areas.remove(null); // null이 들어가있다면 제거.
+
+        return areas;
+    }
+
+    /**
+     * 출발지와 목적지를 비교하여 방향 알아내기
+     * @param origin
+     * @param dest
+     */
+    public String convertToDirection(CubeEntity origin, CubeEntity dest){
+
+        int x = origin.posX - dest.posX;
+        int y = origin.posY - dest.posY;
+
+        if(x == 1) return "left";
+        if(x == -1) return "right";
+        if(y == 1) return "up";
+        if(y == -1) return "down";
+
+        return "down";
+    }
+
+    /**
      * 
      * @param curCubeId
      * @param direction
@@ -188,6 +231,7 @@ public class CubeService {
      * @throws NoSuchElementException curCubeId에 해당하는 큐브가 존재하지 않을 때.
      * @throws NullPointerException   curCubeId가 null값으로 들어왔을 때.
      */
+    @Cacheable(value = "cubeCache")
     public CubeEntity getNextCube(String position, String direction) {
 
         CubeEntity cube = cubeRepo.findByName(position)
@@ -216,22 +260,4 @@ public class CubeService {
         return cubeRepo.findByPosXAndPosY(posX, posY)
                 .orElse(cubeRepo.findByPosXAndPosY(cube.posX, cube.posY).get());
     }
-
-    public Set<String> getClickableCubes(String cubeId) {
-
-        CubeEntity cube = findById(cubeId);
-        Set<String> clickable = new HashSet<>();
-
-        if (cube.up)
-            clickable.add("slimebox" + findByPosition(cube.posX, cube.posY - 1).order);
-        if (cube.down)
-            clickable.add("slimebox" + findByPosition(cube.posX, cube.posY + 1).order);
-        if (cube.right)
-            clickable.add("slimebox" + findByPosition(cube.posX + 1, cube.posY).order);
-        if (cube.left)
-            clickable.add("slimebox" + findByPosition(cube.posX - 1, cube.posY).order);
-
-        return clickable;
-    }
-
 }
