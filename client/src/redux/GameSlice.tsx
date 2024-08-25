@@ -14,6 +14,8 @@ export interface SlimeDTO {
 export interface EffectData {
     actionType: string
     target: string
+    lockTime: number
+    actionPoint: number
 }
 
 export interface ActionData {
@@ -21,6 +23,7 @@ export interface ActionData {
     username: string
     target: string | null // 위치
     direction: string
+    lockTime:number
 }
 
 

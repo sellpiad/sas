@@ -50,6 +50,14 @@ export default function ObserverPanel({ client }: Props) {
                 setList(parser)
             })
 
+            client.subscribe('/user/queue/game/realtimeRanker', (msg: IMessage) => {
+
+                const parser = JSON.parse(msg.body)
+
+                setList(parser)
+            })
+
+
             client.publish({ destination: '/app/game/realtimeRanker' })
         }
 

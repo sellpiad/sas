@@ -63,7 +63,7 @@ public class GameMaster {
         clear();
         setting();
 
-        aiDeploymentRun(0, 2000, TimeUnit.MILLISECONDS, 0.1);
+        //aiDeploymentRun(0, 2000, TimeUnit.MILLISECONDS, 0.1);
         queueRun(0, 1000, TimeUnit.MILLISECONDS);
 
         //테스트 아이디

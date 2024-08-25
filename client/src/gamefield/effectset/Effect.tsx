@@ -32,24 +32,26 @@ export default function Effect({ actionType, text, target }: Props) {
 
     const getMsg = () => {
 
-        switch(actionType){
+        switch (actionType) {
             case 'ATTACK':
                 return '공격!'
             case 'DRAW':
                 return '? 얜 친구야'
             case 'FEARED':
                 return '무서워'
+            case 'LOCKED':
+                return '힘이 없어..'
         }
 
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         updateTarget()
-    },[])
+    }, [])
 
 
     return (
-        <svg className={`${actionType.toLowerCase()}-msg`} xmlns="http://www.w3.org/2000/svg" width={boxWidth} height={boxHeight} viewBox={`0 0 ${boxWidth} ${boxHeight}`}  preserveAspectRatio="xMidYMid meet" style={{position:"absolute", top:posY-(boxHeight/2), left:posX }}>
+        <svg className={`${actionType.toLowerCase()}-msg`} xmlns="http://www.w3.org/2000/svg" width={boxWidth} height={boxHeight} viewBox={`0 0 ${boxWidth} ${boxHeight}`} preserveAspectRatio="xMidYMid meet" style={{ position: "absolute", top: posY - (boxHeight / 2), left: posX }}>
             <text x="50%" y="50%" textAnchor="middle" dominantBaseline={"text-top"}>
                 {getMsg()}
             </text>

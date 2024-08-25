@@ -64,7 +64,7 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
 
     const startShaking = () => {
         setShaking(true)
-        setTimeout(() => { setShaking(false) }, 500)
+        setTimeout(() => { setShaking(false) }, 300)
     }
 
     // 슬라임의 속성을 나타내는 색을 반환하는 메소드
@@ -200,6 +200,9 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
                 case 'FEARED':
                     startShaking()
                     break;
+                case 'LOCKED':
+                    startShaking()
+                    break;
             }
         }
 
@@ -234,7 +237,7 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
         speed > 0 &&
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={getWidth()} height={getHeight()} preserveAspectRatio="xMidYMid meet" style={{ position: isAbsolute ? "absolute" : "relative", transform: "translate(" + moveX + "px," + moveY + "px)", transition: "transform " + speed + "s ease" }}>
 
-            <use xlinkHref={motion} x={11} y={25} width={150} height={150} className={isShaking ? 'shake' : ''}/>
+            <use xlinkHref={motion} x={11} y={25} width={150} height={150} className={isShaking ? 'shake' : ''} />
             <symbol id={'slime-' + playerId + '-down-idle-1'} viewBox="0 0 150 150">
                 <path id="Body" fillRule="evenodd" clipRule="evenodd" d="M97 9H39V18H19V37H10V82H24V91H39H97H107V82H117V37H110V18H97V9Z" fill={fill === undefined ? '#D9D9D9' : getAttr()} />
                 <rect id="RightEye" x="77" y="45" width="10" height="19" fill="black" />

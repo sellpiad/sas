@@ -1,0 +1,66 @@
+.playerInfo {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 5%;
+    bottom: 0;
+    padding: 0;
+    background-Color: black;
+    font-family: DNFBitBitv2;
+    font-size: 1rem;
+}
+
+.actionStats-txt {
+    width: 13%;
+    text-align: center;
+    align-content: center;
+}
+
+.actionStats-gauge {
+    position: relative;
+    width: 20%;
+    height: 60%;
+    background: rgb(245, 245, 245);
+    border-radius: 6px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25), 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.progress-bar {
+    position: absolute;
+    height: 100%;
+    background-color: #ee303c;
+    border-radius: 4px;
+}
+
+.actionPoint-txt{
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    color: black;
+}
+
+@media (max-width:576px) {
+    .actionStats-txt {
+        width: 25%;
+        font-size: 1rem;
+    }
+
+    .actionStats-gauge {
+        width: 30%;
+    }
+
+    .progress-bar {
+        border-radius: 2px
+    }
+}
+
+@keyframes progressAnimationStrike {
+    from {
+        width: 0
+    }
+
+    to {
+        width: 100%
+    }
+}

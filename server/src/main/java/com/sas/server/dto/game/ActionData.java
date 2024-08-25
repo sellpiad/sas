@@ -4,7 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
 
-
 @Data
 @Builder(toBuilder = true)
 public class ActionData {
@@ -27,5 +26,6 @@ public class ActionData {
     String direction;
 
     public long lockTime;
+    public long actionPoint;
     
 }

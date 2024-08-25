@@ -9,6 +9,8 @@ export interface ObserverType {
     kill: number
     conquer: number
     ranking: number
+    lockTime: number
+    actionPoint: number
 }
 
 export interface observerStatus {
@@ -50,6 +52,16 @@ export const cube = createSlice({
                 state.observer.kill = action.payload.kill
             }
         },
+        updateLockTime(state, action: PayloadAction<{ lockTime: number }>) {
+            if (state.observer !== null) {
+                state.observer.lockTime = action.payload.lockTime
+            }
+        },
+        updateActionPoint(state, action: PayloadAction<{ actionPoint: number }>) {
+            if (state.observer !== null) {
+                state.observer.actionPoint = action.payload.actionPoint
+            }
+        },
         updateRanking(state, action: PayloadAction<{ ranking: number }>) {
             if (state.observer !== null) {
                 state.observer.ranking = action.payload.ranking
@@ -61,7 +73,7 @@ export const cube = createSlice({
     }
 })
 
-export const { updateScale, updateObserver, updateObserverCoor, updateObserverPos, updateKill, updateRanking } = cube.actions
+export const { updateScale, updateObserver, updateObserverCoor, updateObserverPos, updateKill, updateRanking, updateLockTime, updateActionPoint} = cube.actions
 
 export default cube.reducer
 

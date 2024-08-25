@@ -8,6 +8,7 @@ import CubeSet from "./cubeset/CubeSet.tsx";
 import './GameField.css';
 import SlimeSet from "./slimeset/SlimeSet.tsx";
 import EffectSet from "./effectset/EffectSet.tsx";
+import PlayerInfo from "./playerinfo/PlayerInfo.tsx";
 
 
 /**
@@ -134,6 +135,7 @@ export default function GameField({ client }: Props) {
                 <SlimeSet client={client} />
                 <EffectSet client={client} />
             </Row>
+            <PlayerInfo  client={client}/>
         </div>
     )
 }

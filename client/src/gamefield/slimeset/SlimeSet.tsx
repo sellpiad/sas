@@ -2,7 +2,7 @@ import { Client, IMessage } from "@stomp/stompjs";
 import React, { useEffect, useReducer, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionData, SlimeDTO } from "../../redux/GameSlice.tsx";
-import { ObserverType, updateObserverPos } from "../../redux/ObserverSlice.tsx";
+import { ObserverType, updateLockTime, updateObserverPos } from "../../redux/ObserverSlice.tsx";
 import { RootState } from "../../redux/Store.tsx";
 import { deletePlayer } from "../../redux/UserSlice.tsx";
 import Slime from "./Slime.tsx";
@@ -115,7 +115,9 @@ export default function SlimeSet({ client }: Props) {
 
                 // 옵저버 시점 업데이트
                 if (observerRef.current?.username === ActionData.username && ActionData.target !== null) {
+
                     dispatch(updateObserverPos({ observerPos: ActionData.target }))
+
                 }
             })
 

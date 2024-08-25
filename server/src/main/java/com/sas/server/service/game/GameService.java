@@ -38,6 +38,7 @@ import com.sas.server.service.player.PlaylogService;
 import com.sas.server.service.ranker.RankerService;
 import com.sas.server.util.ActivityType;
 
+import ch.qos.logback.core.joran.action.Action;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -197,12 +198,12 @@ public class GameService {
                         .inQueue(false)
                         .position(position)
                         .build());
-                
+
                 // 실시간 랭킹에 추가
                 rankerService.updateRealtimeRank(player);
 
                 // 플레이어라면 시작 로그 기록
-                if(!player.ai)
+                if (!player.ai)
                     logService.save(player.username, ActivityType.PLAY);
 
                 SlimeDTO slime = SlimeDTO.builder()
@@ -222,6 +223,8 @@ public class GameService {
                         ingameData);
 
                 simpMessagingTemplate.convertAndSend("/topic/game/addSlime", slime);
+                simpMessagingTemplate.convertAndSend("/topic/game/realtimeRanker",
+                        rankerService.getRealtimeRank());
             }
 
         }
@@ -242,9 +245,11 @@ public class GameService {
         PlayerEntity player = playerService.findById(username);
 
         if (actionSystem.isLocked(username)) {
-            return ActionData.builder()
+            return ActionData
+                    .builder()
                     .actionType("LOCKED")
                     .direction(direction)
+                    .target(player.position)
                     .username(player.username)
                     .build();
         }
@@ -308,13 +313,13 @@ public class GameService {
             playerService.deleteById(enemy.username);
             rankerService.removeRealtimeRank(enemy.username);
             rankerService.updateAlltimeRank(enemy);
-            
+
             // ai가 아닐때만 플레이 로그 저장
-            if(!enemy.ai){
+            if (!enemy.ai) {
                 playlogService.save(enemy);
-                logService.save(enemy.username,ActivityType.STOP);
+                logService.save(enemy.username, ActivityType.STOP);
             }
-               
+
             player = playerService.incKill(player);
 
             // 리얼타임 랭킹 기록
@@ -346,6 +351,7 @@ public class GameService {
                 .direction(direction)
                 .target(actionType.equals("DRAW") || actionType.equals("FEARED") ? player.position : target.name)
                 .lockTime(lockTime)
+                .actionPoint((player.actionPoint))
                 .build();
     }
 
