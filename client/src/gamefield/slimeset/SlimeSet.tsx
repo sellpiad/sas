@@ -58,6 +58,7 @@ const slimeReducer = (state: SlimesState, action: SlimesAction) => {
 
 export default function SlimeSet({ client }: Props) {
 
+
     // 슬라임셋
     const slimeset: { [key: string]: SlimeDTO } = useSelector((state: RootState) => state.game.slimeset); // 초기화용
 
@@ -112,6 +113,8 @@ export default function SlimeSet({ client }: Props) {
                 const ActionData = JSON.parse(msg.body) as ActionData
 
                 setSlime({ type: 'ACTION', payload: ActionData })
+
+                console.log(ActionData.actionType)
 
                 // 옵저버 시점 업데이트
                 if (observerRef.current?.username === ActionData.username && ActionData.target !== null) {

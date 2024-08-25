@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/Store";
 
@@ -15,6 +15,7 @@ interface Props {
     actionType?: string
     direction?: string
     fill?: string
+    border?: string
     target?: string | undefined // 현재 위치한 큐브 이름
     width?: string
     height?: string
@@ -23,72 +24,14 @@ interface Props {
 
 //기본 프레임과 해당 액션의 소요 시간
 //시간은 ms 단위
-const idleFrame = 2;
-const idleTime = 500;
-
-const movingFrame = 2;
-const movingTime = 300;
-
-const attackFrame = 3;
-const attackTime = 300;
-
-const fearedFrame = 1;
-const fearedTime = 300;
-
-type Slime = {
-    id: string
-    posX: number
-    posY: number
-    action: string
-    frame: number
-    direction: string
-    target: string
-}
-
-type SlimesAction =
-    | { type: 'UPDATE_ACTION'; payload: string }
-    | { type: 'INIT_POS_X'; payload: number }
-    | { type: 'INIT_POS_Y'; payload: number }
-    | { type: 'UPDATE_POS_X'; payload: number }
-    | { type: 'UPDATE_POS_Y'; payload: number }
-    | { type: 'UPDATE_TARGET'; payload: string }
-    | { type: 'INC_FRAME'; }
-    | { type: 'INIT_FRAME'; }
-    | { type: 'UPDATE_DIRECTION'; payload: string }
-    | { type: 'INIT'; payload: Slime }
-
-
-const slimeReducer = (state: Slime, action: SlimesAction) => {
-
-    const moveProgress = state.frame / movingFrame;
-
-    switch (action.type) {
-        case 'UPDATE_ACTION':
-            return { ...state, action: action.payload };
-        case 'INIT_POS_X':
-            return { ...state, posX: action.payload };
-        case 'INIT_POS_Y':
-            return { ...state, posY: action.payload };
-        case 'UPDATE_POS_X':
-            return { ...state, posX: state.posX * (1 - moveProgress) + action.payload * moveProgress };
-        case 'UPDATE_POS_Y':
-            return { ...state, posY: state.posY * (1 - moveProgress) + action.payload * moveProgress };
-        case 'UPDATE_TARGET':
-            return { ...state, target: action.payload };
-        case 'INC_FRAME':
-            return { ...state, frame: state.frame + 1 };
-        case 'INIT_FRAME':
-            return { ...state, frame: 1 };
-        case 'UPDATE_DIRECTION':
-            return { ...state, direction: action.payload };
-        case 'INIT':
-            return { ...action.payload };
-        default:
-            return state;
-    }
+const FRAME_CONFIG = {
+    IDLE: { frames: 2, duration: 500 },
+    MOVE: { frames: 2, duration: 300 },
+    ATTACK: { frames: 3, duration: 300 },
+    FEARED: { frames: 1, duration: 300 },
 };
 
-export default function Slime({ playerId, fill, actionType, direction, target, isAbsolute, ...props }: Props) {
+export default function Slime({ playerId, actionType, direction, fill, border, target, isAbsolute, ...props }: Props) {
 
     // 슬라임 넓이와 높이
     // 이 컴포넌트는 여러 곳에서 쓰기 때문에 props에서 따로 width와 height이 들어오거나,
@@ -96,24 +39,24 @@ export default function Slime({ playerId, fill, actionType, direction, target, i
     const [width, setWidth] = useState<number>(0)
     const [height, setHeight] = useState<number>(0)
 
-    // 통합적 데이터 관리를 위한 reducer
-    const [slime, setSlime] = useReducer(slimeReducer, {
-        id: playerId,
-        action: 'IDLE',
-        direction: direction,
-        frame: 1
-    } as Slime)
-
-    const slimeRef = useRef(slime)
-
     const boxWidth = useSelector((state: RootState) => state.cube.width)
     const boxHeight = useSelector((state: RootState) => state.cube.height)
 
     const [speed, setSpeed] = useState<number>(0) // 이동 스피드
 
+    const [moveX, setMoveX] = useState<number>(0)
+    const [moveY, setMoveY] = useState<number>(0)
+    const [action, setAction] = useState<string>('IDLE')
+    const [frame, setFrame] = useState<number>(1)
     const [isShaking, setShaking] = useState<boolean>(false)
 
     const startTimeRef = useRef(0)
+
+    const actionRef = useRef('IDLE')
+    const frameRef = useRef<number>(1)
+    const directionRef = useRef<string>('down') // direction 어댑터용
+
+    const targetRef = useRef<string>()
 
     const startShaking = () => {
         setShaking(true)
@@ -123,14 +66,10 @@ export default function Slime({ playerId, fill, actionType, direction, target, i
     // 슬라임의 속성을 나타내는 색을 반환하는 메소드
     const getAttr = () => {
         switch (fill) {
-            case 'GRASS':
-                return "#38f113"
-            case 'FIRE':
-                return "#dc3545"
-            case 'WATER':
-                return "#0d6efd"
-            default:
-                return "tranparent"
+            case 'GRASS': return "#38f113"
+            case 'FIRE': return "#dc3545"
+            case 'WATER': return "#0d6efd"
+            default: return "tranparent"
         }
     }
 
@@ -148,63 +87,52 @@ export default function Slime({ playerId, fill, actionType, direction, target, i
         setHeight(boxHeight)
     }
 
-    // 위치 업데이트
+    // 위치 업데이트 메소드
     const updateTarget = () => {
 
         const slimeBox = target !== undefined && document.getElementById(target)
 
         if (slimeBox) {
-            setSlime({ type: 'INIT_POS_X', payload: slimeBox.offsetLeft })
-            setSlime({ type: 'INIT_POS_Y', payload: slimeBox.offsetTop })
+            setMoveX(slimeBox.offsetLeft)
+            setMoveY(slimeBox.offsetTop)
         }
 
     }
 
+
     // 애니메이션 업데이트 메소드
     const updateAnimation = (currentTime) => {
 
-        let maxFrame = 0;
-        let delay = 0;
         const elaspedTime = currentTime - startTimeRef.current
-        const updatedSlime = slimeRef.current;
 
-        switch (updatedSlime.action) {
-            case 'IDLE':
-                maxFrame = idleFrame
-                delay = idleTime / maxFrame
-                break;
-            case 'MOVE':
-                maxFrame = movingFrame
-                delay = movingTime / maxFrame
-                break;
-            case 'ATTACK':
-                maxFrame = attackFrame
-                delay = attackTime / maxFrame
-                break;
-            case 'FEARED':
-                maxFrame = fearedFrame
-                delay = fearedTime / maxFrame
-                break;
-        }
+        const { frames, duration } = FRAME_CONFIG[actionRef.current]
 
-        // 프레임 당 정해진 딜레이가 경과 했는지 확인
-        if (elaspedTime > delay) {
+        // 딜레이가 경과할 때마다 frame 증가
+        if (elaspedTime > duration) {
 
-            const nextTarget = document.getElementById(updatedSlime.target);
+            setFrame(prev => {
+                const newFrame = prev + 1;
 
-            console.log(updatedSlime.frame)
+                // 좌표 체크
+                const slimeBox = targetRef.current && document.getElementById(targetRef.current);
 
-            if (nextTarget != undefined) {
-                setSlime({ type: "UPDATE_POS_X", payload: nextTarget.offsetLeft })
-                setSlime({ type: "UPDATE_POS_Y", payload: nextTarget.offsetTop })
-            }
+                if (slimeBox) {
+                    const targetX = slimeBox.offsetLeft;
+                    const targetY = slimeBox.offsetTop;
 
-            if (updatedSlime.frame < maxFrame) {
-                setSlime({ type: "INC_FRAME" })
-            } else {
-                setSlime({ type: "UPDATE_ACTION", payload: 'IDLE' })
-                setSlime({ type: "INIT_FRAME" })
-            }
+                    const t = frameRef.current / frames;
+
+                    setMoveX(prevX => prevX * (1 - t) + targetX * t);
+                    setMoveY(prevY => prevY * (1 - t) + targetY * t);
+                }
+
+                if (newFrame > frames) {
+                    setAction('IDLE');
+                    return 1;
+                }
+
+                return newFrame;
+            });
 
             startTimeRef.current = currentTime;
         }
@@ -226,24 +154,11 @@ export default function Slime({ playerId, fill, actionType, direction, target, i
 
     }, [playerId])
 
-    useEffect(() => {
-        slimeRef.current = slime
-    }, [slime])
-
-
-    // 박스 크기 변할 때 슬라임 크기 변화
-    useEffect(() => {
-        updateSlimeBox()
-    }, [boxWidth, boxHeight])
-
-
     // 액션타입이 변경되었을 때 감지 및, action state 업데이트
     useEffect(() => {
 
-        if (actionType != undefined && actionType != 'LOCKED') {
-
-            setSlime({ type: "UPDATE_ACTION", payload: actionType })
-            setSlime({ type: "INC_FRAME" })
+        if (actionType) {
+            setAction(prev => actionType === 'LOCKED' ? prev : actionType) // action 변경 트리거
 
             switch (actionType) {
                 case 'DRAW':
@@ -261,27 +176,47 @@ export default function Slime({ playerId, fill, actionType, direction, target, i
     }, [actionType])
 
 
+    // 모션 업데이트
+    useEffect(() => {
+
+        actionRef.current = action
+        frameRef.current = frame
+
+    }, [action, frame])
+
+    useEffect(()=>{
+
+        if(action === 'IDLE' && direction !== undefined){
+            directionRef.current = direction
+        }
+
+    },[direction])
+
+
     // 포지션 업데이트
     useEffect(() => {
-        if (target != undefined) {
-            setSlime({ type: "UPDATE_TARGET", payload: target })
+        targetRef.current = target
+
+        if(actionType !== undefined){
+            setAction(actionType)
+            setFrame(1)
         }
+     
     }, [target])
 
 
-    // 방향 업데이트
+    // 박스 크기 변할 때 슬라임 크기 변화
     useEffect(() => {
-        if (direction != undefined && slime.action === 'IDLE') {
-            setSlime({ type: "UPDATE_DIRECTION", payload: direction })
-        }
-    }, [direction])
+        updateSlimeBox()
+    }, [boxWidth, boxHeight])
+
 
 
     return (
         speed > 0 &&
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={getWidth()} height={getHeight()} preserveAspectRatio="xMidYMid meet" style={{ position: isAbsolute ? "absolute" : "relative", transform: "translate(" + slime.posX + "px," + slime.posY + "px)", transition: "transform " + speed + "s ease" }}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={getWidth()} height={getHeight()} preserveAspectRatio="xMidYMid meet" style={{ position: isAbsolute ? "absolute" : "relative", transform: "translate(" + moveX + "px," + moveY + "px)", transition: "transform " + speed + "s ease" }}>
 
-            <use xlinkHref={'#slime-' + playerId + '-' + slime.direction + '-' + slime.action + '-' + slime.frame} x={11} y={25} width={150} height={150} className={isShaking ? 'shake' : ''} />
+            <use xlinkHref={'#slime-' + playerId + '-' + directionRef.current  + '-' + action + '-' + frame} x={11} y={25} width={150} height={150} className={isShaking ? 'shake' : ''} />
             <symbol id={'slime-' + playerId + '-down-IDLE-1'} viewBox="0 0 150 150">
                 <path id="Body" fillRule="evenodd" clipRule="evenodd" d="M97 9H39V18H19V37H10V82H24V91H39H97H107V82H117V37H110V18H97V9Z" fill={fill === undefined ? '#D9D9D9' : getAttr()} />
                 <rect id="RightEye" x="77" y="45" width="10" height="19" fill="black" />
