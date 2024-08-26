@@ -32,11 +32,12 @@
   border-radius: 15%;
 }
 
-@media (max-width: 576px) {
+@media (max-width: 992px) {
   .slime-box {
     border: solid 1px;
   }
 }
+
 
 .hasPlayer {
   animation: pulse 1s infinite;

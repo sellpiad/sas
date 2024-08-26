@@ -11,7 +11,8 @@ import { RootState } from "../../redux/Store";
  */
 
 interface Props {
-    playerId?: string
+    className?: string
+    playerId: string
     actionType?: string
     direction?: string
     fill?: string
@@ -26,12 +27,13 @@ interface Props {
 //시간은 ms 단위
 const FRAME_CONFIG = {
     IDLE: { frames: 2, duration: 500 },
+    DRAW: { frames: 2, duration: 500 },
     MOVE: { frames: 2, duration: 300 },
     ATTACK: { frames: 3, duration: 300 },
     FEARED: { frames: 1, duration: 300 },
 };
 
-export default function Slime({ playerId, actionType, direction, fill, border, target, isAbsolute, ...props }: Props) {
+export default function Slime({ playerId, actionType, direction, fill, target, isAbsolute, ...props }: Props) {
 
     // 슬라임 넓이와 높이
     // 이 컴포넌트는 여러 곳에서 쓰기 때문에 props에서 따로 width와 height이 들어오거나,
@@ -105,7 +107,7 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
 
         const elaspedTime = currentTime - startTimeRef.current
 
-        const { frames, duration } = FRAME_CONFIG[actionRef.current]
+        const { frames, duration } = FRAME_CONFIG[actionRef.current] || {}
 
         // 딜레이가 경과할 때마다 frame 증가
         if (elaspedTime > duration) {
@@ -214,7 +216,7 @@ export default function Slime({ playerId, actionType, direction, fill, border, t
 
     return (
         speed > 0 &&
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={getWidth()} height={getHeight()} preserveAspectRatio="xMidYMid meet" style={{ position: isAbsolute ? "absolute" : "relative", transform: "translate(" + moveX + "px," + moveY + "px)", transition: "transform " + speed + "s ease" }}>
+        <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={getWidth()} height={getHeight()} preserveAspectRatio="xMidYMid meet" style={{ position: isAbsolute ? "absolute" : "relative", transform: "translate(" + moveX + "px," + moveY + "px)", transition: "transform " + speed + "s ease" }}>
 
             <use xlinkHref={'#slime-' + playerId + '-' + directionRef.current  + '-' + action + '-' + frame} x={11} y={25} width={150} height={150} className={isShaking ? 'shake' : ''} />
             <symbol id={'slime-' + playerId + '-down-IDLE-1'} viewBox="0 0 150 150">

@@ -1,9 +1,10 @@
 import { Client, IMessage } from "@stomp/stompjs";
 import React, { useEffect, useReducer } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { EffectData } from "../../redux/GameSlice.tsx";
 import Effect from "./Effect.tsx";
 import { updateActionPoint, updateLockTime } from "../../redux/ObserverSlice.tsx";
+import { RootState } from "../../redux/Store.tsx";
 
 
 interface Props {
@@ -36,7 +37,6 @@ export default function EffectSet({ client }: Props) {
     const [effects, setEffects] = useReducer(effectReducer, {})// 렌더링용
 
     const validActionTypes = ['ATTACK', 'FEARED', 'DRAW', 'LOCKED'];
-    const validLockTypes = ['ATTACK', 'MOVE']
 
     const dispatch = useDispatch()
 
@@ -70,18 +70,6 @@ export default function EffectSet({ client }: Props) {
                         setEffects({ type: 'DELETE', payload: Effect });
                     }, 1000);
 
-                }
-
-                // 락타임 설정
-                if (validLockTypes.includes(Effect.actionType)) {
-
-                    if (Effect.lockTime !== undefined) {
-                        dispatch(updateLockTime({ lockTime: Effect.lockTime }))
-                        dispatch(updateActionPoint({ actionPoint: Effect.actionPoint }))
-                        setTimeout(() => {
-                            dispatch(updateLockTime({ lockTime: 0 }))
-                        }, Effect.lockTime)
-                    }
                 }
             })
         }

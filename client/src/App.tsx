@@ -150,12 +150,10 @@ function App() {
               <Row className='w-100 justify-content-between '>
                 <Col xs={12} sm={6} style={{ paddingLeft: 0 }}>
                   <Navbar.Brand>
-                    <Slime playerId={"navbarSlime"} direction={"down"} width={"96"} height={"96"} isAbsolute={false}></Slime>
-                    <svg width="100%" height="100%" viewBox="-5 -30 200 50">
+                    <Slime className='Slime' playerId={"navbarSlime"} direction={"down"} isAbsolute={false}></Slime>
+                    <svg className="title-svg" width="100%" height="100%" viewBox="-5 -30 200 50">
                       <text
                         x="0" y="0" fill="#3678ce"
-                        fontFamily="SBAggroB"
-                        fontSize="1rem"
                         rotate="4, 8, -8, -4, -20, -24, 48, 0, 0">
                         슬라임으로 살아남기
                       </text>

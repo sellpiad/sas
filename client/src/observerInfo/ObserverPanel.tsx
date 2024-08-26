@@ -57,7 +57,6 @@ export default function ObserverPanel({ client }: Props) {
                 setList(parser)
             })
 
-
             client.publish({ destination: '/app/game/realtimeRanker' })
         }
 

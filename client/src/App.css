@@ -7,6 +7,16 @@
   overflow: hidden;
 }
 
+.Slime {
+  width: 100px;
+  height: 100px;
+}
+
+.title-svg {
+  font-size: 1rem;
+  font-Family: "SBAggroB"
+}
+
 .Admin-Btn {
   font-family: DNFBitBitv2;
   font-size: 1rem;
@@ -30,9 +40,47 @@
   justify-content: center;
 }
 
-@media (max-width: 576px) {
+@media (max-width: 1200px) {
+  .Slime {
+    width: 80px;
+    height: 80px;
+  }
+
   .Menu-Btn {
-      font-size: 0.7rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 996px) {
+  .Slime {
+    width: 60px;
+    height: 60px;
+  }
+
+  .Menu-Btn {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .Slime {
+    width: 40px;
+    height: 40px;
+  }
+
+  .Menu-Btn {
+    font-size: 0.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .Slime {
+    width: 80px;
+    height: 80px;
+  }
+
+  .Menu-Btn {
+    font-size: 0.8rem;
   }
 }
 

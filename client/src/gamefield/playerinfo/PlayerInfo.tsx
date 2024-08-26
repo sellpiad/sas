@@ -1,6 +1,8 @@
-import { Client } from "@stomp/stompjs";
-import React from "react";
-import { useSelector } from "react-redux";
+import { Client, IMessage } from "@stomp/stompjs";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { EffectData } from "../../redux/GameSlice.tsx";
+import { updateActionPoint, updateLockTime } from "../../redux/ObserverSlice.tsx";
 import { RootState } from "../../redux/Store";
 import './PlayerInfo.css';
 
@@ -13,10 +15,40 @@ const MSG_CONFIG = {
     CHARGING: '게이지 모으는 중!'
 }
 
+const validLockTypes = ['ATTACK', 'MOVE']
+
 export default function PlayerInfo({ client }: Props) {
 
     const lockTime = useSelector((root: RootState) => root.observer.observer?.lockTime)
     const actionPoint = useSelector((root: RootState) => root.observer.observer?.actionPoint)
+    const observerName = useSelector((root:RootState) => root.observer.observer?.username)
+
+    const dispatch = useDispatch()
+
+    useEffect(() => {
+        if (client?.connected) {
+            // 이펙트 추가
+
+            client.subscribe("/topic/game/move", (msg: IMessage) => {
+
+                const Effect = JSON.parse(msg.body) as EffectData
+              
+                // 락타임 설정
+                if (validLockTypes.includes(Effect.actionType) && Effect.username === observerName) {
+
+                    if (Effect.lockTime !== undefined) {
+                        dispatch(updateLockTime({ lockTime: Effect.lockTime }))
+                        dispatch(updateActionPoint({ actionPoint: Effect.actionPoint }))
+                        setTimeout(() => {
+                            dispatch(updateLockTime({ lockTime: 0 }))
+                        }, Effect.lockTime)
+                    }
+                }
+            })
+        }
+
+    }, [client])
+
 
     return (
         <div className="playerInfo">
@@ -35,3 +67,7 @@ export default function PlayerInfo({ client }: Props) {
         </div>
     )
 }
+function dispatch(arg0: any) {
+    throw new Error("Function not implemented.");
+}
+
