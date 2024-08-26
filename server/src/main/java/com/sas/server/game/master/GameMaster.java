@@ -66,20 +66,20 @@ public class GameMaster {
         aiDeploymentRun(0, 2000, TimeUnit.MILLISECONDS, 0.1);
         queueRun(0, 1000, TimeUnit.MILLISECONDS);
 
-        //테스트 아이디
-        try{
-            memberService.save("test","1234",Role.USER);
-        } catch(UserAlreadyExistsException E){
+        // 테스트 아이디
+        try {
+            memberService.save("test", "1234", Role.USER);
+        } catch (UserAlreadyExistsException E) {
             log.info("이미 있는 아이디이므로 추가 X");
-        } 
+        }
 
-        //어드민 아이디
-        try{
-            memberService.save(adminId,adminPwd,Role.ADMIN);
-        }catch(UserAlreadyExistsException E){
+        // 어드민 아이디
+        try {
+            memberService.save(adminId, adminPwd, Role.ADMIN);
+        } catch (UserAlreadyExistsException E) {
             log.info("이미 있는 아이디이므로 추가 X");
-        } 
-      
+        }
+
     }
 
     private void clear() {
@@ -103,12 +103,18 @@ public class GameMaster {
         // if (scheduledFuture == null || scheduledFuture.isCancelled()) {
         scheduledQueue = scheduler.scheduleAtFixedRate(() -> {
             try {
-                gameService.scanQueue();
+                
+                PlayerEntity player = gameService.scanQueue();
+
+                if(player != null && player.ai){
+                    aiController.action(player.username);
+                }
+
             } catch (NullPointerException | MessagingException e) {
                 log.error("[scanQueue] {}", e.getMessage());
             } catch (LockAcquisitionException e) {
-            } catch (Exception e){
-                log.error("{}",e.getMessage());
+            } catch (Exception e) {
+                log.error("{}", e.getMessage());
             }
 
         }, initialDelay, period, unit);
@@ -120,20 +126,14 @@ public class GameMaster {
 
             try {
 
-                PlayerEntity ai = aiController.placeRandomAI(percentage);
-
-                if (ai == null)
-                    return;
-                else {
-                    aiController.action(ai.username);
-                }
+                aiController.placeRandomAI(percentage);
 
             } catch (IllegalArgumentException | NullPointerException | MessagingException e) {
                 log.error("[aiDeploymentRun] {}", e.getMessage());
             } catch (LockAcquisitionException e) {
 
             } catch (Exception e) {
-                log.error("[aiDeploymentRun] {}", e);
+                log.error("[aiDeploymentRun-Exception] {}", e);
             }
 
         }, initialDelay, period, unit);

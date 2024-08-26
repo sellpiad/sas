@@ -26,8 +26,8 @@ interface Props {
 //기본 프레임과 해당 액션의 소요 시간
 //시간은 ms 단위
 const FRAME_CONFIG = {
-    IDLE: { frames: 2, duration: 500 },
-    DRAW: { frames: 2, duration: 500 },
+    IDLE: { frames: 2, duration: 300 },
+    DRAW: { frames: 1, duration: 300 },
     MOVE: { frames: 2, duration: 300 },
     ATTACK: { frames: 3, duration: 300 },
     FEARED: { frames: 1, duration: 300 },

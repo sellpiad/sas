@@ -38,21 +38,21 @@ public class AISlime implements Serializable {
      * @param sessionId
      * @throws NullPoniterException
      */
-    public boolean move(String username) {
+    public ActionData move(String username) {
 
         // AI가 더 이상 존재하지 않으면 작동 중지
         if(!playerService.existById(username)){
-            return false;
+            return null;
         }
 
         ActionData action = gameService.updateMove(username, nextDirection(username));
 
         if (action != null) {
             simpMessagingTemplate.convertAndSend("/topic/game/move", action);
-            return true;
+            return action;
         }
 
-        return false;
+        return null;
     }
 
     public String randDirection() {

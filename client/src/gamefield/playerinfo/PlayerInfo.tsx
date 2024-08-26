@@ -1,5 +1,5 @@
 import { Client, IMessage } from "@stomp/stompjs";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { EffectData } from "../../redux/GameSlice.tsx";
 import { updateActionPoint, updateLockTime } from "../../redux/ObserverSlice.tsx";
@@ -23,7 +23,16 @@ export default function PlayerInfo({ client }: Props) {
     const actionPoint = useSelector((root: RootState) => root.observer.observer?.actionPoint)
     const observerName = useSelector((root:RootState) => root.observer.observer?.username)
 
+    const nameRef = useRef<string>('')
+
     const dispatch = useDispatch()
+
+    useEffect(()=>{
+        if(observerName != undefined){
+            nameRef.current = observerName
+        }
+            
+    },[observerName])
 
     useEffect(() => {
         if (client?.connected) {
@@ -34,7 +43,7 @@ export default function PlayerInfo({ client }: Props) {
                 const Effect = JSON.parse(msg.body) as EffectData
               
                 // 락타임 설정
-                if (validLockTypes.includes(Effect.actionType) && Effect.username === observerName) {
+                if (validLockTypes.includes(Effect.actionType) && Effect.username === nameRef.current) {
 
                     if (Effect.lockTime !== undefined) {
                         dispatch(updateLockTime({ lockTime: Effect.lockTime }))

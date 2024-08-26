@@ -27,6 +27,7 @@ import com.sas.server.entity.GameEntity;
 import com.sas.server.entity.PlayerEntity;
 import com.sas.server.entity.RankerEntity;
 import com.sas.server.exception.LockAcquisitionException;
+import com.sas.server.game.ai.AIController;
 import com.sas.server.game.message.MessengerBroker;
 import com.sas.server.game.rule.ActionSystem;
 import com.sas.server.game.rule.BattleSystem;
@@ -158,7 +159,7 @@ public class GameService {
         return null;
     }
 
-    public void scanQueue() {
+    public PlayerEntity scanQueue() {
 
         GameEntity game = gameRepo.findById(GAME_ID)
                 .orElseThrow(() -> new NullPointerException("Game Entity not found with id"));
@@ -206,6 +207,7 @@ public class GameService {
                 if (!player.ai)
                     logService.save(player.username, ActivityType.PLAY);
 
+
                 SlimeDTO slime = SlimeDTO.builder()
                         .username(player.username)
                         .attr(player.attr)
@@ -225,9 +227,13 @@ public class GameService {
                 simpMessagingTemplate.convertAndSend("/topic/game/addSlime", slime);
                 simpMessagingTemplate.convertAndSend("/topic/game/realtimeRanker",
                         rankerService.getRealtimeRank());
+
+                return player;
             }
 
         }
+
+        return null;
     }
 
     /**

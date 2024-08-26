@@ -19,6 +19,7 @@ import com.sas.server.exception.LockAcquisitionException;
 import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.game.GameService;
 import com.sas.server.service.player.PlayerService;
+import com.sas.server.dto.game.ActionData;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,34 +66,14 @@ public class AIController {
 
     public void action(String sessionId) {
 
-        int initialDelay = (int) (Math.random() * 1000); // 0~1000ms 사이의 랜덤 초기 딜레이
-        int moveInterval = (int) (Math.random() * 1500) + 500; // 500~1000ms 사이의 랜덤 이동 간격
+        int delay = (int) (Math.random() * 200) + 200; // 200ms~400ms 사이의 반응속도
 
-        ScheduledFuture<?> future = scheduler.scheduleWithFixedDelay(() -> {
+        ActionData action = aiSlime.move(sessionId);
 
-            CompletableFuture.supplyAsync(() -> aiSlime.move(sessionId))
-                    .exceptionally(ex -> {
-                        // 예외가 발생한 경우 처리 로직
+        if(action != null){
+            scheduler.schedule(()->action(sessionId), action.lockTime+delay, TimeUnit.MILLISECONDS);
+        }
 
-                        if (ex != null) {
-                            Throwable cause = ex instanceof CompletionException ? ex.getCause() : ex;
-                            if (cause instanceof LockAcquisitionException || cause instanceof ExhaustedRetryException) {
-                            } else {
-                                throw new CompletionException(cause);
-                            }
-                        }
-                        
-                        return true;
-                        
-                    }).thenAccept((isAlive) -> {
-                        if (!isAlive) {
-                            stop(sessionId);
-                        }
-                    });
-
-        }, initialDelay, moveInterval, TimeUnit.MILLISECONDS);
-
-        actionTasks.put(sessionId, future);
     }
 
     private void stop(String sessionId) {
