@@ -18,7 +18,7 @@ interface playlog {
 export default function PlayerInfo({ show, onHide }) {
 
     const [id, setId] = useState<string>('')
-    const [highestRanking,setHighestRanking] = useState<number>()
+    const [highestRanking, setHighestRanking] = useState<number>()
     const [killMax, setKillMax] = useState<number>()
     const [conquerMax, setConquerMax] = useState<number>()
     const [mainAttr, setMainAttr] = useState<string>()
@@ -53,40 +53,48 @@ export default function PlayerInfo({ show, onHide }) {
     }, [show])
 
     return (
-        <Modal show={show} onHide={onHide} centered style={{ fontFamily: "DNFBitBitv2", fontSize: "0.9rem" }}>
-            <ModalBody>
-                <Container>
-                    <Row>
-                        <h3>{id}</h3>
-                    </Row>
-                    <Row>
-                        <p />
-                        <span style={{ width: "20%" }}>주속성 </span> <span style={{ width: "40%", paddingRight: 0 }}>{mainAttr}</span>
-                        <p />
-                        <span style={{ width: "20%" }}>최다킬 </span> <span style={{ width: "40%", paddingRight: 0 }}>{killMax} 번</span>
-                        <p />
-                        <span style={{ width: "20%" }}>최고랭킹 </span> <span style={{ width: "40%", paddingRight: 0 }}>
+        <Modal show={show} onHide={onHide} centered >
+            <ModalBody style={{ fontFamily: "DNFBitBitv2", fontSize: "0.9rem", height: "60vh" }}>
+
+                <div className="playerinfo-title ">
+                    <h3>{id}</h3>
+                </div>
+                <div className="playerinfo-content">
+                    <div className="playerinfo-content-row">
+                        <span className="playerlog-content-box">주속성</span>
+                        <span className="playerlog-content-box">{mainAttr}</span>
+                    </div>
+                    <div className="playerinfo-content-row">
+                        <span className="playerlog-content-box">최다킬</span>
+                        <span className="playerlog-content-box">{killMax} 번</span>
+                    </div>
+                    <div className="playerinfo-content-row">
+                        <span className="playerlog-content-box">최고랭킹</span>
+                        <span className="playerlog-content-box">
                             {highestRanking === -1 ? "OUT OF RANK" : `${highestRanking} 위`}
                         </span>
-                        <p />
-                        <span style={{ width: "20%" }}>최다정복 </span> <span style={{ width: "40%", paddingRight: 0 }}>{conquerMax} 번</span>
-                        <p />
-                    </Row>
-                    <Row>
-                        <hr />
-                        <h6>PLAY LOG</h6>
+                    </div>
+                    <div className="playerinfo-content-row">
+                        <span className="playerlog-content-box">최다정복</span>
+                        <span className="playerlog-content-box">{conquerMax} 번</span>
+                    </div>
+                </div>
+                <div className="playerinfo-log">
+                    <hr />
+                    <h6>PLAY LOG</h6>
 
-                        <div style={{ display: "flex", padding: "0 3px" }}>
-                            <span className="playTime-col">날짜</span>
-                            <span className="username-col">닉네임</span>
-                            <span className="attr-col">속성</span>
-                            <span className="totalKill-col">킬</span>
-                        </div>
+                    <div className="playerlog-th">
+                        <span className="playTime-col">날짜</span>
+                        <span className="username-col">닉네임</span>
+                        <span className="attr-col">속성</span>
+                        <span className="totalKill-col">킬</span>
+                    </div>
 
+                    <div className="playlog-container">
                         {log.map((value, index, array) => {
                             return (
                                 <li key={"playlog" + index} style={{ display: "flex", justifyContent: "space-between", padding: "3px" }}>
-                                    <span className="playTime-col" style={{fontSize:"0.5rem"}}>{value['playTime']}</span>
+                                    <span className="playTime-col" style={{ fontSize: "0.5rem" }}>{value['playTime']}</span>
                                     <span className="username-col">{value['nickname']}</span>
                                     <span className="attr-col">{value['attr']}</span>
                                     <span className="totalKill-col">{value['totalKill']}</span>
@@ -94,8 +102,9 @@ export default function PlayerInfo({ show, onHide }) {
                             )
                         })
                         }
-                    </Row>
-                </Container>
+                    </div>
+                </div>
+
             </ModalBody>
         </Modal >
     )

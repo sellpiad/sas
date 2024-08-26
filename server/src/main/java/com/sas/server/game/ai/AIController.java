@@ -31,9 +31,9 @@ public class AIController {
 
     private final CubeService cubeService;
     private final PlayerService playerService;
-    private final GameService gameService;
 
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(20);
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(20,
+            Thread.ofVirtual().factory());
     private Map<String, ScheduledFuture<?>> actionTasks = new ConcurrentHashMap<>();
 
     private final AISlime aiSlime;
@@ -68,10 +68,16 @@ public class AIController {
 
         int delay = (int) (Math.random() * 200) + 200; // 200ms~400ms 사이의 반응속도
 
-        ActionData action = aiSlime.move(sessionId);
+        ActionData action = null;
 
-        if(action != null){
-            scheduler.schedule(()->action(sessionId), action.lockTime+delay, TimeUnit.MILLISECONDS);
+        try {
+            action = aiSlime.move(sessionId);
+        } catch (Exception e) {
+            log.error("{}", e.getMessage());
+        }
+
+        if (action != null) {
+            scheduler.schedule(() -> action(sessionId), action.lockTime + delay, TimeUnit.MILLISECONDS);
         }
 
     }

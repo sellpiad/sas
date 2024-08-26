@@ -39,8 +39,6 @@ export default function Effect({ actionType, text, target }: Props) {
                 return '? 얜 친구야'
             case 'FEARED':
                 return '무서워'
-            case 'LOCKED':
-                return '힘이 없어..'
         }
 
     }
