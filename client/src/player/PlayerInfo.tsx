@@ -94,7 +94,7 @@ export default function PlayerInfo({ show, onHide }) {
                         {log.map((value, index, array) => {
                             return (
                                 <li key={"playlog" + index} style={{ display: "flex", justifyContent: "space-between", padding: "3px" }}>
-                                    <span className="playTime-col" style={{ fontSize: "0.5rem" }}>{value['playTime']}</span>
+                                    <span className="playTime-col" style={{ fontSize: "0.8rem" }}>{value['playTime']}</span>
                                     <span className="username-col">{value['nickname']}</span>
                                     <span className="attr-col">{value['attr']}</span>
                                     <span className="totalKill-col">{value['totalKill']}</span>

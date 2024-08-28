@@ -1,9 +1,12 @@
 package com.sas.server.entity;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.redis.core.index.Indexed;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +14,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,6 +34,7 @@ public class PlaylogEntity {
 
     @Column(name = "play_time", nullable = false)
     @CreationTimestamp
+    @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm", timezone="Asia/Seoul")
     Date playTime;
 
     @Indexed

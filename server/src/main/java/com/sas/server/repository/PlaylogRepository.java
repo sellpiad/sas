@@ -11,7 +11,8 @@ import com.sas.server.entity.PlaylogEntity;
 
 public interface PlaylogRepository extends JpaRepository<PlaylogEntity, Long> {
     
-    List<PlaylogEntity> findAllByUsername(String username);
+    @Query("SELECT p FROM PlaylogEntity p WHERE p.username = :username ORDER BY p.playTime DESC")
+    List<PlaylogEntity> findAllByUsername(@Param("username") String username);
 
     @Query("SELECT p FROM PlaylogEntity p WHERE p.username = :username ORDER BY p.totalKill DESC LIMIT 1")
     Optional<PlaylogEntity> findTopByUsernameOrderByTotalKillDesc(@Param("username") String username);

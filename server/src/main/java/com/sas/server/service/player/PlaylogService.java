@@ -46,6 +46,11 @@ public class PlaylogService {
     }
 
     public List<PlaylogEntity> findAllByUsername(String username) {
+
+        List<PlaylogEntity> list = repo.findAllByUsername(username);
+
+
+
         return repo.findAllByUsername(username);
     }
 
