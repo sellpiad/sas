@@ -24,6 +24,12 @@
     font-size: 0.4rem;
 }
 
+.lockon-msg{
+    fill: red;
+    font-family: DNFBitBitv2;
+    font-size: 0.4rem;
+}
+
 @media (max-width: 576px) {
     .attack-msg {
         font-size: 0.3rem;

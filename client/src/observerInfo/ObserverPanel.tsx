@@ -30,13 +30,13 @@ interface Props {
 export default function ObserverPanel({ client }: Props) {
 
     const [list, setList] = useState<CardData[]>()
-    const [selectedCard, setSelectedCard] = useState<string>('')
+    const [selectedCard, setSelectedCard] = useState<number>()
 
     const dispatch = useDispatch()
 
-    const getObserver = (nickname: string) => {
-        setSelectedCard(nickname)
-        client?.publish({ destination: '/app/player/findObserverByNickname', body: nickname })
+    const getObserver = (ranking: number) => {
+        setSelectedCard(ranking)
+        client?.publish({ destination: '/app/player/findObserverByRanking', body: ranking + "" })
     }
 
     useEffect(() => {
@@ -77,8 +77,8 @@ export default function ObserverPanel({ client }: Props) {
                                 attr={value.attr}
                                 nickname={value.nickname}
                                 kill={value.kill}
-                                onClick={() => getObserver(value.nickname)}
-                                selected={selectedCard === value.nickname}
+                                onClick={() => getObserver(index+1)}
+                                selected={selectedCard === index+1}
                             />
                         )
                     })

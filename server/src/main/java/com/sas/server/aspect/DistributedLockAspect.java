@@ -35,8 +35,8 @@ public class DistributedLockAspect {
     @Around("@annotation(distributedLock)")
     public Object around(ProceedingJoinPoint joinPoint, DistributedLock distributedLock) throws Throwable {
 
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        Method method = signature.getMethod();
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature(); 
+        Method method = signature.getMethod(); 
 
         String lockKey = distributedLock.key();
         long watingTime = distributedLock.watingTime();
@@ -44,6 +44,9 @@ public class DistributedLockAspect {
 
         boolean lockAcquired = false;
 
+        //method = 메소드 시그니처 
+        //joinPoint.getArgs() = 실제 매개변수 값
+        //nameDiscoverer = 메소드 파라미터 이름을 추적할 수 있도록 도와준다. 즉, SpEL에서 파라미터를 사용할 수 있도록 도와준다.
         StandardEvaluationContext context = new MethodBasedEvaluationContext(null, method, joinPoint.getArgs(),
                 nameDiscoverer);
         String evaluatedKey = parser.parseExpression(lockKey).getValue(context, String.class);

@@ -1,5 +1,7 @@
 package com.sas.server.dto.game;
 
+import com.sas.server.util.ActionType;
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +15,7 @@ public class ActionData {
      */
 
     @NotBlank(message = "actionType value cannot be null, empty, and blank.")
-    String actionType;
+    ActionType actionType;
 
     @NotBlank(message = "username value cannot be null, empty, and blank.")
     String username;

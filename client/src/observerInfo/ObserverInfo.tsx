@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { Col, Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import Slime from "../gamefield/slimeset/Slime.tsx";
-import { ObserverType, updateKill, updateObserver, updateObserverPos, updateRanking } from "../redux/ObserverSlice.tsx";
+import { ObserverType, updateKill, updateObserver, updateObserverPos, updateRanking, updateScale } from "../redux/ObserverSlice.tsx";
 import { RootState } from "../redux/Store.tsx";
 import { updateUsername } from "../redux/UserSlice.tsx";
 import './ObserverInfo.css';
@@ -32,6 +32,8 @@ export default function ObserverControl({ client }: Props) {
 
     // 옵저버 아이디 및 객체
     const observer = useSelector((state: RootState) => state.observer.observer)
+
+    const scale = useSelector((state:RootState) => state.observer.scale)
 
     // 플레이어 아이디
     const username = useSelector((state: RootState) => state.user.username)
@@ -80,16 +82,17 @@ export default function ObserverControl({ client }: Props) {
 
             client.subscribe('/user/queue/game/incKill', (msg: IMessage) => {
 
-                dispatch(updateKill({kill: parseInt(msg.body)}))
+                dispatch(updateKill({ kill: parseInt(msg.body) }))
 
             })
 
             client.subscribe('/user/queue/game/newRanking', (msg: IMessage) => {
 
-                dispatch(updateRanking({ranking: parseInt(msg.body)}))
+                dispatch(updateRanking({ ranking: parseInt(msg.body) }))
 
             })
 
+       
             //처음 접속, 새로고침 시 플레이어가 존재하는지 검사하고, 아니라면 옵저버 요청.
             if (username === null) {
                 client?.publish({ destination: '/app/player/anyObserver' })

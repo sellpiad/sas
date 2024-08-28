@@ -1,4 +1,4 @@
-import { Client } from "@stomp/stompjs";
+import { Client, IMessage } from "@stomp/stompjs";
 import React, { useEffect, useState } from "react";
 import { Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
@@ -40,10 +40,13 @@ export default function GameField({ client }: Props) {
     const observeX = useSelector((state: RootState) => state.observer.observeX)
     const observeY = useSelector((state: RootState) => state.observer.observeY)
     const observerPos = useSelector((state: RootState) => state.observer.observerPos)
+    const observer = useSelector((state: RootState) => state.observer.observer)
 
     // 옵저버 이동 한계 좌표
     const [limitX, setLimitX] = useState<number>(0)
     const [limitY, setLimitY] = useState<number>(0)
+
+    const [focus,setFocus] = useState<boolean>(false)
 
     // redux state 수정용
     const dispatch = useDispatch()
@@ -59,9 +62,9 @@ export default function GameField({ client }: Props) {
             setHeight(height)
         }
 
-        if(fullWidth != undefined && fullWidth < 576){
+        if (fullWidth != undefined && fullWidth < 576) {
             dispatch(updateScale({ scale: 3.5 }))
-        } else if(fullWidth != undefined && fullWidth < 996){
+        } else if (fullWidth != undefined && fullWidth < 996) {
             dispatch(updateScale({ scale: 2.5 }))
         } else {
             dispatch(updateScale({ scale: 2.5 }))
@@ -82,7 +85,7 @@ export default function GameField({ client }: Props) {
 
             const x = width / 2 - (boxLeft + ((boxWidth) / 2))
             const y = width / 2 - (boxTop + ((boxHeight) / 2))
-        
+
             dispatch(updateObserverCoor({ observeX: Math.abs(x) < limitX ? x : Math.sign(x) * limitX, observeY: Math.abs(y) < limitY ? y : Math.sign(y) * limitY }))
         }
 
@@ -92,8 +95,25 @@ export default function GameField({ client }: Props) {
     useEffect(() => {
 
         getWindowSize() // 초기 화면 크기 구하기
- 
+
         window.addEventListener('resize', getWindowSize)
+
+        if (client != undefined) {
+            client.subscribe('/topic/game/lockon', (msg: IMessage) => {
+
+                if (observer?.username === msg.body) {
+
+                    setFocus(true)
+
+                    setTimeout(() => {
+                        setFocus(false)
+                    }, 500)
+                }
+
+            })
+        }
+
+
 
         return () => {
             window.removeEventListener('resize', getWindowSize)
@@ -107,13 +127,13 @@ export default function GameField({ client }: Props) {
 
         // observer window와 scale된 gamefield window와의 크기 차이
         // gamefield window는 정사각형을 유지해야하기 때문에 width=height
-        const gapWidth = width - width*scale
-        const gapHeight = height - width*scale 
+        const gapWidth = width - width * scale
+        const gapHeight = height - width * scale
 
         // 0.5 = 두 윈도우 간의 크기 차이에서 1/2배를 해줘야 이동 한계 좌표가 나오기 때문.
         // 1/scale = scale이 적용된 element는 1px 이동시 (1*scale)px만큼 이동하므로 그를 보정
-        setLimitX(Math.abs(gapWidth*0.5*(1/scale)))
-        setLimitY(Math.abs(gapHeight*0.5*(1/scale)))
+        setLimitX(Math.abs(gapWidth * 0.5 * (1 / scale)))
+        setLimitY(Math.abs(gapHeight * 0.5 * (1 / scale)))
 
 
     }, [scale, width, height])
@@ -130,12 +150,12 @@ export default function GameField({ client }: Props) {
 
     return (
         <div id="observer-window" className="observer-window">
-            <Row id="gamefield-window" className="gamefield-window" style={{ width: width, height: width, transform: `translate(${observeX}px, ${observeY}px)`, transition: 'transform 0.5s ease' }}>
+            <Row id="gamefield-window" className="gamefield-window" style={{ width: width, height: width, transform: (focus ? 'scale(2)' : '') + `translate(${observeX}px, ${observeY}px)`, transition: 'transform 0.5s ease' }}>
                 <CubeSet client={client} />
                 <SlimeSet client={client} />
                 <EffectSet client={client} />
             </Row>
-            <PlayerInfo  client={client}/>
+            <PlayerInfo client={client} />
         </div>
     )
 }

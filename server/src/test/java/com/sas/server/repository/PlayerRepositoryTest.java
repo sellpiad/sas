@@ -1,7 +1,6 @@
 package com.sas.server.repository;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Optional;
 

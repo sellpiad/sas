@@ -13,7 +13,6 @@ import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.messaging.MessagingException;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 import com.sas.server.entity.PlayerEntity;
@@ -23,7 +22,6 @@ import com.sas.server.game.ai.AIController;
 import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.game.GameService;
 import com.sas.server.service.member.MemberService;
-import com.sas.server.service.player.PlayerService;
 import com.sas.server.util.Role;
 
 import lombok.RequiredArgsConstructor;
@@ -37,14 +35,10 @@ public class GameMaster {
     private final AIController aiController;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3);
     private ScheduledFuture<?> scheduledPlaceRandomAI;
-    private ScheduledFuture<?> scheduledQueue;
 
     private final GameService gameService;
     private final CubeService cubeService;
-    private final PlayerService playerService;
     private final MemberService memberService;
-
-    private final SimpMessagingTemplate messagingTemplate;
 
     private final StringRedisTemplate redisTemplate;
 
@@ -101,12 +95,12 @@ public class GameMaster {
 
     private void queueRun(long initialDelay, long period, TimeUnit unit) {
         // if (scheduledFuture == null || scheduledFuture.isCancelled()) {
-        scheduledQueue = scheduler.scheduleAtFixedRate(() -> {
+        scheduler.scheduleAtFixedRate(() -> {
             try {
-                
+
                 PlayerEntity player = gameService.scanQueue();
 
-                if(player != null && player.ai){
+                if (player != null && player.ai) {
                     aiController.action(player.username);
                 }
 

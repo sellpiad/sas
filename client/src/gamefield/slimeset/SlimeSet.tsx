@@ -108,13 +108,12 @@ export default function SlimeSet({ client }: Props) {
         if (client?.connected) {
 
             // 슬라임 위치 업데이트
-            client.subscribe("/topic/game/move", (msg: IMessage) => {
+            client.subscribe("/topic/game/action", (msg: IMessage) => {
 
                 const ActionData = JSON.parse(msg.body) as ActionData
 
                 setSlime({ type: 'ACTION', payload: ActionData })
 
-  
                 // 옵저버 시점 업데이트
                 if (observerRef.current?.username === ActionData.username && ActionData.target !== null) {
 
@@ -138,15 +137,14 @@ export default function SlimeSet({ client }: Props) {
 
                 const id = msg.body
 
-                setSlime({ type: 'DELETE', payload: id })
-
-
                 if (id === usernameRef.current) {   // 플레이어 사망 처리
                     dispatch(deletePlayer())
 
                 } else if (id === observerRef.current?.username) {   // 옵저버 사망 처리
                     client?.publish({ destination: '/app/player/anyObserver' })
                 }
+
+                setSlime({ type: 'DELETE', payload: id })
 
             })
 

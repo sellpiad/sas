@@ -13,15 +13,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.sas.server.dao.CustomUserDetails;
 import com.sas.server.dto.game.ObserverData;
-import com.sas.server.dto.game.PlayerCardData;
 import com.sas.server.dto.queue.CreationInfo;
 import com.sas.server.entity.PlaylogEntity;
 import com.sas.server.service.player.PlayerService;
 import com.sas.server.service.player.PlaylogService;
+import com.sas.server.service.ranker.RankerService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 
@@ -32,6 +31,7 @@ public class PlayerController {
 
     private final PlayerService playerService;
     private final PlaylogService playlogService;
+    private final RankerService rankerService;
 
     @MessageMapping("/player/anyObserver")
     @SendTo("/topic/player/anyObserver")
@@ -45,10 +45,13 @@ public class PlayerController {
         return playerService.findObserverById(username);
     }
 
-    @MessageMapping("/player/findObserverByNickname")
-    @SendTo("/queue/player/findObserverByNickname")
-    public ObserverData findObserverByNickname(@RequestBody String nickname) {
-        return playerService.findObserverByNickname(nickname);
+    @MessageMapping("/player/findObserverByRanking")
+    @SendTo("/queue/player/findObserverByRanking")
+    public ObserverData findObserverByRanking(@RequestBody String ranking) {
+
+        String player = rankerService.findRealtimeRankerByRanking(Integer.parseInt(ranking));
+
+        return playerService.findObserverById(player);
     }
 
     @PostMapping("/player/register")

@@ -3,23 +3,18 @@ package com.sas.server.game.ai;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.retry.ExhaustedRetryException;
 import org.springframework.stereotype.Component;
 
-import com.sas.server.entity.PlayerEntity;
-import com.sas.server.exception.LockAcquisitionException;
-import com.sas.server.service.cube.CubeService;
-import com.sas.server.service.game.GameService;
-import com.sas.server.service.player.PlayerService;
 import com.sas.server.dto.game.ActionData;
+import com.sas.server.entity.PlayerEntity;
+import com.sas.server.service.cube.CubeService;
+import com.sas.server.service.player.PlayerService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -71,7 +66,7 @@ public class AIController {
         ActionData action = null;
 
         try {
-            action = aiSlime.move(sessionId);
+            action = aiSlime.requestAction(sessionId);
         } catch (Exception e) {
             log.error("{}", e.getMessage());
         }

@@ -1,6 +1,7 @@
 .playerInfo {
     position: absolute;
     display: flex;
+    flex-direction: column;
     align-items: center;
     width: 100%;
     height: 5%;
@@ -10,6 +11,14 @@
     font-family: DNFBitBitv2;
     font-size: 1rem;
 }
+
+.playerInfo-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
 
 .actionStats-txt {
     width: 13%;
@@ -32,6 +41,47 @@
     align-content: center;
     color: bisque;
 }
+
+.hp-bar {
+    width: 20%;
+    height: 60%;
+    background: white;
+    border-radius: 4px;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(110deg,
+            transparent,
+            transparent 19%,
+            black 19%,
+            black 21%);
+    border-radius: 4px;
+    filter: blur(0.6px);
+    pointer-events: none;
+}
+
+.hp-bar .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(110deg, #ee303c);
+    background-size: 0% 100%;
+    /* 초기 크기 */
+    border-radius: 4px;
+    pointer-events: none;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25), 0 1px rgba(255, 255, 255, 0.08);
+}
+
 
 .progress-bar {
     position: absolute;
@@ -124,4 +174,14 @@
     to {
         width: 100%
     }
+}
+
+@keyframes level1 {
+    from {
+        background-size: 20% 100%; /* 처음 상태 */
+    }
+    to {
+        background-size: 40% 100%; /* 끝 상태 */
+    }
+
 }

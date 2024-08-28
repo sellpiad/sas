@@ -1,5 +1,5 @@
 import { Client, IMessage } from "@stomp/stompjs";
-import React, { useEffect, useReducer } from "react";
+import React, { useEffect, useReducer, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { EffectData } from "../../redux/GameSlice.tsx";
 import Effect from "./Effect.tsx";
@@ -38,7 +38,12 @@ export default function EffectSet({ client }: Props) {
 
     const validActionTypes = ['ATTACK', 'FEARED', 'DRAW', 'LOCKED'];
 
+    const observer = useSelector((root:RootState) => root.observer.observer)
+    const observerPos = useSelector((root:RootState) => root.observer.observerPos)
+
     const dispatch = useDispatch()
+
+    const posRef = useRef<string>('')
 
     const getActionText = (action: string) => {
 
@@ -53,11 +58,17 @@ export default function EffectSet({ client }: Props) {
 
     }
 
+    useEffect(()=>{
+        if(observerPos != null){
+            posRef.current = observerPos
+        }
+    },[observerPos])
+
     useEffect(() => {
         if (client?.connected) {
             // 이펙트 추가
 
-            client.subscribe("/topic/game/move", (msg: IMessage) => {
+            client.subscribe("/topic/game/action", (msg: IMessage) => {
 
                 const Effect = JSON.parse(msg.body) as EffectData
               
@@ -71,6 +82,25 @@ export default function EffectSet({ client }: Props) {
                     }, 1000);
 
                 }
+            })
+
+            client.subscribe('/topic/game/lockon', (msg: IMessage) => {
+
+                if (observer?.username === msg.body) {
+
+                    const effect:EffectData = {
+                        actionType:'LOCKON',
+                        target: posRef.current
+                    }
+
+                    setEffects({ type: 'ADD', payload: effect })
+
+                    setTimeout(() => {
+                        setEffects({ type: 'DELETE', payload: effect });
+                    }, 1000);
+
+                }
+
             })
         }
 

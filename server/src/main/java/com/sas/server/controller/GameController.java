@@ -43,18 +43,21 @@ public class GameController {
 
     }
 
-    @MessageMapping("/game/move")
-    @SendTo("/topic/game/move")
-    public ActionData setMove(@RequestBody String keyDown,
+    @MessageMapping("/game/action")
+    @SendTo("/topic/game/action")
+    public ActionData action(@RequestBody String keyDown,
             SimpMessageHeaderAccessor simpMessageHeaderAccessor) {
 
         Principal user = simpMessageHeaderAccessor.getUser();
+
+        if (user == null)
+            return null;
 
         if (playerService.ingameById(user.getName()) == null) {
             return null;
         }
 
-        return gameService.updateMove(user.getName(), keyDown);
+        return gameService.startAction(user.getName(), keyDown);
     }
 
     @MessageMapping("/game/ranker")

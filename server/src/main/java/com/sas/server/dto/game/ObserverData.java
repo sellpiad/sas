@@ -19,10 +19,8 @@ public class ObserverData {
     @NonNull
     String attr;
 
-    @NonNull
     int kill;
 
-    @NonNull
     int conquer;
 
 }

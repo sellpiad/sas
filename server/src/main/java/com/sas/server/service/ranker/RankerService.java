@@ -9,6 +9,7 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.sas.server.dto.game.PlayerCardData;
@@ -24,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class RankerService {
+
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     private final StringRedisTemplate stringRedisTemplate;
     private final RedisTemplate<String, RankerEntity> rankerRedisTemplate;
@@ -161,5 +164,30 @@ public class RankerService {
                             .build();
                 })
                 .collect(Collectors.toList());
+    }
+
+    public void publishAlltimeRanker() {
+        simpMessagingTemplate.convertAndSend("/topic/game/ranker",
+                getAlltimeRank());
+
+    }
+
+    public void publishRealtimeRanker() {
+        simpMessagingTemplate.convertAndSend("/topic/game/realtimeRanker",
+                getRealtimeRank());
+    }
+
+    public String findRealtimeRankerByRanking(int ranking) {
+
+        ZSetOperations<String, String> zSetOps = stringRedisTemplate.opsForZSet();
+
+        Set<String> rankername = zSetOps.reverseRange(LEADERBOARD_REALTIME_ZSETKEY, ranking + 1, ranking + 1);
+
+        if (rankername == null) {
+            return null;
+        } else {
+            return rankername.stream().findFirst().get();
+        }
+
     }
 }

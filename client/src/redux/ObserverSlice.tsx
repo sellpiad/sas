@@ -22,7 +22,7 @@ export interface observerStatus {
 }
 
 const initialState: observerStatus = {
-    scale: 2.5, // 게임 스케일
+    scale: 1, // 게임 스케일
     observeX: 0, // 게임 시점용 좌표 x
     observeY: 0, // 게임 시점용 좌표 y
     observerPos: null, // 게임 시점용 위치, 예시) slimebox33 

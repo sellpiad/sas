@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
@@ -30,7 +29,6 @@ public class AISlime implements Serializable {
     private final PlayerService playerService;
     private final CubeService cubeService;
     private final SimpMessagingTemplate simpMessagingTemplate;
-    private final StringRedisTemplate redisTemplate;
 
     /**
      * 인공지능 슬라임이 자동으로 움직이도록 만든다. 콜백 함수는 해당 인공지능이 멈췄을 때 작동.
@@ -38,17 +36,17 @@ public class AISlime implements Serializable {
      * @param sessionId
      * @throws NullPoniterException
      */
-    public ActionData move(String username) {
+    public ActionData requestAction(String username) {
 
         // AI가 더 이상 존재하지 않으면 작동 중지
         if(!playerService.existById(username)){
             return null;
         }
 
-        ActionData action = gameService.updateMove(username, nextDirection(username));
+        ActionData action = gameService.startAction(username, nextDirection(username));
 
         if (action != null) {
-            simpMessagingTemplate.convertAndSend("/topic/game/move", action);
+            simpMessagingTemplate.convertAndSend("/topic/game/action", action);
             return action;
         }
 

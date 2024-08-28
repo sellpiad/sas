@@ -13,10 +13,10 @@ export interface SlimeDTO {
 
 export interface EffectData {
     actionType: string
-    username: string
+    username?: string
     target: string
-    lockTime: number
-    actionPoint: number
+    lockTime?: number
+    actionPoint?: number
 }
 
 export interface ActionData {

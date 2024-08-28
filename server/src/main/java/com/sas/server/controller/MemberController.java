@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sas.server.dao.CustomUserDetails;
 import com.sas.server.dto.game.UserData;
-import com.sas.server.entity.LogEntity;
 import com.sas.server.service.admin.LogService;
 import com.sas.server.service.member.MemberService;
 import com.sas.server.service.player.PlaylogService;
