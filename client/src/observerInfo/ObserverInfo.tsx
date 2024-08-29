@@ -113,10 +113,10 @@ export default function ObserverControl({ client }: Props) {
 
     return (
         <Row className="observer">
-            <Col xs={2} sm={3}>
+            <Col xs={2} sm={6} md={5} lg={3}>
                 <Slime playerId={"ObserverSlime"} direction={"down"} width={"100%"} height={"100%"} isAbsolute={false} fill={observer?.attr}></Slime>
             </Col>
-            <Col xs={3} sm={9} className="msg-nickname">
+            <Col xs={3} sm={6} md={7} lg={9} className="msg-nickname">
                 <strong>{observer?.nickname}</strong> <span>관전 중</span>
             </Col>
             <Col xs={2} sm={12} className="info-container">

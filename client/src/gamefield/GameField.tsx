@@ -64,7 +64,7 @@ export default function GameField({ client }: Props) {
 
         if (fullWidth != undefined && fullWidth < 576) {
             dispatch(updateScale({ scale: 3.5 }))
-        } else if (fullWidth != undefined && fullWidth < 996) {
+        } else if (fullWidth != undefined && fullWidth < 992) {
             dispatch(updateScale({ scale: 2.5 }))
         } else {
             dispatch(updateScale({ scale: 2.5 }))
@@ -98,7 +98,7 @@ export default function GameField({ client }: Props) {
 
         window.addEventListener('resize', getWindowSize)
 
-        if (client != undefined) {
+        if (client?.connected) {
             client.subscribe('/topic/game/lockon', (msg: IMessage) => {
 
                 if (observer?.username === msg.body) {

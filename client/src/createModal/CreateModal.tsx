@@ -39,7 +39,9 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
 
     const dispatch = useDispatch()
 
-    const btnHanlder = () => {
+    const btnHanlder = (e: React.FormEvent<HTMLFormElement>) => {
+
+        e.preventDefault()
 
         if (nickname.length < 1) {
             alarmErr()
@@ -130,34 +132,37 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
                             </div>
                         </Col>
                     </Row>
-                    <Row>
-                        <Col className="info-span" xs={4}>
-                            <span>닉네임</span>
-                        </Col>
-                        <Col className="info-span" xs={8}>
-                            <InputGroup onSubmit={btnHanlder} hasValidation>
-                                <Form.Control
-                                    required
-                                    placeholder="닉네임을 입력해주세요."
-                                    aria-label="닉네임"
-                                    aria-describedby="basic-addon2"
-                                    value={nickname}
-                                    onChange={(e) => setNickname(e.target.value)}
-                                    isInvalid={valid}
-                                />
-                            </InputGroup>
-                        </Col>
-                    </Row>
-                    <Row className="info-span">
-                        <p className={valid ? "shake err-msg" : "err-msg"}>{err}</p>
-                    </Row>
-                    <Row>
-                        <Col xs={{ offset: 3, span: 6 }}>
-                            <Button onClick={btnHanlder} variant="outline-secondary" style={{ color: "black" }}>
-                                슬라임 생성
-                            </Button>
-                        </Col>
-                    </Row>
+
+                    <Form onSubmit={btnHanlder}>
+                        <Row>
+                            <Col className="info-span" xs={4}>
+                                <span>닉네임</span>
+                            </Col>
+                            <Col className="info-span" xs={8}>
+                                <InputGroup hasValidation>
+                                    <Form.Control
+                                        required
+                                        placeholder="닉네임을 입력해주세요."
+                                        aria-label="닉네임"
+                                        aria-describedby="basic-addon2"
+                                        value={nickname}
+                                        onChange={(e) => setNickname(e.target.value)}
+                                        isInvalid={valid}
+                                    />
+                                </InputGroup>
+                            </Col>
+                        </Row>
+                        <Row className="info-span">
+                            <p className={valid ? "shake err-msg" : "err-msg"}>{err}</p>
+                        </Row>
+                        <Row>
+                            <Col xs={{ offset: 3, span: 6 }}>
+                                <Button variant="outline-secondary" style={{ color: "black" }}>
+                                    슬라임 생성
+                                </Button>
+                            </Col>
+                        </Row>
+                    </Form>
                 </Stack>
             </ModalBody>
         </Modal>

@@ -30,6 +30,7 @@ export default function PlayResultModal({ client, show, onHide }: Props) {
 
         if (!show && client?.connected) {
             client?.publish({ destination: '/app/player/anyObserver' })
+            handleObserveBtn()
         }  
         
         if (show) {

@@ -21,25 +21,27 @@
     display: flex;
 }
 
-@media (max-width: 996px) {
+@media (max-width: 992px) {
     .observer {
         font-size: 0.9rem;
         border-radius: 0.6rem;
     }
 }
 
-@media (max-width: 996px) {
+@media (max-width: 768px) {
     .observer {
-        font-size: 0.7rem;
+        font-size: 0.6rem;
         border-radius: 0.6rem;
     }
 }
 
-
 @media (max-width: 576px) {
     .observer {
-        font-size: 0.6rem;
+        font-size: 1rem;
         border-radius: 0.6rem;
+    }
+    .msg-nickname {
+        padding: 0
     }
     .info-container{
         flex-direction: column;

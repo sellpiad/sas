@@ -31,6 +31,7 @@ const FRAME_CONFIG = {
     MOVE: { frames: 2, duration: 300 },
     ATTACK: { frames: 3, duration: 300 },
     FEARED: { frames: 1, duration: 300 },
+    LOCK: { frames: 1, duration: 300 }
 };
 
 export default function Slime({ playerId, actionType, direction, fill, target, isAbsolute, ...props }: Props) {
@@ -186,24 +187,24 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
 
     }, [action, frame])
 
-    useEffect(()=>{
+    useEffect(() => {
 
-        if(action === 'IDLE' && direction !== undefined){
+        if (action === 'IDLE' && direction !== undefined) {
             directionRef.current = direction
         }
 
-    },[direction])
+    }, [direction])
 
 
     // 포지션 업데이트
     useEffect(() => {
         targetRef.current = target
 
-        if(actionType !== undefined){
+        if (actionType !== undefined) {
             setAction(actionType)
             setFrame(1)
         }
-     
+
     }, [target])
 
 
@@ -218,7 +219,7 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
         speed > 0 &&
         <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={getWidth()} height={getHeight()} preserveAspectRatio="xMidYMid meet" style={{ position: isAbsolute ? "absolute" : "relative", transform: "translate(" + moveX + "px," + moveY + "px)", transition: "transform " + speed + "s ease" }}>
 
-            <use xlinkHref={'#slime-' + playerId + '-' + directionRef.current  + '-' + action + '-' + frame} x={11} y={25} width={150} height={150} className={isShaking ? 'shake' : ''} />
+            <use xlinkHref={'#slime-' + playerId + '-' + directionRef.current + '-' + action + '-' + frame} x={11} y={25} width={150} height={150} className={isShaking ? 'shake' : ''} />
             <symbol id={'slime-' + playerId + '-down-IDLE-1'} viewBox="0 0 150 150">
                 <path id="Body" fillRule="evenodd" clipRule="evenodd" d="M97 9H39V18H19V37H10V82H24V91H39H97H107V82H117V37H110V18H97V9Z" fill={fill === undefined ? '#D9D9D9' : getAttr()} />
                 <rect id="RightEye" x="77" y="45" width="10" height="19" fill="black" />
