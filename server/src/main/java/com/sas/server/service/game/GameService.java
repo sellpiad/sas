@@ -10,7 +10,6 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -18,26 +17,22 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.sas.server.annotation.DistributedLock;
-import com.sas.server.dto.game.ActionData;
 import com.sas.server.dto.game.SlimeDTO;
 import com.sas.server.dto.queue.IngameData;
 import com.sas.server.entity.CubeEntity;
 import com.sas.server.entity.GameEntity;
 import com.sas.server.entity.PlayerEntity;
 import com.sas.server.exception.LockAcquisitionException;
-import com.sas.server.game.message.MessengerBroker;
 import com.sas.server.game.rule.ActionSystem;
 import com.sas.server.game.rule.BattleSystem;
+import com.sas.server.game.rule.ConquerSystem;
 import com.sas.server.repository.GameRepository;
 import com.sas.server.service.admin.LogService;
 import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.player.PlayerService;
 import com.sas.server.service.player.PlaylogService;
 import com.sas.server.service.ranker.RankerService;
-import com.sas.server.util.ActionType;
 import com.sas.server.util.ActivityType;
 
 import lombok.RequiredArgsConstructor;
@@ -52,14 +47,9 @@ public class GameService {
     private final PlayerService playerService;
     private final CubeService cubeService;
     private final RankerService rankerService;
-    private final PlaylogService playlogService;
     private final LogService logService;
 
-    private final BattleSystem battleSystem;
-    private final ActionSystem actionSystem;
-
     private final SimpMessagingTemplate simpMessagingTemplate;
-    private final MessengerBroker msgBroker;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private ScheduledFuture<?> scheduledFuture;
@@ -233,175 +223,5 @@ public class GameService {
         }
 
         return null;
-    }
-
-    /**
-     * 
-     * @param sessionId
-     * @param direction
-     * @return MoveData형식으로 슬라임 닉네임, 위치 리턴. 실패시 null
-     */
-    @DistributedLock(key = "'lock:lockon:' + #username", watingTime = 500, timeUnit= TimeUnit.MILLISECONDS)
-    @Retryable(value = {LockAcquisitionException.class,Exception.class}, maxAttempts = 2)
-    public ActionData startAction(String username, String direction) {
-
-        PlayerEntity player = playerService.findById(username);
-        CubeEntity target = cubeService.getNextCube(player.position, direction);
-        PlayerEntity enemy = searchEnemy(target.name);
-
-        // 락이 걸린 상태라면 리턴.
-        if (actionSystem.isLocked(username)) {
-            return ActionData.builder()
-                    .actionType(ActionType.LOCKED)
-                    .direction(direction)
-                    .target(player.position)
-                    .username(player.username)
-                    .build();
-        }
-
-        // 적이 존재하지 않을시 MOVE.
-        // 승리했다면 ATTACK
-        // 천적이라면 FEARED
-        // 무승부라면 DRAW
-        ActionType actionType = battleSystem.attrJudgment(player, enemy);
-
-        // 공격이라면 상대를 lockon하고, 메시지 전송.
-        if (actionType.equals(ActionType.ATTACK)) {
-
-            boolean isLockon = redisTemplate.opsForValue().setIfAbsent("lock:lockon:" + enemy.username, "LOCKED", 500, TimeUnit.MILLISECONDS);
-
-            if(!isLockon){
-                throw new LockAcquisitionException("Try again");
-            }
-
-            simpMessagingTemplate.convertAndSend("/topic/game/lockon", enemy.username);
-        }
-
-        return doAction(actionType, player, direction, target, enemy);
-
-    }
-
-    @Recover
-    public ActionData recoverAction(LockAcquisitionException e, String username, String direction) {
-
-        return ActionData.builder()
-                .actionType(ActionType.LOCKED)
-                .direction(direction)
-                .username(username)
-                .build();
-    }
-
-    @Recover
-    public ActionData recoverAction(Exception e, String username, String direction) {
-
-        log.error("{}", e.getMessage());
-
-        return ActionData.builder()
-                .actionType(ActionType.LOCKED)
-                .direction(direction)
-                .username(username)
-                .build();
-    }
-
-
-    /**
-     * 
-     * @param game
-     * @param sessionId
-     * @param direction
-     * @return ActionData
-     */
-
-    @Transactional
-    private ActionData doAction(ActionType actionType, PlayerEntity player, String direction, CubeEntity target,
-            PlayerEntity enemy) {
-
-        long lockTime = actionSystem.lock(player, target);
-
-        // 이동 위치가 같은 큐브일 때, 플레이어 스스로가 적이 되는 것 방지
-        if (player.position.equals(target.name))
-            enemy = null;
-
-        // 플레이어를 필드에서 제거.
-        redisTemplate.delete("lock:cube:" + player.position);
-
-        switch (actionType) {
-            case ActionType.ATTACK:
-                doAttack(player, enemy, target);
-                break;
-            case ActionType.MOVE:
-                doMove(player, target);
-                break;
-            case ActionType.DRAW:
-                doDraw(player);
-                break;
-            case ActionType.FEARED:
-                doDraw(player);
-                break;
-            default:
-                break;
-        }
-
-        return ActionData.builder()
-                .actionType(actionType)
-                .username(player.username)
-                .direction(direction)
-                .target(actionType.name().equals("DRAW") || actionType.name().equals("FEARED") ? player.position
-                        : target.name)
-                .lockTime(lockTime)
-                .actionPoint((player.actionPoint))
-                .build();
-    }
-
-    /**
-     * 큐브에 적이 있는지 없는지 확인.
-     * 
-     * @param position
-     * @return 적이 있다면 PlayerEntity를 반환. 없다면 Null을 반환.
-     */
-    private PlayerEntity searchEnemy(String position) {
-
-        if (redisTemplate.opsForSet().size("lock:cube:" + position) == 0) {
-            return null;
-        } else {
-            return playerService.findByPosition(position);
-        }
-    }
-
-    private void doAttack(PlayerEntity player, PlayerEntity enemy, CubeEntity target) {
-        // 패배자 삭제 및 리얼타임 랭크에서 삭제, 그 후 올타임 랭크에 기록
-        redisTemplate.delete("lock:cube:" + enemy.position);
-        playerService.deleteById(enemy.username);
-        rankerService.removeRealtimeRank(enemy.username);
-        rankerService.updateAlltimeRank(enemy);
-
-        // ai가 아닐때만 플레이 로그 저장
-        if (!enemy.ai) {
-            playlogService.save(enemy);
-            logService.save(enemy.username, ActivityType.STOP);
-        }
-
-        player = playerService.incKill(player);
-
-        // 리얼타임 랭킹 기록
-        rankerService.updateRealtimeRank(player);
-
-        simpMessagingTemplate.convertAndSend("/topic/game/deleteSlime",
-                enemy.username);
-        rankerService.publishAlltimeRanker();
-        rankerService.publishRealtimeRanker();
-        simpMessagingTemplate.convertAndSendToUser(player.username, "/queue/game/incKill", player.totalKill);
-
-        playerService.updatePlayer(player.toBuilder().position(target.name).build());
-        redisTemplate.opsForSet().add("lock:cube:" + target.name, "");
-    }
-
-    private void doMove(PlayerEntity player, CubeEntity target) {
-        playerService.updatePlayer(player.toBuilder().position(target.name).build());
-        redisTemplate.opsForSet().add("lock:cube:" + target.name, "");
-    }
-
-    private void doDraw(PlayerEntity player) {
-        redisTemplate.opsForSet().add("lock:cube:" + player.position, "");
     }
 }

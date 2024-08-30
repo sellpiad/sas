@@ -1,10 +1,10 @@
 import { Client, IMessage } from "@stomp/stompjs";
 import React, { useEffect, useReducer, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { ActionData, SlimeDTO } from "../../redux/GameSlice.tsx";
-import { ObserverType, updateLockTime, updateObserverPos } from "../../redux/ObserverSlice.tsx";
+import { ActionData, ActionType, SlimeDTO } from "../../redux/GameSlice.tsx";
+import { ObserverType, updateObserverPos } from "../../redux/ObserverSlice.tsx";
 import { RootState } from "../../redux/Store.tsx";
-import { deletePlayer } from "../../redux/UserSlice.tsx";
+import { deletePlayer, updateLocked } from "../../redux/UserSlice.tsx";
 import Slime from "./Slime.tsx";
 
 
@@ -70,7 +70,6 @@ export default function SlimeSet({ client }: Props) {
     const observer = useSelector((state: RootState) => state.observer.observer);
     const observerRef = useRef<ObserverType>()
 
-
     // redux state 수정용
     const dispatch = useDispatch()
 
@@ -116,7 +115,7 @@ export default function SlimeSet({ client }: Props) {
 
                 // 옵저버 시점 업데이트
                 if (observerRef.current?.username === ActionData.username && ActionData.target !== null) {
-                    console.log(ActionData)
+
                     dispatch(updateObserverPos({ observerPos: ActionData.target }))
 
                 }
@@ -160,7 +159,7 @@ export default function SlimeSet({ client }: Props) {
                 Object.values(slimes).map((value) => {
                     return <Slime key={value['username']}
                         playerId={value['username']}
-                        actionType={value['actionType']}
+                        actionType={value['actionType'] as ActionType}
                         direction={value['direction']}
                         fill={value['attr']}
                         target={value['target']}

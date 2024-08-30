@@ -7,12 +7,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ActionType {
 
+    NOTCLASSIFIED("NOTCLASSIFIED"),
+    STUCK("STUCK"),
     ATTACK("ATTACK"),
     MOVE("MOVE"),
     DRAW("DRAW"),
+    CONQUER_START("CONQUER_START"),
+    CONQUER_CANCEL("CONQUER_CANCEL"),
     LOCKED("LOCKED"),
     LOCKON("LOCKON"),
-    FEARED("FEARD");
+    FEARED("FEARED");
 
     private final String actionType;
 }

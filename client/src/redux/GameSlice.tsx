@@ -20,11 +20,25 @@ export interface EffectData {
 }
 
 export interface ActionData {
-    actionType: string
+    actionType: ActionType
     username: string
     target: string | null // 위치
     direction: string
-    lockTime:number
+    lockTime: number
+}
+
+export enum ActionType {
+    IDLE = "IDLE",
+    NOTCLASSIFIED = "NOTCLASSIFIED",
+    STUCK = "STUCK",
+    ATTACK = "ATTACK",
+    MOVE = "MOVE",
+    DRAW = "DRAW",
+    CONQUER_START = "CONQUER_START",
+    CONQUER_CANCEL = "CONQUER_CANCEL",
+    LOCKED = "LOCKED",
+    LOCKON = "LOCKON",
+    FEARED = "FEARED"
 }
 
 

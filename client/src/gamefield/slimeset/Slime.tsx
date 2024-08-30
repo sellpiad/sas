@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "../../redux/Store";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../redux/Store.tsx";
+import { ActionType } from "../../redux/GameSlice.tsx";
+import { updateLocked } from "../../redux/UserSlice.tsx";
 
 
 /**
@@ -11,16 +13,16 @@ import { RootState } from "../../redux/Store";
  */
 
 interface Props {
-    className?: string
     playerId: string
-    actionType?: string
+    actionType?: ActionType
     direction?: string
     fill?: string
-    border?: string
     target?: string | undefined // 현재 위치한 큐브 이름
+    isAbsolute: boolean
+    border?: string
+    className?: string
     width?: string
     height?: string
-    isAbsolute: boolean
 }
 
 //기본 프레임과 해당 액션의 소요 시간
@@ -31,16 +33,11 @@ const FRAME_CONFIG = {
     MOVE: { frames: 2, duration: 300 },
     ATTACK: { frames: 3, duration: 300 },
     FEARED: { frames: 1, duration: 300 },
-    LOCK: { frames: 1, duration: 300 }
+    LOCK: { frames: 1, duration: 300 },
+    CONQUER: { frame: 1, duration: 3000 }
 };
 
-export default function Slime({ playerId, actionType, direction, fill, target, isAbsolute, ...props }: Props) {
-
-    // 슬라임 넓이와 높이
-    // 이 컴포넌트는 여러 곳에서 쓰기 때문에 props에서 따로 width와 height이 들어오거나,
-    // 슬라임 박스 내에 위치 시키거나 하는 경우 때문에 어댑터 역할로 따로 state를 선언.
-    const [width, setWidth] = useState<number>(0)
-    const [height, setHeight] = useState<number>(0)
+export default function Slime({ playerId, actionType, direction, fill, target, isAbsolute, border, className, width, height }: Props) {
 
     const boxWidth = useSelector((state: RootState) => state.cube.width)
     const boxHeight = useSelector((state: RootState) => state.cube.height)
@@ -49,13 +46,13 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
 
     const [moveX, setMoveX] = useState<number>(0)
     const [moveY, setMoveY] = useState<number>(0)
-    const [action, setAction] = useState<string>('IDLE')
+    const [action, setAction] = useState<ActionType>(ActionType.IDLE)
     const [frame, setFrame] = useState<number>(1)
     const [isShaking, setShaking] = useState<boolean>(false)
 
     const startTimeRef = useRef(0)
 
-    const actionRef = useRef('IDLE')
+    const actionRef = useRef<ActionType>(ActionType.IDLE)
     const frameRef = useRef<number>(1)
     const directionRef = useRef<string>('down') // direction 어댑터용
 
@@ -76,19 +73,6 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
         }
     }
 
-    const getWidth = () => {
-        return props.width === undefined ? width : props.width
-    }
-
-    const getHeight = () => {
-        return props.height === undefined ? height : props.height
-    }
-
-    // 슬라임이 속한 큐브의 정보 업데이트 메소드
-    const updateSlimeBox = () => {
-        setWidth(boxWidth)
-        setHeight(boxHeight)
-    }
 
     // 위치 업데이트 메소드
     const updateTarget = () => {
@@ -130,7 +114,7 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
                 }
 
                 if (newFrame > frames) {
-                    setAction('IDLE');
+                    setAction(ActionType.IDLE);
                     return 1;
                 }
 
@@ -148,7 +132,6 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
     useEffect(() => {
 
         updateTarget()
-        updateSlimeBox()
 
         setTimeout(() => { setSpeed(0.5) }, 10)
         const animation = requestAnimationFrame(updateAnimation)
@@ -157,21 +140,26 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
 
     }, [playerId])
 
+
     // 액션타입이 변경되었을 때 감지 및, action state 업데이트
     useEffect(() => {
 
-        if (actionType) {
-            setAction(prev => actionType === 'LOCKED' ? prev : actionType) // action 변경 트리거
-
+        if (actionType != undefined) {
             switch (actionType) {
-                case 'DRAW':
+                case ActionType.LOCKED:
                     startShaking()
                     break;
-                case 'FEARED':
+                case ActionType.DRAW:
                     startShaking()
                     break;
-                case 'LOCKED':
+                case ActionType.FEARED:
                     startShaking()
+                    break;
+                case ActionType.STUCK:
+                    startShaking()
+                    break;
+                default:
+                    setAction(actionType)
                     break;
             }
         }
@@ -189,7 +177,7 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
 
     useEffect(() => {
 
-        if (action === 'IDLE' && direction !== undefined) {
+        if (action === ActionType.IDLE && direction !== undefined) {
             directionRef.current = direction
         }
 
@@ -208,16 +196,9 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
     }, [target])
 
 
-    // 박스 크기 변할 때 슬라임 크기 변화
-    useEffect(() => {
-        updateSlimeBox()
-    }, [boxWidth, boxHeight])
-
-
-
     return (
         speed > 0 &&
-        <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={getWidth()} height={getHeight()} preserveAspectRatio="xMidYMid meet" style={{ position: isAbsolute ? "absolute" : "relative", transform: "translate(" + moveX + "px," + moveY + "px)", transition: "transform " + speed + "s ease" }}>
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={width === undefined ? boxWidth : width} height={height === undefined ? boxHeight : height} preserveAspectRatio="xMidYMid meet" style={{ position: isAbsolute ? "absolute" : "relative", transform: "translate(" + moveX + "px," + moveY + "px)", transition: "transform " +  speed + "s ease" }}>
 
             <use xlinkHref={'#slime-' + playerId + '-' + directionRef.current + '-' + action + '-' + frame} x={11} y={25} width={150} height={150} className={isShaking ? 'shake' : ''} />
             <symbol id={'slime-' + playerId + '-down-IDLE-1'} viewBox="0 0 150 150">
@@ -437,6 +418,33 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
                 <path id="LeftEye" fillRule="evenodd" clipRule="evenodd" d="M33 55H23V65H33V74H43V65H53V55H43H33Z" fill="black" />
                 <path id="RightEye" fillRule="evenodd" clipRule="evenodd" d="M69 55H59V65H69V74H79V65H89V55H79H69Z" fill="black" />
                 <path id="Frame" fillRule="evenodd" clipRule="evenodd" d="M89 18H40V27H20V36H11V46H1V91H11H30V100H100V91H118H128V46H118V36H109V27H89V18ZM88 27V36H108V55H118V82H99V91H30V82H11V55H21V36H40V27H88Z" fill="#020202" />
+            </symbol>
+
+            <symbol id={'slime-' + playerId + '-down-CONQUER'} viewBox="0 0 150 150">
+                <path id="Body" fillRule="evenodd" clipRule="evenodd" d="M40 148H88V155H108V174H117V219H102H88V228H40V219H19H10V174H20V155H40V148Z" fill="#D9D9D9" />
+                <path id="Frame" fillRule="evenodd" clipRule="evenodd" d="M39 146H88V155H108V164H117V174H127V219H117H98V228H28V219H10H0V174H10V164H19V155H39V146ZM40 155V164H20V183H10V210H29V219H98V210H117V183H107V164H88V155H40Z" fill="#020202" />
+                <rect id="Mouse" width="20" height="20" transform="matrix(-1 0 0 1 74 199)" fill="black" />
+                <path id="LeftEye" fillRule="evenodd" clipRule="evenodd" d="M97 178V183V193H87H77V183H87V178H97Z" fill="black" />
+                <path id="RightEye" fillRule="evenodd" clipRule="evenodd" d="M39 178V183H49V193H39H29V183V178H39Z" fill="black" />
+            </symbol>
+            <symbol id={'slime-' + playerId + '-up-CONQUER'} viewBox="0 0 150 150">
+                <path id="Body_2" fillRule="evenodd" clipRule="evenodd" d="M40 20H88V27H108V46H117V91H102H88V100H40V91H19H10V46H20V27H40V20Z" fill="#D9D9D9" />
+                <path id="Frame_2" fillRule="evenodd" clipRule="evenodd" d="M39 18H88V27H108V36H117V46H127V91H117H98V100H28V91H10H0V46H10V36H19V27H39V18ZM40 27V36H20V55H10V82H29V91H98V82H117V55H107V36H88V27H40Z" fill="#020202" />
+                <path id="Union" fillRule="evenodd" clipRule="evenodd" d="M91.7103 55.6214L90.7381 58.2923L85.1655 56.264L83.2212 61.606L80.4349 60.5919L83.3513 52.579L83.3513 52.579L83.3513 52.579L91.7103 55.6214ZM75.5726 58.8221L78.3589 59.8362L80.3032 54.4943L80.3032 54.4943L81.2754 51.8233L72.9164 48.7809L71.9443 51.4519L77.5169 53.4802L75.5726 58.8221ZM74.8961 43.3419L73.9239 46.0129L82.2828 49.0553L82.2829 49.0553L83.255 46.3844L85.1993 41.0424L82.413 40.0283L80.4687 45.3702L74.8961 43.3419ZM93.6899 50.1823L92.7178 52.8533L84.3588 49.8109L84.3588 49.8109L84.3588 49.8108L87.2753 41.798L90.0616 42.8121L88.1173 48.1541L93.6899 50.1823Z" fill="black" />
+            </symbol>
+            <symbol id={'slime-' + playerId + '-right-CONQUER'} viewBox="0 0 150 150">
+                <path id="Body_3" fillRule="evenodd" clipRule="evenodd" d="M40 270H88V277H108V296H117V341H102H88V350H40V341H19H10V296H20V277H40V270Z" fill="#D9D9D9" />
+                <path id="Frame_3" fillRule="evenodd" clipRule="evenodd" d="M39 268H88V277H108V286H117V296H127V341H117H98V350H28V341H10H0V296H10V286H19V277H39V268ZM40 277V286H20V305H10V332H29V341H98V332H117V305H107V286H88V277H40Z" fill="#020202" />
+                <rect id="Mouse_2" width="20" height="20" transform="matrix(-1 0 0 1 83 316)" fill="black" />
+                <path id="LeftEye_2" fillRule="evenodd" clipRule="evenodd" d="M99 292V297V307H89H79V297H89V292H99Z" fill="black" />
+                <path id="RightEye_2" fillRule="evenodd" clipRule="evenodd" d="M63 292V297H73V307H63H53V297V292H63Z" fill="black" />
+            </symbol>
+            <symbol id={'slime-' + playerId + '-left-CONQUER'} viewBox="0 0 150 150">
+                <path id="Body_4" fillRule="evenodd" clipRule="evenodd" d="M88 380H40V387H20V406H11V451H26H40V460H88V451H109H118V406H108V387H88V380Z" fill="#D9D9D9" />
+                <path id="Frame_4" fillRule="evenodd" clipRule="evenodd" d="M89 378H40V387H20V396H11V406H1V451H11H30V460H100V451H118H128V406H118V396H109V387H89V378ZM88 387V396H108V415H118V442H99V451H30V442H11V415H21V396H40V387H88Z" fill="#020202" />
+                <rect id="Mouse_3" x="45" y="426" width="20" height="20" fill="black" />
+                <path id="LeftEye_3" fillRule="evenodd" clipRule="evenodd" d="M29 402V407V417H39H49V407H39V402H29Z" fill="black" />
+                <path id="RightEye_3" fillRule="evenodd" clipRule="evenodd" d="M65 402V407H55V417H65H75V407V402H65Z" fill="black" />
             </symbol>
         </svg>
     )

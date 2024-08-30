@@ -1,21 +1,16 @@
 package com.sas.server.controller;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.sas.server.dao.CustomUserDetails;
-import com.sas.server.dto.game.ActionData;
 import com.sas.server.dto.game.PlayerCardData;
 import com.sas.server.dto.game.RankerDTO;
 import com.sas.server.dto.game.SlimeDTO;
@@ -41,23 +36,6 @@ public class GameController {
 
         return gameService.findAllSlimes();
 
-    }
-
-    @MessageMapping("/game/action")
-    @SendTo("/topic/game/action")
-    public ActionData action(@RequestBody String keyDown,
-            SimpMessageHeaderAccessor simpMessageHeaderAccessor) {
-
-        Principal user = simpMessageHeaderAccessor.getUser();
-
-        if (user == null)
-            return null;
-
-        if (playerService.ingameById(user.getName()) == null) {
-            return null;
-        }
-
-        return gameService.startAction(user.getName(), keyDown);
     }
 
     @MessageMapping("/game/ranker")

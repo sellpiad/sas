@@ -107,6 +107,8 @@ function App() {
         },
         onWebSocketClose: (close) => {
           dispatch(changeLogin({ isLogin: false }))
+          setIsConn(false)
+          persistor.purge()
         },
         reconnectDelay: 15000, // 재연결 딜레이 (밀리초)
         heartbeatIncoming: 4000,
@@ -150,7 +152,7 @@ function App() {
               <Row className='w-100 justify-content-between '>
                 <Col xs={12} sm={6} style={{ paddingLeft: 0 }}>
                   <Navbar.Brand>
-                    <Slime className='Slime' playerId={"navbarSlime"} direction={"down"} isAbsolute={false}></Slime>
+                    <Slime key={"navbarSlime"} className='Slime' playerId={"navbarSlime"} direction={"down"} isAbsolute={false}></Slime>
                     <svg className="title-svg" width="100%" height="100%" viewBox="-5 -30 200 50">
                       <text
                         x="0" y="0" fill="#3678ce"

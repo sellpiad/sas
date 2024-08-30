@@ -72,7 +72,7 @@ public class AIController {
         }
 
         if (action != null) {
-            scheduler.schedule(() -> action(sessionId), action.lockTime + delay, TimeUnit.MILLISECONDS);
+            scheduler.schedule(() -> action(sessionId), action.getLockTime() + delay, TimeUnit.MILLISECONDS);
         }
 
     }

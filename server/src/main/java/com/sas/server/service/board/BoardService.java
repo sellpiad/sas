@@ -2,11 +2,8 @@ package com.sas.server.service.board;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -17,7 +14,6 @@ import com.sas.server.dto.board.BoardElement;
 import com.sas.server.dto.board.PostData;
 import com.sas.server.entity.PostEntity;
 import com.sas.server.repository.BoardRepository;
-import com.sas.server.util.Role;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

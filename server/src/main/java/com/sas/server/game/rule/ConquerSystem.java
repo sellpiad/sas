@@ -1,6 +1,17 @@
 package com.sas.server.game.rule;
 
+import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
+
+import com.sas.server.entity.CubeEntity;
+import com.sas.server.entity.PlayerEntity;
 
 import lombok.RequiredArgsConstructor;
 
@@ -8,60 +19,42 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ConquerSystem {
 
-        public void notifyConquest(String sessionId, String cubeId, int totalCube, long seconds,
+        private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3,
+                        Thread.ofVirtual().factory());
+        private final StringRedisTemplate redisTemplate;
+        private final SimpMessagingTemplate simpMessagingTemplate;
+
+        private HashMap<String, ScheduledFuture<?>> conquerQueue = new HashMap<>();
+
+        public void notifyConquest(PlayerEntity player, CubeEntity cube, long milliseconds,
                         Runnable afterConquered) {
 
-                /*
-                 * scheduler.schedule(() -> {
-                 * 
-                 * UserEntity user = userSerivce.findBySessionId(sessionId);
-                 * 
-                 * Set<String> conqueredCubes = user.conqueredCubes;
-                 * 
-                 * String cubePos = cubeService.getCubeNickname(cubeId);
-                 * Set<String> clickable = cubeService.getClickableCubes(cubeId);
-                 * 
-                 * conqueredCubes.add(cubePos);
-                 * 
-                 * messageTemplate.convertAndSendToUser(user.sessionId,
-                 * "/queue/cube/conqueredCubes", conqueredCubes,
-                 * msgBroker.createHeaders(user.sessionId));
-                 * messageTemplate.convertAndSendToUser(user.sessionId, "/queue/cube/clickable",
-                 * clickable,
-                 * msgBroker.createHeaders(user.sessionId));
-                 * 
-                 * if (conqueredCubes.size() == totalCube) {
-                 * 
-                 * user =
-                 * user.toBuilder().state("CONQUEROR").conqueredTime(LocalDateTime.now()).build(
-                 * );
-                 * 
-                 * userSerivce.save(user);
-                 * rankerService.save(user);
-                 * 
-                 * RankerDTO conqueror = RankerDTO.builder()
-                 * .nickname(user.nickname)
-                 * .life(user.life)
-                 * .conqueredTime(user.conqueredTime)
-                 * .build();
-                 * 
-                 * messageTemplate.convertAndSendToUser(user.sessionId, "/queue/game/complete",
-                 * conqueror,
-                 * msgBroker.createHeaders(user.sessionId));
-                 * afterConquered.run();
-                 * 
-                 * } else {
-                 * playerService.update(
-                 * user.toBuilder().life(user.life +
-                 * 1).movable(true).conqueredCubes(conqueredCubes).build());
-                 * 
-                 * messageTemplate.convertAndSendToUser(user.sessionId, "/queue/player/movable",
-                 * true,
-                 * msgBroker.createHeaders(user.sessionId));
-                 * }
-                 * 
-                 * }, seconds, TimeUnit.SECONDS);
-                 */
+                ScheduledFuture<?> future = scheduler.schedule(() -> {
 
+                        redisTemplate.opsForSet().add("conquer:" + cube.name + ":" + player.attr, "");
+
+                        simpMessagingTemplate.convertAndSend("/topic/game/conquer", cube.name);
+
+                }, milliseconds, TimeUnit.MILLISECONDS);
+
+                conquerQueue.put(player.username, future);
+
+        }
+
+        /**
+         * 정복 취소 메소드.
+         * 
+         * @param player
+         * @return 유저 앞으로 잡힌 conquer이 없다면 false 리턴, 성공한다면 true 리턴.
+         */
+        public boolean cancelConquer(PlayerEntity player) {
+
+                ScheduledFuture<?> future = conquerQueue.get(player.username);
+
+                if (future != null) {
+                        return future.cancel(true);
+                }
+
+                return false;
         }
 }

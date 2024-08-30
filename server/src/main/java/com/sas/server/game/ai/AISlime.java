@@ -13,9 +13,11 @@ import org.springframework.stereotype.Component;
 import com.sas.server.dto.game.ActionData;
 import com.sas.server.entity.CubeEntity;
 import com.sas.server.entity.PlayerEntity;
+import com.sas.server.service.action.ActionService;
 import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.game.GameService;
 import com.sas.server.service.player.PlayerService;
+import com.sas.server.util.ActionType;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AISlime implements Serializable {
 
+    private final ActionService actionService;
     private final GameService gameService;
     private final PlayerService playerService;
     private final CubeService cubeService;
@@ -39,11 +42,11 @@ public class AISlime implements Serializable {
     public ActionData requestAction(String username) {
 
         // AI가 더 이상 존재하지 않으면 작동 중지
-        if(!playerService.existById(username)){
+        if (!playerService.existById(username)) {
             return null;
         }
 
-        ActionData action = gameService.startAction(username, nextDirection(username));
+        ActionData action = actionService.requestAction(ActionType.NOTCLASSIFIED, username, nextDirection(username));
 
         if (action != null) {
             simpMessagingTemplate.convertAndSend("/topic/game/action", action);
@@ -76,7 +79,7 @@ public class AISlime implements Serializable {
         }
     }
 
-    String nextDirection(String username){
+    String nextDirection(String username) {
 
         PlayerEntity ai = playerService.findById(username);
         CubeEntity origin = cubeService.findByName(ai.position);
@@ -84,33 +87,33 @@ public class AISlime implements Serializable {
         Set<CubeEntity> movableAreas = new HashSet<>();
 
         // 멍청하지 않다면 벽 감지
-        if(!ai.isDumb){
+        if (!ai.isDumb) {
             movableAreas = cubeService.getMovableArea(origin.name);
         }
 
         // 친화적이라면 동족 감지
-        if(ai.isFriendly){
-            
+        if (ai.isFriendly) {
+
         }
 
         // 방어적이라면 천적 감지
-        if(ai.isDefensive){
+        if (ai.isDefensive) {
 
         }
 
         // 공격적이라면 먹이 감지
-        if(ai.isAggressive){
+        if (ai.isAggressive) {
 
         }
 
         // 아무것도 없다면 랜덤으로 방향 던지기.
-        if(movableAreas.isEmpty()){
+        if (movableAreas.isEmpty()) {
             return randDirection();
         }
 
         List<CubeEntity> candidates = new ArrayList<>(movableAreas);
         Random random = new Random();
-        
+
         CubeEntity target = candidates.get(random.nextInt(candidates.size()));
 
         return cubeService.convertToDirection(origin, target);

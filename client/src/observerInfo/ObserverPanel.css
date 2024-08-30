@@ -78,7 +78,7 @@
     margin: 2px;
 }
 
-@media (max-width: 996px) {
+@media (max-width: 992px) {
     .observerPanel {
         font-size: 0.8rem;
     }

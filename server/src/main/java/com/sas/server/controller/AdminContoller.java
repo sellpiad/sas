@@ -18,6 +18,9 @@ import com.sas.server.service.player.PlayerService;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * 관리자 전용 컨트롤러
+ */
 
 @RestController
 @RequiredArgsConstructor
