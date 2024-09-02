@@ -1,37 +1,21 @@
 import React from "react"
+import './AttrSymbol.css'
 
 interface Props {
     width: string
     height: string
     attr: string
     opacity: number
-    animating: boolean | undefined
+    animating: boolean
 }
 
 export default function AttSymbol({ width, height, attr, opacity, animating }: Props) {
 
     return (
-        <svg width={width} height={height} viewBox="0 0 70 70" fill="none" opacity={opacity} xmlns="http://www.w3.org/2000/svg">
+        <svg className={animating ? 'animate' : ''} width={width} height={height} viewBox="0 0 70 70" fill="none" opacity={opacity} xmlns="http://www.w3.org/2000/svg">
             {attr === 'GRASS' && <Grass />}
             {attr === 'FIRE' && <Fire />}
             {attr === 'WATER' && <Water />}
-            {animating && <>
-                <animate
-                    attributeName="opacity"
-                    from="0"
-                    to="1"
-                    dur="5s"
-                    begin="0s"
-                    fill="freeze" />
-                <animate
-                    attributeName="width"
-                    from="0%"
-                    to="80%"
-                    dur="5s"
-                    begin="0s"
-                    fill="freeze" />
-            </>}
-
         </svg>
     )
 }

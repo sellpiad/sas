@@ -49,7 +49,7 @@ public class AISlime implements Serializable {
         ActionData action = actionService.requestAction(ActionType.NOTCLASSIFIED, username, nextDirection(username));
 
         if (action != null) {
-            simpMessagingTemplate.convertAndSend("/topic/game/action", action);
+            simpMessagingTemplate.convertAndSend("/topic/action", action);
             return action;
         }
 

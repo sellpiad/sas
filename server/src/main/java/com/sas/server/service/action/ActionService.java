@@ -6,12 +6,11 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import com.sas.server.dto.game.ActionData;
+import com.sas.server.dto.game.CubeAttrData;
 import com.sas.server.entity.CubeEntity;
 import com.sas.server.entity.PlayerEntity;
 import com.sas.server.exception.LockAcquisitionException;
 import com.sas.server.game.message.MessagePublisher;
-import com.sas.server.game.rule.BattleSystem;
-import com.sas.server.game.rule.ConquerSystem;
 import com.sas.server.service.admin.LogService;
 import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.player.PlayerService;
@@ -81,8 +80,11 @@ public class ActionService {
                     .build();
         }
 
-        doAction(actionType, player, target, enemy);
-        publishMessage(actionType, direction, player, enemy, target);
+        boolean actionComplete = doAction(actionType, player, target, enemy);
+
+        if (actionComplete) {
+            publishMessage(actionType, direction, player, enemy, target);
+        }
 
         return ActionData.builder()
                 .actionType(actionType)
@@ -110,7 +112,7 @@ public class ActionService {
         log.error("{}", e.getMessage());
 
         return ActionData.builder()
-                .actionType(ActionType.LOCKON)
+                .actionType(ActionType.LOCKED)
                 .username(username)
                 .direction(direction)
                 .build();
@@ -121,24 +123,21 @@ public class ActionService {
         return battleSystem.attrJudgment(player, enemy);
     }
 
-    private void doAction(ActionType actionType, PlayerEntity player, CubeEntity target, PlayerEntity enemy) {
+    private boolean doAction(ActionType actionType, PlayerEntity player, CubeEntity target, PlayerEntity enemy) {
 
         switch (actionType) {
             case ActionType.ATTACK:
-                actionSystem.doAttack(player, enemy, target);
-                break;
+                return actionSystem.doAttack(player, enemy, target);
             case ActionType.MOVE:
-                actionSystem.doMove(player, target);
-                break;
+                return actionSystem.doMove(player, target);
             case ActionType.CONQUER_START:
-                actionSystem.doConquer(player, target);
-                break;
+                return actionSystem.doConquer(player, target);
             case ActionType.CONQUER_CANCEL:
-                actionSystem.cancelConquer(player);
-                break;
+                return actionSystem.cancelConquer(player);
             default:
-                break;
+                return false;
         }
+
     }
 
     private PlayerEntity searchEnemy(String position) {
@@ -162,19 +161,23 @@ public class ActionService {
                 publisher.queuePublish(player.username, MessageType.QUEUE_INCKILL, player.totalKill);
                 break;
             case ActionType.MOVE:
-
                 break;
             case ActionType.DRAW:
-
                 break;
             case ActionType.FEARED:
-
                 break;
             case ActionType.CONQUER_START:
-                publisher.topicPublish(MessageType.TOPIC_CONQUER_START, target.name);
+                publisher.topicPublish(MessageType.TOPIC_CONQUER_START,
+                        CubeAttrData.builder()
+                                .name(target.name)
+                                .attr(player.attr)
+                                .build());
                 break;
             case ActionType.CONQUER_CANCEL:
-                publisher.topicPublish(MessageType.TOPIC_CONQUER_CANCEL, target.name);
+                publisher.topicPublish(MessageType.TOPIC_CONQUER_CANCEL, CubeAttrData.builder()
+                        .name(target.name)
+                        .attr(player.attr)
+                        .build());
                 break;
             default:
                 break;

@@ -35,10 +35,10 @@ export default function ControlPanel({ client }: Props) {
 
         if (arrowKeys.includes(e.code)) {
             directionRef.current = e.code.toLowerCase().substring(5)
-            client?.publish({ destination: '/app/game/action', body: directionRef.current })
+            client?.publish({ destination: '/app/action', body: directionRef.current })
         } else if (spaceKey.includes(e.code) && !isPressingRef.current) {
             isPressingRef.current = true
-            client?.publish({ destination: '/app/game/action/conquer/start', body: directionRef.current })
+            client?.publish({ destination: '/app/action/conquer/start', body: directionRef.current })
         }
 
     }
@@ -46,7 +46,7 @@ export default function ControlPanel({ client }: Props) {
     const keyUp = (e: KeyboardEvent) => {
         if (spaceKey.includes(e.code)) {
             isPressingRef.current = false
-            client?.publish({ destination: '/app/game/action/conquer/cancel', body: directionRef.current })
+            client?.publish({ destination: '/app/action/conquer/cancel', body: directionRef.current })
         }
     }
 

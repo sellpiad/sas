@@ -3,22 +3,16 @@ package com.sas.server.service.action;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.retry.annotation.Recover;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 import com.sas.server.annotation.DistributedLock;
-import com.sas.server.dto.game.ActionData;
 import com.sas.server.entity.CubeEntity;
 import com.sas.server.entity.PlayerEntity;
 import com.sas.server.exception.LockAcquisitionException;
-import com.sas.server.game.rule.ConquerSystem;
 import com.sas.server.service.admin.LogService;
-import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.player.PlayerService;
 import com.sas.server.service.player.PlaylogService;
 import com.sas.server.service.ranker.RankerService;
-import com.sas.server.util.ActionType;
 import com.sas.server.util.ActivityType;
 
 import lombok.RequiredArgsConstructor;
@@ -102,7 +96,7 @@ public class ActionSystem {
     }
 
     @DistributedLock(key = "'lock:action:normal:' + #player.username", watingTime = 980, timeUnit = TimeUnit.MILLISECONDS)
-    public void doAttack(PlayerEntity player, PlayerEntity enemy, CubeEntity target) {
+    public boolean doAttack(PlayerEntity player, PlayerEntity enemy, CubeEntity target) {
 
         // 상대를 락온
         boolean isLockon = redisTemplate.opsForValue().setIfAbsent("lock:lockon:" + enemy.username, "LOCKED", 500,
@@ -129,25 +123,30 @@ public class ActionSystem {
         rankerService.updateRealtimeRank(player);
 
         doMove(player, target);
+
+        return true;
     }
 
     @DistributedLock(key = "'lock:action:normal:' + #player.username", watingTime = 980, timeUnit = TimeUnit.MILLISECONDS)
-    public void doMove(PlayerEntity player, CubeEntity target) {
+    public boolean doMove(PlayerEntity player, CubeEntity target) {
+        
         redisTemplate.delete("lock:cube:" + player.position);
         playerService.updatePlayer(player.toBuilder().position(target.name).build());
         redisTemplate.opsForSet().add("lock:cube:" + target.name, "");
+
+        return true;
     }
 
     @DistributedLock(key = "'lock:action:normal:' + #player.username", watingTime = 980, timeUnit = TimeUnit.MILLISECONDS)
-    public void doDraw(PlayerEntity player) {
-        
+    public boolean doDraw(PlayerEntity player) {
+        return true;
     }
 
-    public String doConquer(PlayerEntity player, CubeEntity target) {
+    public boolean doConquer(PlayerEntity player, CubeEntity target) {
 
         conquerSystem.notifyConquest(player, target, 3000, null);
 
-        return target.name;
+        return true;
     }
 
     public boolean cancelConquer(PlayerEntity player) {

@@ -68,7 +68,7 @@ export default function EffectSet({ client }: Props) {
         if (client?.connected) {
             // 이펙트 추가
 
-            client.subscribe("/topic/game/action", (msg: IMessage) => {
+            client.subscribe("/topic/action", (msg: IMessage) => {
 
                 const Effect = JSON.parse(msg.body) as EffectData
               

@@ -1,4 +1,4 @@
-package com.sas.server.game.rule;
+package com.sas.server.service.action;
 
 import java.util.Random;
 

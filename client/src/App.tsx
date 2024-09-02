@@ -51,28 +51,34 @@ function App() {
   const auth = useSelector((state: RootState) => state.user.auth)
 
   // 모달 관리 메소드들
-  const showCreateModal = () => {
+  const showCreateModal = (e:React.MouseEvent<HTMLButtonElement>) => {
     setCreateModal(true)
+    e.currentTarget.blur()
   }
 
-  const showRankingModal = () => {
+  const showRankingModal = (e:React.MouseEvent<HTMLButtonElement>) => {
     setRankingModal(true)
+    e.currentTarget.blur()
   }
 
-  const showBoardModal = () => {
+  const showBoardModal = (e:React.MouseEvent<HTMLButtonElement>) => {
     setBoardModal(true)
+    e.currentTarget.blur()
   }
 
-  const showPlayerModal = () => {
+  const showPlayerModal = (e:React.MouseEvent<HTMLButtonElement>) => {
     setPlayerModal(true)
+    e.currentTarget.blur()
   }
 
-  const showPlayResultModal = () => {
+  const showPlayResultModal = (e:React.MouseEvent<HTMLButtonElement>) => {
     setPlayResultModal(true)
+    e.currentTarget.blur()
   }
 
-  const showAdminModal = () => {
+  const showAdminModal = (e:React.MouseEvent<HTMLButtonElement>) => {
     setAdminModal(true)
+    e.currentTarget.blur()
   }
 
   const handleLogout = () => {

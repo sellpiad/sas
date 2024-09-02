@@ -1,0 +1,21 @@
+.animate {
+    animation: fadeIn 5s forwards, widthGrow 5s forwards;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes widthGrow {
+    0% {
+        width: 0%;
+    }
+    100% {
+        width: 80%;
+    }
+}

@@ -14,11 +14,16 @@ interface Props {
     client: Client | undefined;
 }
 
+type CubeAttrData = {
+    name: string
+    attr: string
+}
+
 export default function CubeSet({ client }: Props) {
 
     const cubeset = useSelector((state: RootState) => state.game.cubeset)
-    const [attrset,setAttrset] = useState<Set<string>>(new Set<string>())
-
+    const [attrmap, setAttrmap] = useState<Map<string, string>>(new Map<string, string>())
+    const [conquerInProcess, setConquerInProcess] = useState<Map<string, string>>(new Map<string, string>())
 
     const dispatch = useDispatch()
 
@@ -27,19 +32,21 @@ export default function CubeSet({ client }: Props) {
 
     const gameSize = useSelector((state: RootState) => state.game.size)
 
-    const beingConquered = (cubeNickname:string) => {
-        
+    const inConquerProcess = (cubename: string) => {
+        const attr = conquerInProcess.get(cubename)
+
+        return attr == undefined ? false : true
     }
 
-    const hasPlayer = (cubeNickname: string) => {
-        return observerPos === cubeNickname ? true : false
+    const hasPlayer = (cubename: string) => {
+        return observerPos === cubename ? true : false
     }
 
-    const getAttr = (cubeNickname: string) => {
+    const getAttr = (cubename: string) => {
 
-            if(attrset.size > 0 && attrset.has(cubeNickname)){
-                return attrset[cubeNickname]
-            }
+        const attr = attrmap.get(cubename)
+
+        return attr == undefined ? 'NORMAL' : attr
     }
 
     useEffect(() => {
@@ -54,26 +61,65 @@ export default function CubeSet({ client }: Props) {
 
     }, [])
 
-
     useEffect(() => {
         if (client?.connected) {
-            client.subscribe('/topic/game/action/conquer/start', (msg: IMessage) => {
-                console.log(msg.body)
-            })
-            client.subscribe('/topic/game/action/conquer/cancel', (msg: IMessage) => {
-                console.log(msg.body)
-            })
-            client.subscribe('/topic/cube/conquerSet',(msg:IMessage) => {
-                console.log(msg.body)
-            })
-            client.subscribe('/user/queue/cube/conquerSet',(msg:IMessage) => {
-                
-                const parser = JSON.parse(msg.body)
 
-                setAttrset(parser)
+            client.subscribe('/topic/action/conquer/start', (msg: IMessage) => {
+
+                const cubeAttr = JSON.parse(msg.body) as CubeAttrData
+
+                setConquerInProcess(prev => {
+                    const newMap = new Map<string, string>(prev);
+                    newMap.set(cubeAttr.name, cubeAttr.attr)
+                    return newMap;
+                })
+
+                setAttrmap(prev => {
+                    const newMap = new Map<string, string>(prev);
+                    newMap.set(cubeAttr.name, cubeAttr.attr)
+                    return newMap;
+                })
             })
 
-            client.publish({destination:'/app/cube/conquerSet'})
+            client.subscribe('/topic/action/conquer/cancel', (msg: IMessage) => {
+
+                const cubeAttr = JSON.parse(msg.body) as CubeAttrData
+
+                setConquerInProcess(prev => {
+                    const newMap = new Map<string, string>(prev);
+                    newMap.delete(cubeAttr.name)
+                    return newMap;
+                })
+
+                setAttrmap(prev => {
+                    const newMap = new Map<string, string>(prev);
+                    newMap.delete(cubeAttr.name)
+                    return newMap;
+                })
+
+            })
+            client.subscribe('/topic/action/conquer/complete', (msg: IMessage) => {
+
+                const cubeAttr = JSON.parse(msg.body) as CubeAttrData
+
+                setConquerInProcess(prev => {
+                    const newMap = new Map<string, string>(prev);
+                    newMap.delete(cubeAttr.name)
+                    return newMap;
+                })
+
+            })
+
+            client.subscribe('/user/queue/cube/conquerSet', (msg: IMessage) => {
+
+                const parser = JSON.parse(msg.body) as Map<string, string>
+
+                const newMap = new Map<string, string>(Object.entries(parser))
+
+                setAttrmap(newMap)
+            })
+
+            client.publish({ destination: '/app/cube/conquerSet' })
         }
     }, [client])
 
@@ -132,13 +178,13 @@ export default function CubeSet({ client }: Props) {
                             {
                                 cubeset[rowNum].map((cube, index) => {
                                     return (
-                                        <Cube 
-                                        key={'col-' + cube.posX + cube.posY} 
-                                        name={cube.name} 
-                                        hasPlayer={hasPlayer(cube.name)} 
-                                        setBorder={false} 
-                                        attr={getAttr(cube.name)} 
-                                        conquering={true}
+                                        <Cube
+                                            key={'col-' + cube.posX + cube.posY}
+                                            name={cube.name}
+                                            hasPlayer={hasPlayer(cube.name)}
+                                            setBorder={false}
+                                            attr={getAttr(cube.name)}
+                                            conquering={inConquerProcess(cube.name)}
                                         />
                                     )
                                 })

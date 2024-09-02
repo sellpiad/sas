@@ -1,7 +1,8 @@
-package com.sas.server.game.rule;
+package com.sas.server.service.action;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -12,8 +13,11 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
+import com.sas.server.dto.game.CubeAttrData;
 import com.sas.server.entity.CubeEntity;
 import com.sas.server.entity.PlayerEntity;
+import com.sas.server.game.message.MessagePublisher;
+import com.sas.server.util.MessageType;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,12 +28,13 @@ public class ConquerSystem {
         private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(3,
                         Thread.ofVirtual().factory());
         private final StringRedisTemplate redisTemplate;
-        private final SimpMessagingTemplate simpMessagingTemplate;
 
         private HashMap<String, ScheduledFuture<?>> conquerQueue = new HashMap<>();
 
-        public Set<String> getConquerSet() {
-                return redisTemplate.opsForSet().members("conquer");
+        private final MessagePublisher publisher;
+
+        public Map<Object, Object> getConquerSet() {
+                return redisTemplate.opsForHash().entries("conquer");
         }
 
         public void notifyConquest(PlayerEntity player, CubeEntity cube, long milliseconds,
@@ -37,9 +42,12 @@ public class ConquerSystem {
 
                 ScheduledFuture<?> future = scheduler.schedule(() -> {
 
-                        redisTemplate.opsForSet().add("conquer", cube.name + ":" + player.attr);
+                        redisTemplate.opsForHash().put("conquer", cube.name, player.attr);
 
-                        simpMessagingTemplate.convertAndSend("/topic/game/conquer", cube.name);
+                        publisher.topicPublish(MessageType.TOPIC_CONQUER_COMPLETE, CubeAttrData.builder()
+                                        .name(cube.name)
+                                        .attr(player.attr)
+                                        .build());
 
                 }, milliseconds, TimeUnit.MILLISECONDS);
 

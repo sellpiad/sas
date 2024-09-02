@@ -107,7 +107,7 @@ export default function SlimeSet({ client }: Props) {
         if (client?.connected) {
 
             // 슬라임 위치 업데이트
-            client.subscribe("/topic/game/action", (msg: IMessage) => {
+            client.subscribe("/topic/action", (msg: IMessage) => {
 
                 const ActionData = JSON.parse(msg.body) as ActionData
 

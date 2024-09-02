@@ -27,8 +27,8 @@ public class ActionController {
 
     private final ActionService actionService;
 
-    @MessageMapping("/game/action")
-    @SendTo("/topic/game/action")
+    @MessageMapping("/action")
+    @SendTo("/topic/action")
     public ActionData action(@RequestBody String direction,
             SimpMessageHeaderAccessor simpMessageHeaderAccessor) {
 
@@ -37,24 +37,24 @@ public class ActionController {
         return actionService.requestAction(ActionType.NOTCLASSIFIED, user.getName(), direction);
     }
 
-    @MessageMapping("/game/action/conquer/start")
-    @SendTo("/topic/game/action/conquer/start")
-    public ActionData conquerStart(@RequestBody String direction,
+    @MessageMapping("/action/conquer/start")
+    @SendTo("/topic/action/conquer/start")
+    public void conquerStart(@RequestBody String direction,
             SimpMessageHeaderAccessor simpMessageHeaderAccessor) {
 
         Principal user = simpMessageHeaderAccessor.getUser();
 
-        return actionService.requestAction(ActionType.CONQUER_START, user.getName(), direction);
+        actionService.requestAction(ActionType.CONQUER_START, user.getName(), direction);
     }
 
-    @MessageMapping("/game/action/conquer/cancel")
-    @SendTo("/topic/game/action/conquer/cancel")
-    public ActionData conquerCancel(@RequestBody String direction,
+    @MessageMapping("/action/conquer/cancel")
+    @SendTo("/topic/action/conquer/cancel")
+    public void conquerCancel(@RequestBody String direction,
             SimpMessageHeaderAccessor simpMessageHeaderAccessor) {
 
         Principal user = simpMessageHeaderAccessor.getUser();
 
-        return actionService.requestAction(ActionType.CONQUER_CANCEL, user.getName(), direction);
+        actionService.requestAction(ActionType.CONQUER_CANCEL, user.getName(), direction);
     }
 
 }

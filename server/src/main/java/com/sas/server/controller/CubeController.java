@@ -1,6 +1,7 @@
 package com.sas.server.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -8,7 +9,7 @@ import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
 import com.sas.server.dto.cube.CubeDAO;
-import com.sas.server.game.rule.ConquerSystem;
+import com.sas.server.service.action.ConquerSystem;
 import com.sas.server.service.cube.CubeService;
 
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ public class CubeController {
 
     @MessageMapping("/cube/conquerSet")
     @SendToUser("/queue/cube/conquerSet")
-    public Set<String> getConquerSet(){
+    public  Map<Object, Object> getConquerSet(){
         return conquerSystem.getConquerSet();
     }
 }
