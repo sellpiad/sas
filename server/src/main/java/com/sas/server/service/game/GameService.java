@@ -101,7 +101,7 @@ public class GameService {
     }
 
     /**
-     * PlayerEntity와 해당 포지션 lockey를 삭제.
+     * Player를 게임에서 영구제거.
      * 
      * @param game
      * @param sessionId
@@ -114,7 +114,9 @@ public class GameService {
         String lockKey = "lock:cube:" + player.position;
 
         redisTemplate.delete(lockKey);
-        playerService.deleteById(lockKey);
+        playerService.deleteById(player.username);
+        rankerService.removeRealtimeRank(player.username);
+        simpMessagingTemplate.convertAndSend("/topic/game/deleteSlime", player.username);
 
     }
 

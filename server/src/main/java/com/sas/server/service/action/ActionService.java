@@ -52,8 +52,8 @@ public class ActionService {
 
     private final StringRedisTemplate redisTemplate;
 
-    @DistributedLock(key = "'lock:lockon:' + #username", watingTime = 1000, timeUnit = TimeUnit.MILLISECONDS)
-    @Retryable(value = { LockAcquisitionException.class, Exception.class }, maxAttempts = 2)
+    @DistributedLock(key = "'lock:lockon:' + #username", watingTime = 980, timeUnit = TimeUnit.MILLISECONDS)
+    @Retryable(value = { LockAcquisitionException.class, Exception.class }, maxAttempts = 1)
     public ActionData requestAction(ActionType actionType, String username, String direction) {
 
         // 결과 도출에 필요한 정보들 가져오기
@@ -86,9 +86,11 @@ public class ActionService {
                     .build();
         }
 
+        
         doAction(actionType, player, target, enemy);
         publishMessage(actionType, direction, player, enemy, target);
 
+  
         return ActionData.builder()
                 .actionType(actionType)
                 .username(username)
@@ -103,7 +105,6 @@ public class ActionService {
 
         return ActionData.builder()
                 .actionType(ActionType.LOCKED)
-                .direction(direction)
                 .username(username)
                 .build();
     }
@@ -125,7 +126,6 @@ public class ActionService {
         return battleSystem.attrJudgment(player, enemy);
     }
 
-    @Transactional
     private void doAction(ActionType actionType, PlayerEntity player, CubeEntity target, PlayerEntity enemy) {
 
         redisTemplate.delete("lock:cube:" + player.position);
@@ -133,6 +133,7 @@ public class ActionService {
         switch (actionType) {
             case ActionType.ATTACK:
                 doAttack(player, enemy, target);
+                doMove(player, target);
                 break;
             case ActionType.MOVE:
                 doMove(player, target);
@@ -179,8 +180,6 @@ public class ActionService {
         player = playerService.incKill(player);
 
         rankerService.updateRealtimeRank(player);
-        playerService.updatePlayer(player.toBuilder().position(target.name).build());
-        redisTemplate.opsForSet().add("lock:cube:" + target.name, "");
     }
 
     private void doMove(PlayerEntity player, CubeEntity target) {

@@ -157,7 +157,7 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
                         </Row>
                         <Row>
                             <Col xs={{ offset: 3, span: 6 }}>
-                                <Button variant="outline-secondary" style={{ color: "black" }}>
+                                <Button variant="outline-secondary" type="submit" style={{ color: "black" }}>
                                     슬라임 생성
                                 </Button>
                             </Col>

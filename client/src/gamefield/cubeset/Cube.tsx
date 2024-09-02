@@ -1,23 +1,25 @@
 import React from "react"
-import { useSelector } from "react-redux"
-import { RootState } from "../../redux/Store"
+import AttSymbol from "./AttrSymbol.tsx"
 import './Cube.css'
 
 interface Props {
     name: string
     hasPlayer: boolean
     setBorder: boolean
-    attr: string | undefined
+    attr: string
+    conquering?: boolean | undefined
 }
 
 
-export default function CubeObj({name, hasPlayer, setBorder, attr }: Props) {
+export default function CubeObj({ name, hasPlayer, setBorder, attr, conquering }: Props) {
 
     const classNames = `slime-box ${hasPlayer ? "hasPlayer " + attr?.toLowerCase() : ''} ${setBorder ? 'styx' : ''}`
 
     return (
 
-        <div key={name} className={classNames} id={name}/>
+        <div key={name} className={classNames} id={name}>
+            <AttSymbol width="80%" height="80%" attr={attr} opacity={100} animating={conquering}></AttSymbol>
+        </div>
     )
 
 }

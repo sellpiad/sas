@@ -101,9 +101,11 @@ function App() {
           setIsConn(true)
         },
         onStompError: (error) => {
+          console.log("stomp error : " + error)
         },
         onDisconnect: (error) => {
           setIsConn(false)
+          console.log("disconnet :" + error)
         },
         onWebSocketClose: (close) => {
           dispatch(changeLogin({ isLogin: false }))

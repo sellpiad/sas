@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.sas.server.dao.CustomUserDetails;
 import com.sas.server.service.admin.LogService;
+import com.sas.server.service.game.GameService;
 import com.sas.server.util.ActivityType;
 
 import jakarta.servlet.http.HttpSession;
@@ -24,6 +25,7 @@ public class CustomSessionListener implements HttpSessionListener {
 
     private final SessionRegistry sessionRegistry;
     private final LogService logService;
+    private final GameService gameService;
 
     @Override
     public void sessionCreated(HttpSessionEvent se) {
@@ -49,6 +51,7 @@ public class CustomSessionListener implements HttpSessionListener {
 
                 // 로그에 기록합니다.
                 logService.save(user.getUsername(), ActivityType.LOGOUT);
+                gameService.removePlayer(user.getUsername());
             }
         }
     }

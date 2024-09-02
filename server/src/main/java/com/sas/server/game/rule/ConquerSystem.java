@@ -1,6 +1,8 @@
 package com.sas.server.game.rule;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -26,12 +28,16 @@ public class ConquerSystem {
 
         private HashMap<String, ScheduledFuture<?>> conquerQueue = new HashMap<>();
 
+        public Set<String> getConquerSet() {
+                return redisTemplate.opsForSet().members("conquer");
+        }
+
         public void notifyConquest(PlayerEntity player, CubeEntity cube, long milliseconds,
                         Runnable afterConquered) {
 
                 ScheduledFuture<?> future = scheduler.schedule(() -> {
 
-                        redisTemplate.opsForSet().add("conquer:" + cube.name + ":" + player.attr, "");
+                        redisTemplate.opsForSet().add("conquer", cube.name + ":" + player.attr);
 
                         simpMessagingTemplate.convertAndSend("/topic/game/conquer", cube.name);
 

@@ -17,6 +17,8 @@ interface Props {
 export default function CubeSet({ client }: Props) {
 
     const cubeset = useSelector((state: RootState) => state.game.cubeset)
+    const [attrset,setAttrset] = useState<Set<string>>(new Set<string>())
+
 
     const dispatch = useDispatch()
 
@@ -25,14 +27,19 @@ export default function CubeSet({ client }: Props) {
 
     const gameSize = useSelector((state: RootState) => state.game.size)
 
+    const beingConquered = (cubeNickname:string) => {
+        
+    }
+
     const hasPlayer = (cubeNickname: string) => {
         return observerPos === cubeNickname ? true : false
     }
 
     const getAttr = (cubeNickname: string) => {
-        if (hasPlayer(cubeNickname)) {
-            return observer !== null ? observer.attr : ''
-        }
+
+            if(attrset.size > 0 && attrset.has(cubeNickname)){
+                return attrset[cubeNickname]
+            }
     }
 
     useEffect(() => {
@@ -46,6 +53,29 @@ export default function CubeSet({ client }: Props) {
         }
 
     }, [])
+
+
+    useEffect(() => {
+        if (client?.connected) {
+            client.subscribe('/topic/game/action/conquer/start', (msg: IMessage) => {
+                console.log(msg.body)
+            })
+            client.subscribe('/topic/game/action/conquer/cancel', (msg: IMessage) => {
+                console.log(msg.body)
+            })
+            client.subscribe('/topic/cube/conquerSet',(msg:IMessage) => {
+                console.log(msg.body)
+            })
+            client.subscribe('/user/queue/cube/conquerSet',(msg:IMessage) => {
+                
+                const parser = JSON.parse(msg.body)
+
+                setAttrset(parser)
+            })
+
+            client.publish({destination:'/app/cube/conquerSet'})
+        }
+    }, [client])
 
 
 
@@ -102,7 +132,14 @@ export default function CubeSet({ client }: Props) {
                             {
                                 cubeset[rowNum].map((cube, index) => {
                                     return (
-                                        <Cube key={'col-' + cube.posX + cube.posY} name={cube.name} hasPlayer={hasPlayer(cube.name)} setBorder={false} attr={getAttr(cube.name)} />
+                                        <Cube 
+                                        key={'col-' + cube.posX + cube.posY} 
+                                        name={cube.name} 
+                                        hasPlayer={hasPlayer(cube.name)} 
+                                        setBorder={false} 
+                                        attr={getAttr(cube.name)} 
+                                        conquering={true}
+                                        />
                                     )
                                 })
                             }

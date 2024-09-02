@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sas.server.dao.CustomUserDetails;
 import com.sas.server.dto.game.UserData;
 import com.sas.server.service.admin.LogService;
+import com.sas.server.service.game.GameService;
 import com.sas.server.service.member.MemberService;
 import com.sas.server.service.player.PlaylogService;
 import com.sas.server.service.ranker.RankerService;

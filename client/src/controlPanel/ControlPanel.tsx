@@ -22,8 +22,8 @@ export default function ControlPanel({ client }: Props) {
 
     const isLocked = useSelector((root:RootState) => root.user.isLocked)
 
-    const directionRef = useRef<string>()
-
+    const directionRef = useRef<string>('down')
+    const isPressingRef = useRef<boolean>(false)
 
     // 터치 및 클릭 버튼 이벤트 처리 메소드
     const handleClick = (button: string) => {
@@ -36,8 +36,8 @@ export default function ControlPanel({ client }: Props) {
         if (arrowKeys.includes(e.code)) {
             directionRef.current = e.code.toLowerCase().substring(5)
             client?.publish({ destination: '/app/game/action', body: directionRef.current })
-
-        } else if (spaceKey.includes(e.code)) {
+        } else if (spaceKey.includes(e.code) && !isPressingRef.current) {
+            isPressingRef.current = true
             client?.publish({ destination: '/app/game/action/conquer/start', body: directionRef.current })
         }
 
@@ -45,6 +45,7 @@ export default function ControlPanel({ client }: Props) {
 
     const keyUp = (e: KeyboardEvent) => {
         if (spaceKey.includes(e.code)) {
+            isPressingRef.current = false
             client?.publish({ destination: '/app/game/action/conquer/cancel', body: directionRef.current })
         }
     }

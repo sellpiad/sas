@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/Store.tsx";
 import { ActionType } from "../../redux/GameSlice.tsx";
 import { updateLocked } from "../../redux/UserSlice.tsx";
+import { Root } from "react-dom/client";
 
 
 /**
@@ -15,7 +16,7 @@ import { updateLocked } from "../../redux/UserSlice.tsx";
 interface Props {
     playerId: string
     actionType?: ActionType
-    direction?: string
+    direction?: string | null
     fill?: string
     target?: string | undefined // 현재 위치한 큐브 이름
     isAbsolute: boolean
@@ -25,7 +26,7 @@ interface Props {
     height?: string
 }
 
-//기본 프레임과 해당 액션의 소요 시간
+//기본 프레임과 1프레임 당 액션의 소요 시간
 //시간은 ms 단위
 const FRAME_CONFIG = {
     IDLE: { frames: 2, duration: 300 },
@@ -41,6 +42,8 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
 
     const boxWidth = useSelector((state: RootState) => state.cube.width)
     const boxHeight = useSelector((state: RootState) => state.cube.height)
+    
+    const username = useSelector((state:RootState) => state.user.username)
 
     const [speed, setSpeed] = useState<number>(0) // 이동 스피드
 
@@ -54,9 +57,11 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
 
     const actionRef = useRef<ActionType>(ActionType.IDLE)
     const frameRef = useRef<number>(1)
-    const directionRef = useRef<string>('down') // direction 어댑터용
+    const directionRef = useRef<string | null>('down') // direction 어댑터용
 
     const targetRef = useRef<string>()
+
+    const { frames, duration } = FRAME_CONFIG[actionRef.current] || {}
 
     const startShaking = () => {
         setShaking(true)
@@ -91,8 +96,6 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
     const updateAnimation = (currentTime) => {
 
         const elaspedTime = currentTime - startTimeRef.current
-
-        const { frames, duration } = FRAME_CONFIG[actionRef.current] || {}
 
         // 딜레이가 경과할 때마다 frame 증가
         if (elaspedTime > duration) {
@@ -133,7 +136,7 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
 
         updateTarget()
 
-        setTimeout(() => { setSpeed(0.5) }, 10)
+        setTimeout(() => { setSpeed(0.3) }, 10)
         const animation = requestAnimationFrame(updateAnimation)
 
         return () => cancelAnimationFrame(animation)
@@ -147,7 +150,6 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
         if (actionType != undefined) {
             switch (actionType) {
                 case ActionType.LOCKED:
-                    startShaking()
                     break;
                 case ActionType.DRAW:
                     startShaking()
@@ -177,7 +179,7 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
 
     useEffect(() => {
 
-        if (action === ActionType.IDLE && direction !== undefined) {
+        if (direction !== null && direction !== undefined) {
             directionRef.current = direction
         }
 
@@ -198,8 +200,27 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
 
     return (
         speed > 0 &&
-        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={width === undefined ? boxWidth : width} height={height === undefined ? boxHeight : height} preserveAspectRatio="xMidYMid meet" style={{ position: isAbsolute ? "absolute" : "relative", transform: "translate(" + moveX + "px," + moveY + "px)", transition: "transform " +  speed + "s ease" }}>
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={width === undefined ? boxWidth : width} height={height === undefined ? boxHeight : height} preserveAspectRatio="xMidYMid meet" style={{ position: isAbsolute ? "absolute" : "relative", transform: "translate(" + moveX + "px," + moveY + "px)", transition: "transform " + speed + "s ease" }}>
 
+            {username === playerId && <circle viewBox="0 0 150 150" cx="75" cy="75" r="10" stroke={fill === undefined ? '#D9D9D9' : getAttr()} strokeWidth="10" fill="transparent">
+                <animate
+                    attributeName="r"
+                    from="10"
+                    to="90"
+                    dur={frames*duration + 'ms'}
+                    begin="0s"
+                    repeatCount="indefinite"
+                    fill="freeze" />
+                <animate
+                    attributeName="opacity"
+                    from="1"
+                    to="0.3"
+                    dur={frames*duration + 'ms'}
+                    begin="0s"
+                    repeatCount="indefinite"
+                    fill="freeze" />
+            </circle>}
+            
             <use xlinkHref={'#slime-' + playerId + '-' + directionRef.current + '-' + action + '-' + frame} x={11} y={25} width={150} height={150} className={isShaking ? 'shake' : ''} />
             <symbol id={'slime-' + playerId + '-down-IDLE-1'} viewBox="0 0 150 150">
                 <path id="Body" fillRule="evenodd" clipRule="evenodd" d="M97 9H39V18H19V37H10V82H24V91H39H97H107V82H117V37H110V18H97V9Z" fill={fill === undefined ? '#D9D9D9' : getAttr()} />
@@ -446,6 +467,7 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
                 <path id="LeftEye_3" fillRule="evenodd" clipRule="evenodd" d="M29 402V407V417H39H49V407H39V402H29Z" fill="black" />
                 <path id="RightEye_3" fillRule="evenodd" clipRule="evenodd" d="M65 402V407H55V417H65H75V407V402H65Z" fill="black" />
             </symbol>
+
         </svg>
     )
 
