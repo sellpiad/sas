@@ -44,6 +44,7 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
     const boxHeight = useSelector((state: RootState) => state.cube.height)
     
     const username = useSelector((state:RootState) => state.user.username)
+    const observername = useSelector((state:RootState) => state.observer.observer?.username)
 
     const [speed, setSpeed] = useState<number>(0) // 이동 스피드
 
@@ -202,7 +203,7 @@ export default function Slime({ playerId, actionType, direction, fill, target, i
         speed > 0 &&
         <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={width === undefined ? boxWidth : width} height={height === undefined ? boxHeight : height} preserveAspectRatio="xMidYMid meet" style={{ position: isAbsolute ? "absolute" : "relative", transform: "translate(" + moveX + "px," + moveY + "px)", transition: "transform " + speed + "s ease" }}>
 
-            {username === playerId && <circle viewBox="0 0 150 150" cx="75" cy="75" r="10" stroke={fill === undefined ? '#D9D9D9' : getAttr()} strokeWidth="10" fill="transparent">
+            {observername === playerId && <circle viewBox="0 0 150 150" cx="75" cy="75" r="10" stroke={fill === undefined ? '#D9D9D9' : getAttr()} strokeWidth="10" fill="transparent">
                 <animate
                     attributeName="r"
                     from="10"

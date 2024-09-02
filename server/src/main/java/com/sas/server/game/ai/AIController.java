@@ -61,7 +61,7 @@ public class AIController {
 
     public void action(String sessionId) {
 
-        int delay = (int) (Math.random() * 200) + 200; // 200ms~400ms 사이의 반응속도
+        int delay = (int) (Math.random() * 500) + 500; // 500ms~1000ms 사이의 반응속도
 
         ActionData action = null;
 

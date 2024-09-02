@@ -13,7 +13,7 @@ public enum MessageType {
 
     TOPIC_ACTION(ActionData.class,"/topic/game/action"),
     TOPIC_DELETE(String.class, "/topic/game/deleteSlime"),
-    TOPIC_LOCKON(Boolean.class,"/topic/game/lockon"),
+    TOPIC_LOCKON(String.class,"/topic/game/lockon"),
     TOPIC_ADD(String.class, "/topic/game/addSlime"),
     TOPIC_CONQUER_START(String.class,"/topic/game/conquer/start"),
     TOPIC_CONQUER_CANCEL(String.class, "/topic/game/conquer/cancel"),

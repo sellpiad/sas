@@ -1,14 +1,10 @@
 package com.sas.server.service.action;
 
-import java.util.concurrent.TimeUnit;
-
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.sas.server.annotation.DistributedLock;
 import com.sas.server.dto.game.ActionData;
 import com.sas.server.entity.CubeEntity;
 import com.sas.server.entity.PlayerEntity;
@@ -22,7 +18,6 @@ import com.sas.server.service.player.PlayerService;
 import com.sas.server.service.player.PlaylogService;
 import com.sas.server.service.ranker.RankerService;
 import com.sas.server.util.ActionType;
-import com.sas.server.util.ActivityType;
 import com.sas.server.util.MessageType;
 
 import lombok.RequiredArgsConstructor;
@@ -45,6 +40,7 @@ public class ActionService {
     private final PlaylogService playlogService;
     private final LogService logService;
 
+    private final ActionSystem actionSystem;
     private final ConquerSystem conquerSystem;
     private final BattleSystem battleSystem;
 
@@ -52,7 +48,6 @@ public class ActionService {
 
     private final StringRedisTemplate redisTemplate;
 
-    @DistributedLock(key = "'lock:lockon:' + #username", watingTime = 980, timeUnit = TimeUnit.MILLISECONDS)
     @Retryable(value = { LockAcquisitionException.class, Exception.class }, maxAttempts = 1)
     public ActionData requestAction(ActionType actionType, String username, String direction) {
 
@@ -62,7 +57,7 @@ public class ActionService {
         PlayerEntity enemy = searchEnemy(target.name);
 
         // 막다른 곳이라면 그대로 리턴.
-        if(player.position.equals(target.name)){
+        if (player.position.equals(target.name)) {
             return ActionData.builder()
                     .actionType(ActionType.STUCK)
                     .username(username)
@@ -86,11 +81,9 @@ public class ActionService {
                     .build();
         }
 
-        
         doAction(actionType, player, target, enemy);
         publishMessage(actionType, direction, player, enemy, target);
 
-  
         return ActionData.builder()
                 .actionType(actionType)
                 .username(username)
@@ -106,18 +99,20 @@ public class ActionService {
         return ActionData.builder()
                 .actionType(ActionType.LOCKED)
                 .username(username)
+                .direction(direction)
                 .build();
     }
 
     @Recover
-    public ActionData recoverAction(Exception e, ActionType actionType, String username, String direction) {
+    public ActionData recoverAction(Exception e, ActionType actionType, String username,
+            String direction) {
 
         log.error("{}", e.getMessage());
 
         return ActionData.builder()
-                .actionType(ActionType.LOCKED)
-                .direction(direction)
+                .actionType(ActionType.LOCKON)
                 .username(username)
+                .direction(direction)
                 .build();
     }
 
@@ -128,78 +123,22 @@ public class ActionService {
 
     private void doAction(ActionType actionType, PlayerEntity player, CubeEntity target, PlayerEntity enemy) {
 
-        redisTemplate.delete("lock:cube:" + player.position);
-
         switch (actionType) {
             case ActionType.ATTACK:
-                doAttack(player, enemy, target);
-                doMove(player, target);
+                actionSystem.doAttack(player, enemy, target);
                 break;
             case ActionType.MOVE:
-                doMove(player, target);
-                break;
-            case ActionType.DRAW:
-                doDraw(player);
-                break;
-            case ActionType.FEARED:
-                doDraw(player);
+                actionSystem.doMove(player, target);
                 break;
             case ActionType.CONQUER_START:
-                doConquer(player, target);
+                actionSystem.doConquer(player, target);
                 break;
             case ActionType.CONQUER_CANCEL:
-                cancelConquer(player);
+                actionSystem.cancelConquer(player);
                 break;
             default:
                 break;
         }
-    }
-
-    private void doAttack(PlayerEntity player, PlayerEntity enemy, CubeEntity target) {
-
-        // 상대를 락온
-        boolean isLockon = redisTemplate.opsForValue().setIfAbsent("lock:lockon:" + enemy.username, "LOCKED", 500,
-                TimeUnit.MILLISECONDS);
-
-        if (!isLockon) {
-            throw new LockAcquisitionException("Try again");
-        }
-
-        // 패배자 삭제 및 리얼타임 랭크에서 삭제, 그 후 올타임 랭크에 기록
-        redisTemplate.delete("lock:cube:" + enemy.position);
-        playerService.deleteById(enemy.username);
-        rankerService.removeRealtimeRank(enemy.username);
-        rankerService.updateAlltimeRank(enemy);
-
-        // ai가 아닐때만 플레이 로그 저장
-        if (!enemy.ai) {
-            playlogService.save(enemy);
-            logService.save(enemy.username, ActivityType.STOP);
-        }
-
-        player = playerService.incKill(player);
-
-        rankerService.updateRealtimeRank(player);
-    }
-
-    private void doMove(PlayerEntity player, CubeEntity target) {
-        playerService.updatePlayer(player.toBuilder().position(target.name).build());
-        redisTemplate.opsForSet().add("lock:cube:" + target.name, "");
-    }
-
-    private void doDraw(PlayerEntity player) {
-        redisTemplate.opsForSet().add("lock:cube:" + player.position, "");
-    }
-
-    private String doConquer(PlayerEntity player, CubeEntity target) {
-
-        conquerSystem.notifyConquest(player, target, 3000, null);
-
-        return target.name;
-    }
-
-    private boolean cancelConquer(PlayerEntity player) {
-        return conquerSystem.cancelConquer(player);
     }
 
     private PlayerEntity searchEnemy(String position) {
