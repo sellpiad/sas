@@ -27,34 +27,36 @@ jobs:
       run: |
         cd client
         npm run build
-    
-    build-server:
-      runs-on: ubunu-latest
 
-      steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  build-server:
+    runs-on: ubuntu-latest
 
-      - name: Set up JDK
-        uses: actions/setup-java@v2
-        with:
-          java-version: '21'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Install server dependencies and build
-        run: |
-          cd server
-          mvn clean package
+    - name: Set up JDK
+      uses: actions/setup-java@v2
+      with:
+        java-version: '21'
 
-    deploy:
-      runs-on: ubuntu-latest
+    - name: Install server dependencies and build
+      run: |
+        cd server
+        mvn clean package
 
-      needs: [build-client, build-server]
+  deploy:
+    runs-on: ubuntu-latest
 
-      env:
-        EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-        EC2_HOST: ${{ secrets.EC2_HOST}}
-        EC2_USER: ${{ secrets.EC2_USER}}
-        
+    needs: [build-client, build-server]
+
+    env:
+      EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+      EC2_HOST: ${{ secrets.EC2_HOST }}
+      EC2_USER: ${{ secrets.EC2_USER }}
+      
+    steps:  
+    - name: Copy files to EC2
       run: |
         echo "${EC2_SSH_KEY}" > /tmp/id_rsa
         chmod 600 /tmp/id_rsa
@@ -62,4 +64,3 @@ jobs:
         scp -i /tmp/id_rsa -o StrictHostKeyChecking=no -r client/build $EC2_USER@$EC2_HOST:/home/ubuntu/sas/client
         scp -i /tmp/id_rsa -o StrictHostKeyChecking=no -r server/target/sas-server-1.0.0.jar $EC2_USER@$EC2_HOST:/home/ubuntu/sas/server.jar
         rm /tmp/id_rsa 
-
