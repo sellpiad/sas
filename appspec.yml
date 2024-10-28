@@ -1,0 +1,18 @@
+version: 0.0
+os: linux
+
+files:
+  - source: frontend/
+    destination: /home/ubuntu/sas/frontend
+  - source: backend/sas-server-1.0.0.jar
+    destination: /home/ubuntu/sas/backend
+
+hooks:
+  ApplicationStop:
+    - location: stop_server.sh
+      timeout: 300
+      runas: root
+  ApplicationStart:
+    - location: start_server.sh
+      timeout: 300
+      runas: root
