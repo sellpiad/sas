@@ -1,12 +1,11 @@
+import { Client } from "@stomp/stompjs";
+import axios from "axios";
 import React, { useEffect } from "react";
-import { Button, Container, Modal, ModalBody, ModalFooter, Row, Stack } from "react-bootstrap";
+import { Button, Container, Modal, ModalBody, ModalFooter, Row } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/Store";
-import './PlayResultModal.css'
-import { Client, IMessage } from "@stomp/stompjs";
 import { updateDead } from "../redux/UserSlice.tsx";
-import axios from "axios";
-import { updateRanking } from "../redux/ObserverSlice.tsx";
+import './PlayResultModal.css';
 
 interface Props {
     client: Client | undefined
@@ -36,7 +35,7 @@ export default function PlayResultModal({ client, show, onHide }: Props) {
         if (show) {
             axios.get('/api/game/alltimeRanking')
             .then((res)=>{
-                dispatch(updateRanking({ranking: parseInt(res.data)}))
+                
             }).catch((err)=>{})
         }
 
@@ -60,7 +59,7 @@ export default function PlayResultModal({ client, show, onHide }: Props) {
                             </g>
                         </svg>
                     </Row>
-                    <Row>
+                   { /*<Row>
                         <p className="rs-text">닉네임</p>
                         <p className="rs-text">{observer?.nickname}</p>
                     </Row>
@@ -79,7 +78,7 @@ export default function PlayResultModal({ client, show, onHide }: Props) {
                     <Row>
                         <p className="rs-text">랭크</p>
                         <p className="rs-text">{observer?.ranking !== undefined || observer?.ranking !== -1 ? observer?.ranking : 'OUT OF RANK'}</p>
-                    </Row>
+                    </Row>*/}
                 </Container>
             </ModalBody>
             <ModalFooter>

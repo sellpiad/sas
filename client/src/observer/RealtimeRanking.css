@@ -1,0 +1,95 @@
+.observerPanel {
+    border: 2px dashed white;
+    border-radius: 0.9rem;
+    font-family: DNFBitBitv2;
+    font-size: 1rem;
+    width: 100%;
+    margin: 0;
+    margin-bottom: 1%;
+    overflow: hidden;
+}
+
+
+.observerPanel-title {
+    background-color: white;
+    height: 5vh;
+    margin: 0;
+    color: black;
+    text-align: center;
+    align-items: center;
+    padding: 0;
+}
+
+.observerPanel-body {
+    margin: 0;
+    background-color: white;
+    height: 55vh;
+    overflow-y: scroll;
+    transition: all 0.3s ease;
+}
+
+.observerPanel-body :hover {
+    background-color: rgb(95, 120, 187);
+}
+
+
+.observerPanel-card {
+    display: flex;
+    background-color: white;
+    color: black;
+    height: 5vh;
+    text-align: center;
+    align-items: center;
+    padding: 0px;
+    border-radius: 0.8rem;
+}
+
+.player-card {
+    transition: transform 0.3s ease, opacity 0.3s ease; 
+}
+
+.selected {
+    background-color: rgb(95, 120, 187);
+}
+
+
+.observerPanel-ranking-col {
+    width: 10%
+}
+
+.observerPanel-slime-col {
+    width: 10%
+}
+
+.observerPanel-nickname-col {
+    width: 50%
+}
+
+.observerPanel-survivalTime-col {
+    width: 30%
+}
+
+.skeleton {
+    background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    height: 80%;
+    border-radius: 0.3rem;
+    margin: 2px;
+}
+
+@media (max-width: 992px) {
+    .observerPanel {
+        font-size: 0.8rem;
+    }
+}
+
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}

@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import org.springframework.data.repository.CrudRepository;
 
-import com.sas.server.entity.GameEntity;
+import com.sas.server.repository.entity.GameEntity;
 
 public interface GameRepository extends CrudRepository<GameEntity, UUID> {
 

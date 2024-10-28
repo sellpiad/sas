@@ -50,11 +50,11 @@ export default function RankingBoard({ client, show, onHide }: Props) {
         <Modal show={show} onHide={onHide} centered >
             <ModalBody style={{ height: "40vh", fontFamily: "DNFBitBitv2", fontSize: "0.9rem" }}>
                 <div style={{ height: "15%" }}>
-                    <strong>실시간 플레이어 랭킹</strong>
+                    <strong>역대 플레이어 랭킹</strong>
                     <div style={{ display: "flex", padding: "0 3px" }}>
                         <span className="rank-col">순위</span>
                         <span className="nickname-col">닉네임</span>
-                        <span className="kill-col">킬</span>
+                        <span className="kill-col">생존시간</span>
                         <span className="attr-col">속성</span>
                     </div>
                 </div>
@@ -65,7 +65,7 @@ export default function RankingBoard({ client, show, onHide }: Props) {
                                 return <li key={"ranker" + index} className={value['isMe'] ? 'myRank' : ''} style={{ display: "flex", justifyContent: "space-between", padding: "3px" }}>
                                     <span className="rank-col">{index + 1}</span>
                                     <span className="nickname-col">{value['nickname']}</span>
-                                    <span className="kill-col">{value['kill']}</span>
+                                    <span className="kill-col">{(value['lifeTime']/1000).toFixed(0)} 초</span>
                                     <span className="attr-col">{value['attr']}</span>
                                 </li>
                             })

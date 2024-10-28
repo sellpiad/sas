@@ -7,19 +7,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import com.sas.server.dto.board.BoardElement;
-import com.sas.server.entity.PostEntity;
+import com.sas.server.controller.dto.board.BoardData;
+import com.sas.server.repository.entity.PostEntity;
 
 public interface BoardRepository extends JpaRepository<PostEntity, Long> {
 
-    @Query("SELECT new com.sas.server.dto.board.BoardElement(p.category, p.id, p.title, p.author) FROM PostEntity p")
-    Page<BoardElement> findList(Pageable pageable);
+    @Query("SELECT BoardData(p.category, p.id, p.title, p.author) FROM PostEntity p")
+    Page<BoardData> findList(Pageable pageable);
 
-    List<BoardElement> findByCategory(String category);
+    List<BoardData> findByCategory(String category);
 
-    @Query("SELECT new com.sas.server.dto.board.BoardElement(p.category, p.id, p.title, p.author) " +
+    @Query("SELECT BoardData(p.category, p.id, p.title, p.author) " +
             "FROM PostEntity p " +
             "ORDER BY CASE WHEN p.category = '공지' THEN 0 ELSE 1 END, p.id DESC")
-    Page<BoardElement> findWithNoticeAtTop(Pageable pageable);
+    Page<BoardData> findWithNoticeAtTop(Pageable pageable);
 
 }

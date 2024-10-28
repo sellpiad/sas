@@ -10,10 +10,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
-import com.sas.server.dto.board.BoardElement;
-import com.sas.server.dto.board.PostData;
-import com.sas.server.entity.PostEntity;
+import com.sas.server.controller.dto.board.BoardData;
+import com.sas.server.controller.dto.board.PostData;
 import com.sas.server.repository.BoardRepository;
+import com.sas.server.repository.entity.PostEntity;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -64,7 +64,7 @@ public class BoardService {
         }
     }
 
-    public Page<BoardElement> findByRange(int page, int pageSize) {
+    public Page<BoardData> findByRange(int page, int pageSize) {
 
         if (page > 0)
             page -= 1;
@@ -72,21 +72,21 @@ public class BoardService {
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "id"));
 
         // 일반글
-        Page<BoardElement> postList = boardRepo.findWithNoticeAtTop(pageable);
+        Page<BoardData> postList = boardRepo.findWithNoticeAtTop(pageable);
 
         return postList;
 
     }
 
-    public List<BoardElement> findAll() {
+    public List<BoardData> findAll() {
 
         List<PostEntity> postList = boardRepo.findAll();
 
-        List<BoardElement> board = new ArrayList<>();
+        List<BoardData> board = new ArrayList<>();
 
         for (PostEntity post : postList) {
 
-            board.add(BoardElement.builder()
+            board.add(BoardData.builder()
                     .id(post.id)
                     .title(post.title)
                     .author(post.author)

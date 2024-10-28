@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.sas.server.entity.PlaylogEntity;
+import com.sas.server.repository.entity.PlaylogEntity;
 
 public interface PlaylogRepository extends JpaRepository<PlaylogEntity, Long> {
     

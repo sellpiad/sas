@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sas.server.dao.CustomUserDetails;
-import com.sas.server.dto.board.BoardElement;
-import com.sas.server.dto.board.PostData;
+import com.sas.server.controller.dto.board.BoardData;
+import com.sas.server.controller.dto.board.PostData;
+import com.sas.server.repository.entity.CustomUserDetails;
 import com.sas.server.service.board.BoardService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ public class BoardController {
     private final BoardService boardService;
 
     @GetMapping("/getList")
-    public Page<BoardElement> getList(@RequestParam int page, int pageSize) {
+    public Page<BoardData> getList(@RequestParam int page, int pageSize) {
 
         return boardService.findByRange(page, pageSize);
     }

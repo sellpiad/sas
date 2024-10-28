@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.springframework.data.repository.CrudRepository;
 
-import com.sas.server.entity.RankerEntity;
+import com.sas.server.repository.entity.RankerEntity;
 
 public interface RankerRepository extends CrudRepository<RankerEntity, String> {
 

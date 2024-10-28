@@ -4,10 +4,18 @@ import { PURGE } from "redux-persist";
 
 export interface SlimeDTO {
     actionType: string
-    username: string
+    id: string
     target: string // 위치
     attr: string
     direction: string
+    duration: number
+}
+
+export interface ObjectProps {
+    position: 'absolute' | 'relative'
+    width: string
+    height: string
+    className?: string
 }
 
 
@@ -20,11 +28,17 @@ export interface EffectData {
 }
 
 export interface ActionData {
-    actionType: ActionType
     username: string
-    target: string | null // 위치
+    actionType: ActionType
+    duration: number
     direction: string
-    lockTime: number
+    position?: string
+    targetX?: number
+    targetY?: number
+    locktime?: number
+    removedTime?: number
+    buffCount?: number
+    nuffCount?: number
 }
 
 export enum ActionType {
@@ -36,23 +50,28 @@ export enum ActionType {
     DRAW = "DRAW",
     CONQUER_START = "CONQUER_START",
     CONQUER_CANCEL = "CONQUER_CANCEL",
+    CONQUER_COMPLETE = "CONQUER_COMPLETE",
     LOCKED = "LOCKED",
     LOCKON = "LOCKON",
-    FEARED = "FEARED"
+    FEARED = "FEARED",
+    DENIED = "DENIED"
+}
+
+export enum AttributeType {
+    NORMAL = "NORMAL",
+    FIRE = "FIRE",
+    WATER = "WATER",
+    GRASS = "GRASS"
 }
 
 
 export interface gameState {
     size: number
-    slimeset: { [key: string]: SlimeDTO }
-    cubeset: []
     isReady: boolean
 }
 
 const initialState: gameState = {
     size: 0, // 게임 사이즈 size*size
-    slimeset: {},
-    cubeset: [],
     isReady: false
 }
 
@@ -63,19 +82,7 @@ export const game = createSlice({
         initialGameSize(state, action) {
             state.size = action.payload.size
         },
-        initialCubeSet(state, action) {
-            state.cubeset = action.payload.cubeset
-        },
-        initialSlimeSet(state, action) {
-            state.slimeset = action.payload.slimeset
-        },
-        addSlime: (state, action) => {
-            state.slimeset[action.payload.username] = action.payload.slimedto
-        },
-        removeSlime: (state, action) => {
-            delete state.slimeset[action.payload.username]
-        },
-        setReady: (state) => {
+        setReady(state) {
             state.isReady = true
         }
     },
@@ -84,7 +91,7 @@ export const game = createSlice({
     }
 })
 
-export const { initialGameSize, initialCubeSet, initialSlimeSet, addSlime, removeSlime, setReady } = game.actions
+export const { initialGameSize, setReady } = game.actions
 
 export default game.reducer
 

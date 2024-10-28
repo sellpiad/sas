@@ -8,15 +8,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sas.server.dao.CustomUserDetails;
-import com.sas.server.dto.game.UserData;
+import com.sas.server.controller.dto.game.UserData;
+import com.sas.server.custom.dataType.ActivityType;
+import com.sas.server.custom.util.Role;
+import com.sas.server.repository.entity.CustomUserDetails;
 import com.sas.server.service.admin.LogService;
-import com.sas.server.service.game.GameService;
 import com.sas.server.service.member.MemberService;
 import com.sas.server.service.player.PlaylogService;
 import com.sas.server.service.ranker.RankerService;
-import com.sas.server.util.ActivityType;
-import com.sas.server.util.Role;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

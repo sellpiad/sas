@@ -17,9 +17,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.sas.server.dto.board.BoardElement;
-import com.sas.server.entity.PostEntity;
+import com.sas.server.controller.dto.board.BoardData;
 import com.sas.server.repository.BoardRepository;
+import com.sas.server.repository.entity.PostEntity;
 import com.sas.server.service.board.BoardService;
 
 @ExtendWith(MockitoExtension.class)
@@ -62,16 +62,16 @@ public class BoardServiceTest {
             when(boardRepository.findAll()).thenReturn(Arrays.asList(post1, post2));
 
             // Act
-            List<BoardElement> board = boardService.findAll();
+            List<BoardData> board = boardService.findAll();
 
             // Assert
             assertEquals(2, board.size());
 
-            BoardElement boardDTO1 = board.get(0);
+            BoardData boardDTO1 = board.get(0);
             assertEquals("Title1", boardDTO1.title);
             assertEquals("Author1", boardDTO1.author);
 
-            BoardElement boardDTO2 = board.get(1);
+            BoardData boardDTO2 = board.get(1);
             assertEquals("Title2", boardDTO2.title);
             assertEquals("Author2", boardDTO2.author);
 

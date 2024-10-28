@@ -26,6 +26,12 @@
     align-content: center;
 }
 
+.stats-txt {
+    width: 30%;
+    text-align: center;
+    align-content: center;
+}
+
 .actionStats-gauge {
     position: relative;
     width: 20%;

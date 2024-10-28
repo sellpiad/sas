@@ -4,22 +4,23 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.sas.server.entity.PlayerEntity;
-import com.sas.server.entity.PlaylogEntity;
 import com.sas.server.repository.PlaylogRepository;
+import com.sas.server.repository.entity.PlayerEntity;
+import com.sas.server.repository.entity.PlaylogEntity;
+import com.sas.server.service.player.pattern.PlayerSub;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class PlaylogService {
+public class PlaylogService implements PlayerSub {
 
     private final PlaylogRepository repo;
 
     public PlaylogEntity save(PlayerEntity player) {
 
         PlaylogEntity log = PlaylogEntity.builder()
-                .username(player.username)
+                .username(player.id)
                 .nickname(player.nickname)
                 .attr(player.attr)
                 .totalKill(player.totalKill)
@@ -53,5 +54,12 @@ public class PlaylogService {
 
         return repo.findAllByUsername(username);
     }
+
+    @Override
+    public void delete(PlayerEntity player) {
+        if(!player.ai)
+            save(player);
+    }
+
 
 }

@@ -8,10 +8,10 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sas.server.annotation.CheckValidPlayer;
-import com.sas.server.dto.game.ActionData;
+import com.sas.server.controller.dto.game.ActionData;
+import com.sas.server.custom.annotation.CheckValidPlayer;
+import com.sas.server.custom.dataType.ActionType;
 import com.sas.server.service.action.ActionService;
-import com.sas.server.util.ActionType;
 
 import lombok.RequiredArgsConstructor;
 
@@ -39,22 +39,22 @@ public class ActionController {
 
     @MessageMapping("/action/conquer/start")
     @SendTo("/topic/action/conquer/start")
-    public void conquerStart(@RequestBody String direction,
+    public ActionData conquerStart(@RequestBody String direction,
             SimpMessageHeaderAccessor simpMessageHeaderAccessor) {
 
         Principal user = simpMessageHeaderAccessor.getUser();
 
-        actionService.requestAction(ActionType.CONQUER_START, user.getName(), direction);
+        return actionService.requestAction(ActionType.CONQUER_START, user.getName(), direction);
     }
 
     @MessageMapping("/action/conquer/cancel")
     @SendTo("/topic/action/conquer/cancel")
-    public void conquerCancel(@RequestBody String direction,
+    public ActionData conquerCancel(@RequestBody String direction,
             SimpMessageHeaderAccessor simpMessageHeaderAccessor) {
 
         Principal user = simpMessageHeaderAccessor.getUser();
 
-        actionService.requestAction(ActionType.CONQUER_CANCEL, user.getName(), direction);
+        return actionService.requestAction(ActionType.CONQUER_CANCEL, user.getName(), direction);
     }
 
 }

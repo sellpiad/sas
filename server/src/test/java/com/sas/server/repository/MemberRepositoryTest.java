@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.sas.server.entity.MemberEntity;
+import com.sas.server.repository.entity.MemberEntity;
 
 @SpringBootTest
 public class MemberRepositoryTest {

@@ -1,9 +1,14 @@
+import { Client } from "@stomp/stompjs";
 import React, { useEffect, useRef, useState } from "react";
 import { Col, Row } from "react-bootstrap";
-import './ControlPanel.css'
-import { Client } from "@stomp/stompjs";
 import { useSelector } from "react-redux";
-import { RootState } from "../redux/Store";
+import usePlayer from "../customHook/useAction.tsx";
+import { ActionData, ActionType } from "../redux/GameSlice.tsx";
+import { RootState } from "../redux/Store.tsx";
+import './ControlPanel.css';
+import actionReceiver from "../dataReceiver/actionReceiver.tsx";
+import useAction from "../customHook/useAction.tsx";
+import playerReceiver, { Player, PlayerState } from "../dataReceiver/playerReceiver.tsx";
 
 /**
  * Component ControlPanel
@@ -15,15 +20,20 @@ interface Props {
     client: Client | undefined
 }
 
+
 export default function ControlPanel({ client }: Props) {
 
-    const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']; //키보드로 들어올 키값
+    const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
     const spaceKey = ['Space']
 
-    const isLocked = useSelector((root:RootState) => root.user.isLocked)
-
     const directionRef = useRef<string>('down')
-    const isPressingRef = useRef<boolean>(false)
+    const isLocked = useRef<boolean>(false)
+
+    const [player, setPlayer] = useState<Player>({username:'', state:PlayerState.NOT_IN_GAME})
+
+    const [actionSet, dispatch] = useAction()
+    const [actionData, setActionData] = useState<ActionData>()
+
 
     // 터치 및 클릭 버튼 이벤트 처리 메소드
     const handleClick = (button: string) => {
@@ -33,35 +43,87 @@ export default function ControlPanel({ client }: Props) {
     // 키보드 이벤트 처리 메소드
     const keyDown = (e: KeyboardEvent) => {
 
+        if (isLocked.current) {
+            return;
+        }
+
         if (arrowKeys.includes(e.code)) {
             directionRef.current = e.code.toLowerCase().substring(5)
             client?.publish({ destination: '/app/action', body: directionRef.current })
-        } else if (spaceKey.includes(e.code) && !isPressingRef.current) {
-            isPressingRef.current = true
-            client?.publish({ destination: '/app/action/conquer/start', body: directionRef.current })
         }
 
     }
 
-    const keyUp = (e: KeyboardEvent) => {
-        if (spaceKey.includes(e.code)) {
-            isPressingRef.current = false
-            client?.publish({ destination: '/app/action/conquer/cancel', body: directionRef.current })
-        }
+    const setLock = (locktime: number) => {
+        isLocked.current = true
+
+        setTimeout(() => {
+            isLocked.current = false
+        }, locktime)
     }
 
     useEffect(() => {
 
-        window.addEventListener('keydown', keyDown)
-        window.addEventListener('keyup', keyUp)
+        if (client?.connected) {
+
+            setPlayer(playerReceiver.getPlayer()) // 플레이어 초기 정보 요청
+
+            playerReceiver.subscribe((data: Player) => { // 플레이어 정보 추적
+                setPlayer(data)
+            })
+
+            window.addEventListener('keydown', keyDown)
+        }
 
         return () => {
             window.removeEventListener('keydown', keyDown)
-            window.removeEventListener('keyup', keyUp)
         }
 
 
-    }, [])
+    }, [client?.connected])
+
+    // 플레이어 actionData 추적.
+    useEffect(() => {
+
+        if (player?.username) {
+            actionReceiver.subscribe((data: ActionData) => {
+                dispatch({ type: 'UPDATE', payload: data })
+            })
+        }
+
+    }, [player?.username])
+
+    // 플레이어 게임 참가 및 사망 감시하여 락 컨트롤.
+    useEffect(() => {
+
+        switch (player?.state) {
+            case PlayerState.IN_GAME:
+                isLocked.current = false;
+                break;
+            case PlayerState.NOT_IN_GAME:
+                isLocked.current = true;
+                break;
+        }
+
+    }, [player?.state])
+
+
+    useEffect(() => {
+
+        if (actionSet.has(player.username)) {
+            setActionData(actionSet.get(player.username))
+        }
+
+    }, [actionSet])
+
+
+    useEffect(() => {
+
+        if (actionData && actionData.locktime > 0) {
+            setLock(actionData.locktime)
+        }
+    }, [actionData])
+
 
     return (
         <Row className="d-xs-none d-md-none" xs={12}>

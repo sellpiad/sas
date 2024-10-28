@@ -22,16 +22,16 @@ export default function Admin({ client, show, onHide }: Props) {
 
     return (
         <Modal show={show} onHide={onHide} size="xl" centered style={{ fontFamily: "DNFBitBitv2" }} >
-            <ModalBody style={{ height: "60vh",  fontFamily:"DNFBitBitv2", fontSize:"0.9rem"}}>
+            <ModalBody style={{ height: "90vh",  fontFamily:"DNFBitBitv2", fontSize:"0.9rem"}}>
                 <Row style={{height:"10%"}}>
-                    <Button className="Menu-Btn" variant="outline-light" onClick={() => setMode('USER')}>유저 관리</Button>
-                    <Button className="Menu-Btn" variant="outline-light" onClick={() => setMode('LOG')}>로그 현황</Button>
-                    <Button className="Menu-Btn" variant="outline-light" onClick={() => setMode('GAME')}>게임 관리</Button>
+                    <Button className="Menu-Btn" variant="outline-success" onClick={() => setMode('USER')}>유저 관리</Button>
+                    <Button className="Menu-Btn" variant="outline-success" onClick={() => setMode('LOG')}>로그 현황</Button>
+                    <Button className="Menu-Btn" variant="outline-success" onClick={() => setMode('GAME')}>게임 관리</Button>
                 </Row>
                 <Row style={{height:"90%"}}>
                     {mode === 'USER' && <UserPanel />}
                     {mode === 'LOG' && <LogPanel />}
-                    {mode === 'GAME' && <GamePanel />}
+                    {mode === 'GAME' && <GamePanel client={client}/>}
                 </Row>
             </ModalBody>
         </Modal>

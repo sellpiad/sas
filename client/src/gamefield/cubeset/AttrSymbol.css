@@ -2,10 +2,27 @@
     animation: fadeIn 5s forwards, widthGrow 5s forwards;
 }
 
+.float-animation{
+    animation: float 2s ease-in-out infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
 @keyframes fadeIn {
     0% {
         opacity: 0;
     }
+
     100% {
         opacity: 1;
     }
@@ -15,7 +32,24 @@
     0% {
         width: 0%;
     }
+
     100% {
         width: 80%;
+    }
+}
+
+@keyframes neon {
+    0% {
+        text-shadow:
+            0 0 10px rgba(0, 255, 255, 0.7),
+            0 0 20px rgba(0, 255, 255, 0.7),
+            0 0 30px rgba(0, 255, 255, 0.7);
+    }
+
+    100% {
+        text-shadow:
+            0 0 20px rgba(0, 255, 255, 0.7),
+            0 0 30px rgba(0, 255, 255, 0.7),
+            0 0 40px rgba(0, 255, 255, 0.7);
     }
 }

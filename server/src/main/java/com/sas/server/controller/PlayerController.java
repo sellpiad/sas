@@ -1,9 +1,12 @@
 package com.sas.server.controller;
 
+import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,18 +14,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.sas.server.dao.CustomUserDetails;
-import com.sas.server.dto.game.ObserverData;
-import com.sas.server.dto.queue.CreationInfo;
-import com.sas.server.entity.PlaylogEntity;
+import com.sas.server.controller.dto.game.SlimeData;
+import com.sas.server.controller.dto.queue.CreationInfo;
+import com.sas.server.custom.dataType.PlayerStateType;
+import com.sas.server.repository.entity.CustomUserDetails;
+import com.sas.server.repository.entity.PlayerEntity;
+import com.sas.server.repository.entity.PlaylogEntity;
 import com.sas.server.service.player.PlayerService;
 import com.sas.server.service.player.PlaylogService;
-import com.sas.server.service.ranker.RankerService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-
 
 @Controller
 @RequiredArgsConstructor
@@ -31,37 +33,45 @@ public class PlayerController {
 
     private final PlayerService playerService;
     private final PlaylogService playlogService;
-    private final RankerService rankerService;
-
-    @MessageMapping("/player/anyObserver")
-    @SendTo("/topic/player/anyObserver")
-    public ObserverData anyObserver() {
-        return playerService.findRandObserver();
-    }
-
-    @MessageMapping("/player/findObserver")
-    @SendTo("/queue/player/findObserver")
-    public ObserverData findObserver(@RequestBody String username) {
-        return playerService.findObserverById(username);
-    }
-
-    @MessageMapping("/player/findObserverByRanking")
-    @SendTo("/queue/player/findObserverByRanking")
-    public ObserverData findObserverByRanking(@RequestBody String ranking) {
-
-        String player = rankerService.findRealtimeRankerByRanking(Integer.parseInt(ranking));
-
-        return playerService.findObserverById(player);
-    }
 
     @PostMapping("/player/register")
     @ResponseBody
-    public ObserverData register(@RequestBody CreationInfo info, @AuthenticationPrincipal CustomUserDetails user) {
+    public int register(@RequestBody CreationInfo info, @AuthenticationPrincipal CustomUserDetails user) {
 
-        playerService.savePlayer(user.getUsername(), info.getNickname(), info.getAttr());
+        String username = user.getUsername();
 
-        return playerService.findObserverById(user.getUsername());
+        // 플레이어가 이미 게임 중이라면 삭제.
+        if (playerService.ingameByUsername(username) != null) {
+            playerService.deleteById(username);
+        }
 
+        PlayerEntity player = PlayerEntity.builder()
+                .id(username)
+                .nickname(info.getNickname())
+                .attr(info.getAttr())
+                .build();
+
+        playerService.save(player);
+
+        return playerService.getTotalQueue();
+    }
+
+    @MessageMapping("/player/state")
+    @SendToUser("/queue/player/state")
+    public PlayerStateType getState(SimpMessageHeaderAccessor simpMessageHeaderAccessor) {
+
+        Principal user = simpMessageHeaderAccessor.getUser();
+
+        return playerService.getPlayerState(user.getName());
+    }
+
+    @MessageMapping("/player/username")
+    @SendToUser("/queue/player/username")
+    public String getUsername(SimpMessageHeaderAccessor simpMessageHeaderAccessor) {
+
+        Principal user = simpMessageHeaderAccessor.getUser();
+
+        return user.getName();
     }
 
     @GetMapping("/player/playlog")
@@ -73,5 +83,12 @@ public class PlayerController {
         return list;
     }
 
+    @MessageMapping("/game/slimes")
+    @SendToUser("/queue/game/slimes")
+    public Map<String, SlimeData> getGameStatus() {
+
+        return playerService.findAllSlimes();
+
+    }
 
 }

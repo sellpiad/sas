@@ -17,14 +17,18 @@ import Admin from './admin/Admin.tsx';
 import Board from './board/Board.tsx';
 import ControlPanel from './controlPanel/ControlPanel.tsx';
 import CreateModal from './createModal/CreateModal.tsx';
+import actionReceiver from './dataReceiver/actionReceiver.tsx';
+import gameReceiver, { SlimeData } from './dataReceiver/gameReceiver.tsx';
+import playerReceiver, { Player } from './dataReceiver/playerReceiver.tsx';
 import GameField from './gamefield/GameField.tsx';
 import Slime from './gamefield/slimeset/Slime.tsx';
 import Login from './login/Login.tsx';
-import ObserverInfo from './observerInfo/ObserverInfo.tsx';
-import ObserverPanel from './observerInfo/ObserverPanel.tsx';
+import ObserverInfo from './observer/ObserverInfo.tsx';
+import RealtimeRanking from './observer/RealtimeRanking.tsx';
 import PlayerInfo from './player/PlayerInfo.tsx';
 import PlayResultModal from './playResultModal/PlayResultModal.tsx';
 import RankingBoard from './ranker/RankingBoard.tsx';
+import { ActionType, AttributeType, ObjectProps } from './redux/GameSlice.tsx';
 
 
 function App() {
@@ -33,7 +37,7 @@ function App() {
 
   const [isConn, setIsConn] = useState<boolean>(false)
 
-  const ws = useRef<Client>()
+  const ws = useRef<Client | undefined>()
   // Redux state 업데이트용
   const dispatch = useDispatch()
 
@@ -50,33 +54,57 @@ function App() {
   const isDead = useSelector((state: RootState) => state.user.isDead)
   const auth = useSelector((state: RootState) => state.user.auth)
 
+  const [player, setPlayer] = useState<Player>()
+
+  const navSlimeProps: ObjectProps = {
+    position: 'relative',
+    width: "100%",
+    height: "100%",
+    className: 'Slime'
+  }
+
+  const navSlimeData: SlimeData = {
+    username: 'navSlime',
+    attr: AttributeType.NORMAL,
+    actionType: ActionType.IDLE,
+    direction: 'down',
+    duration: 300,
+    position: '',
+    locktime: 0,
+    nickname: '',
+    createdTime: 0,
+    removedTime: 0,
+    buffCount: 0,
+    nuffCount: 0
+  }
+
   // 모달 관리 메소드들
-  const showCreateModal = (e:React.MouseEvent<HTMLButtonElement>) => {
+  const showCreateModal = (e: React.MouseEvent<HTMLButtonElement>) => {
     setCreateModal(true)
     e.currentTarget.blur()
   }
 
-  const showRankingModal = (e:React.MouseEvent<HTMLButtonElement>) => {
+  const showRankingModal = (e: React.MouseEvent<HTMLButtonElement>) => {
     setRankingModal(true)
     e.currentTarget.blur()
   }
 
-  const showBoardModal = (e:React.MouseEvent<HTMLButtonElement>) => {
+  const showBoardModal = (e: React.MouseEvent<HTMLButtonElement>) => {
     setBoardModal(true)
     e.currentTarget.blur()
   }
 
-  const showPlayerModal = (e:React.MouseEvent<HTMLButtonElement>) => {
+  const showPlayerModal = (e: React.MouseEvent<HTMLButtonElement>) => {
     setPlayerModal(true)
     e.currentTarget.blur()
   }
 
-  const showPlayResultModal = (e:React.MouseEvent<HTMLButtonElement>) => {
+  const showPlayResultModal = (e: React.MouseEvent<HTMLButtonElement>) => {
     setPlayResultModal(true)
     e.currentTarget.blur()
   }
 
-  const showAdminModal = (e:React.MouseEvent<HTMLButtonElement>) => {
+  const showAdminModal = (e: React.MouseEvent<HTMLButtonElement>) => {
     setAdminModal(true)
     e.currentTarget.blur()
   }
@@ -142,10 +170,26 @@ function App() {
   useEffect(() => {
 
     if (isDead) {
-      showPlayResultModal()
+      setPlayResultModal(true)
     }
 
   }, [isDead])
+
+  useEffect(() => {
+
+    if (ws.current?.connected) {
+
+      gameReceiver.initReceiver(ws.current)
+      actionReceiver.initReceiver(ws.current)
+      playerReceiver.initReceiver(ws.current)
+
+      playerReceiver.subscribe((data: Player) => {
+        setPlayer(data)
+      })
+    }
+
+
+  }, [ws.current])
 
 
   return (
@@ -160,7 +204,7 @@ function App() {
               <Row className='w-100 justify-content-between '>
                 <Col xs={12} sm={6} style={{ paddingLeft: 0 }}>
                   <Navbar.Brand>
-                    <Slime key={"navbarSlime"} className='Slime' playerId={"navbarSlime"} direction={"down"} isAbsolute={false}></Slime>
+                    <Slime key={"navbarSlime"} objectProps={navSlimeProps} slimeData={navSlimeData}></Slime>
                     <svg className="title-svg" width="100%" height="100%" viewBox="-5 -30 200 50">
                       <text
                         x="0" y="0" fill="#3678ce"
@@ -188,14 +232,14 @@ function App() {
               {
                 isConn && <>
                   <Col xs={12} sm={3}>
-                    <ObserverInfo client={ws.current} />
-                    <ObserverPanel client={ws.current} />
+                    <ObserverInfo client={ws.current}/>
+                    <RealtimeRanking client={ws.current} />
                     {(auth === 'ADMIN' || auth === 'MANAGER') && <Button className="Admin-Btn" variant="outline-light" onClick={showAdminModal}>관리모드</Button>}
                   </Col>
                   <Col xs={12} sm={9}>
                     <Stack gap={4} style={{ alignItems: "center" }}>
                       <GameField client={ws.current}></GameField>
-                      {isPlaying && <ControlPanel client={ws.current}></ControlPanel>}
+                      {player?.state === 'IN_GAME' && <ControlPanel client={ws.current}></ControlPanel>}
                     </Stack>
                   </Col>
                 </>

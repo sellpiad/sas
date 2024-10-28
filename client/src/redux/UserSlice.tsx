@@ -17,7 +17,7 @@ const initialState: State = {
     isDead: false,
     isLocked: false,
     auth: null,
-    username: null,
+    username: null ,
     attr: null,
 }
 

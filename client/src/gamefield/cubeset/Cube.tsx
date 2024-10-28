@@ -1,24 +1,22 @@
 import React from "react"
-import AttSymbol from "./AttrSymbol.tsx"
+import { default as AttrSymbol } from "./AttrSymbol.tsx"
 import './Cube.css'
 
 interface Props {
     name: string
-    hasPlayer: boolean
-    setBorder: boolean
     attr: string
-    conquering?: boolean
+    setBorder: boolean
 }
 
 
-export default function CubeObj({ name, hasPlayer, setBorder, attr, conquering }: Props) {
+export default function Cube({ name, setBorder, attr }: Props) {
 
-    const classNames = `slime-box ${hasPlayer ? "hasPlayer " + attr?.toLowerCase() : ''} ${setBorder ? 'styx' : ''}`
+    const classNames = `slime-box ${setBorder ? 'styx' : ''}`
 
     return (
 
         <div key={name} className={classNames} id={name}>
-            <AttSymbol width="80%" height="80%" attr={attr} opacity={100} animating={conquering === undefined ? false : conquering}></AttSymbol>
+            <AttrSymbol width="80%" height="80%" attr={attr} opacity={100}></AttrSymbol>
         </div>
     )
 

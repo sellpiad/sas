@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.sas.server.entity.PostEntity;
 import com.sas.server.repository.BoardRepository;
+import com.sas.server.repository.entity.PostEntity;
 
 @SpringBootTest
 public class BoardRepositoryTest {

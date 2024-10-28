@@ -1,5 +1,5 @@
 {
-  "name": "votewar-front",
+  "name": "sas-front",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -19,6 +19,7 @@
     "react-scripts": "5.0.1",
     "react-spring": "^9.7.3",
     "redux-persist": "^6.0.0",
+    "sas-front": "file:",
     "sockjs-client": "^1.6.1",
     "votewar-front": "file:",
     "web-vitals": "^2.1.4",

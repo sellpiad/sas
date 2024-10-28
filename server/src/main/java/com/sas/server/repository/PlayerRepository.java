@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.repository.CrudRepository;
 
-import com.sas.server.entity.PlayerEntity;
+import com.sas.server.repository.entity.PlayerEntity;
 
 public interface PlayerRepository extends CrudRepository<PlayerEntity,String>{
     
@@ -13,5 +13,4 @@ public interface PlayerRepository extends CrudRepository<PlayerEntity,String>{
     public List<PlayerEntity> findAllByInQueue(boolean inQueue);
     public Optional<PlayerEntity> findByPosition(String position);
     public Optional<PlayerEntity> findByNickname(String nickname);
-    public Optional<PlayerEntity> findByUsernameAndInQueue(String username, boolean inQueue);
 }

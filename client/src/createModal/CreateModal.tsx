@@ -2,11 +2,10 @@ import { Client } from "@stomp/stompjs";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Button, Col, Form, InputGroup, Modal, ModalBody, Row, Stack } from "react-bootstrap";
-import { useDispatch } from "react-redux";
 import Slime from "../gamefield/slimeset/Slime.tsx";
-import { ObserverType, updateObserver } from "../redux/ObserverSlice.tsx";
+import { ActionType, AttributeType, ObjectProps } from "../redux/GameSlice.tsx";
 import './CreateModal.css';
-import { updatePlaying } from "../redux/UserSlice.tsx";
+import { SlimeData } from "../dataReceiver/gameReceiver.tsx";
 
 /**
  * Component CreateModal
@@ -32,12 +31,29 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
 
     const [color, setColor] = useState<string>()
     const [text, setText] = useState<string>()
-    const [attr, setAttr] = useState<string>()
-    const [exp, setExp] = useState<string>()
+    const [attr, setAttr] = useState<string>('')
+
+    const [winAttr, setWinAttr] = useState<string>()
+    const [loseAttr, setLoseAttr] = useState<string>()
+
+    const [slime, setSlime] = useState<SlimeData>({
+        username: 'createSlime',
+        attr: AttributeType.NORMAL,
+        actionType: ActionType.IDLE,
+        direction: 'down',
+        duration: 300,
+        position: '',
+        locktime: 0
+    } as SlimeData)
 
     const [index, setIndex] = useState<number>(0)
 
-    const dispatch = useDispatch()
+    const createObjectProps: ObjectProps = {
+        position: 'relative',
+        width: '30%',
+        height: '30%'
+    }
+
 
     const btnHanlder = (e: React.FormEvent<HTMLFormElement>) => {
 
@@ -50,8 +66,7 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
 
             axios.post('/api/player/register', user)
                 .then((res) => {
-                    dispatch(updateObserver({ observer: res.data as ObserverType }))
-                    dispatch(updatePlaying({ isPlaying: true }))
+                    console.log(res.data + "명이 플레이를 기다리는 중..")
                 }).catch((err) => {
 
                 })
@@ -82,6 +97,29 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
             setIndex(prev => prev - 1)
     }
 
+    const getWinAttr = (curAttr: string) => {
+        switch (curAttr) {
+            case 'GRASS':
+                return '#180bc7'
+            case 'FIRE':
+                return '#38f113'
+            case 'WATER':
+                return '#dc3545'
+        }
+    }
+
+    const getLoseAttr = (curAttr: string) => {
+        switch (curAttr) {
+            case 'GRASS':
+                return '#dc3545'
+            case 'FIRE':
+                return '#180bc7'
+            case 'WATER':
+                return '#38f113'
+        }
+    }
+
+
     const getAttr = () => {
 
         switch (index) {
@@ -89,19 +127,25 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
                 setColor("#38f113")
                 setText("풀속성")
                 setAttr("GRASS")
-                setExp("물속성과 전투시 승리 불속성과 전투시 패배")
+                setWinAttr("물속성")
+                setLoseAttr("불속성")
+                setSlime(prev => ({ ...prev, attr: AttributeType.GRASS }))
                 break;
             case 1:
                 setColor("#dc3545")
                 setText("불속성")
                 setAttr("FIRE")
-                setExp("풀속성과 전투시 승리 물속성과 전투시 패배")
+                setWinAttr("풀속성")
+                setLoseAttr("물속성")
+                setSlime(prev => ({ ...prev, attr: AttributeType.FIRE }))
                 break;
             case 2:
                 setColor("#180bc7")
                 setText("물속성")
                 setAttr("WATER")
-                setExp("불속성과 전투시 승리 풀속성과 전투시 패배")
+                setWinAttr("불속성")
+                setLoseAttr("풀속성")
+                setSlime(prev => ({ ...prev, attr: AttributeType.WATER }))
                 break;
         }
 
@@ -116,9 +160,15 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
             <ModalBody>
                 <Stack gap={2}>
                     <Row className="info-span">
-                        <Slime playerId="createModalWater" direction="down" fill={attr} width="30%" height="30%" isAbsolute={false}></Slime>
-                        <span>{exp?.substring(0, 11)}</span>
-                        <span>{exp?.substring(12, 23)}</span>
+                        <Slime objectProps={createObjectProps} slimeData={slime} ></Slime>
+                        <div>
+                            <span style={{ color: getWinAttr(attr) }}>{winAttr}</span>
+                            <span>과 전투시 승리</span>
+                        </div>
+                        <div>
+                            <span style={{ color: getLoseAttr(attr) }}>{loseAttr}</span>
+                            <span>과 전투시 패배</span>
+                        </div>
                     </Row>
                     <Row>
                         <Col className="info-span" xs={4}>
@@ -134,34 +184,30 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
                     </Row>
 
                     <Form onSubmit={btnHanlder}>
-                        <Row>
-                            <Col className="info-span" xs={4}>
-                                <span>닉네임</span>
-                            </Col>
-                            <Col className="info-span" xs={8}>
-                                <InputGroup hasValidation>
+                        <Stack gap={2}>
+                            <Row>
+                                <Col className="info-span" xs={4}>
+                                    <span>닉네임</span>
+                                </Col>
+                                <Col className="info-span" xs={8}>
                                     <Form.Control
-                                        required
+                                        className={valid ? 'shake' : ''}
                                         placeholder="닉네임을 입력해주세요."
                                         aria-label="닉네임"
-                                        aria-describedby="basic-addon2"
                                         value={nickname}
                                         onChange={(e) => setNickname(e.target.value)}
                                         isInvalid={valid}
                                     />
-                                </InputGroup>
-                            </Col>
-                        </Row>
-                        <Row className="info-span">
-                            <p className={valid ? "shake err-msg" : "err-msg"}>{err}</p>
-                        </Row>
-                        <Row>
-                            <Col xs={{ offset: 3, span: 6 }}>
-                                <Button variant="outline-secondary" type="submit" style={{ color: "black" }}>
-                                    슬라임 생성
-                                </Button>
-                            </Col>
-                        </Row>
+                                </Col>
+                            </Row>
+                            <Row>
+                                <Col xs={{ offset: 3, span: 6 }}>
+                                    <Button variant="outline-secondary" type="submit" style={{ color: "black" }}>
+                                        슬라임 생성
+                                    </Button>
+                                </Col>
+                            </Row>
+                        </Stack>
                     </Form>
                 </Stack>
             </ModalBody>

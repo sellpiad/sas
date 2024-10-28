@@ -8,11 +8,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
-import com.sas.server.dao.CustomUserDetails;
-import com.sas.server.entity.MemberEntity;
-import com.sas.server.util.Role;
+import com.sas.server.repository.entity.CustomUserDetails;
+import com.sas.server.repository.entity.MemberEntity;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;

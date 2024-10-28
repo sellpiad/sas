@@ -1,76 +1,116 @@
 package com.sas.server.service.player;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.stream.Collectors;
 
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import com.sas.server.dto.admin.MemberData;
-import com.sas.server.dto.game.ObserverData;
-import com.sas.server.dto.game.PlayerCardData;
-import com.sas.server.entity.PlayerEntity;
+import com.sas.server.controller.dto.admin.MemberData;
+import com.sas.server.controller.dto.game.SlimeData;
+import com.sas.server.custom.dataType.PlayerStateType;
+import com.sas.server.logic.MessagePublisher;
+import com.sas.server.logic.TimebombSystem;
 import com.sas.server.repository.PlayerRepository;
+import com.sas.server.repository.entity.PlayerEntity;
+import com.sas.server.service.admin.LogService;
+import com.sas.server.service.player.pattern.PlayerPub;
+import com.sas.server.service.player.pattern.PlayerSub;
+import com.sas.server.service.player.pattern.TimeBombSub;
+import com.sas.server.service.ranker.RankerService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * <strong>Player 객체 관련 비즈니스 로직</strong>
+ * 
+ * <p>
+ * <strong>Player 생성, 변경, 삭제 시 참조 및 로직 실행 파트</strong>
+ * </p>
+ * 
+ * <ul>
+ * <li>{@link RankerService}</li>
+ * <li>{@link PlaylogService}</li>
+ * <li>{@link LogService}</li>
+ * <li>{@link MessagePublisher}</li>
+ * <li>{@link TimebombSystem}</li>
+ * </ul>
+ * 
+ */
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class PlayerService {
+public class PlayerService implements PlayerPub, TimeBombSub {
 
-    private final PlayerRepository repo;
+    private final PlayerRepository repo; // DB 입출력 객체
+    private List<PlayerSub> subscribers = new ArrayList<>(); // 플레이어 생성, 삭제, 업데이트 현황 구독리스트
 
-    /**
-     * 
-     * @param playerId
-     * @param nickname
-     * @param attr
-     */
-
-    public void savePlayer(String username, String nickname, String attr) {
-
-        PlayerEntity player = PlayerEntity.builder()
-                .username(username)
-                .nickname(nickname)
-                .attr(attr)
-                .build();
-
-        repo.save(player);
+    public PlayerEntity save(PlayerEntity player) {
+        return repo.save(player);
     }
 
-    public void saveAI(PlayerEntity user) {
-        repo.save(user);
+    public PlayerEntity updateWithValidCheck(PlayerEntity player) {
+
+        if (new Date().getTime() > player.removedTime.getTime()) {
+            throw new IllegalStateException("Player " + player.nickname + " has Already Died! ");
+        }
+
+        return repo.save(player);
     }
 
-    public void updatePlayer(PlayerEntity player) {
-        repo.save(player);
+    public void deleteById(String username) {
+
+        PlayerEntity player = repo.findById(username).orElse(null);
+
+        if (player != null) {
+            notifyDelete(player);
+            repo.deleteById(username);
+        }
     }
 
-    public boolean existById(String username) {
-        return repo.existsById(username);
+    public int getTotalQueue() {
+        return findAllByInQueue().size();
     }
 
-    public PlayerEntity ingameById(String username) {
+    public PlayerEntity ingameByUsername(String username) {
 
-        return repo.findByUsernameAndInQueue(username, false)
-                .orElse(null);
+        PlayerEntity player = repo.findById(username).orElse(null);
+
+        if (player == null || player.inQueue) {
+            return null;
+        } else {
+            return player;
+        }
 
     }
 
-    public PlayerEntity findById(String username) {
-        return repo.findById(username)
-                .orElseThrow(() -> new NullPointerException("PlayerEntity not found with username = " + username));
+    public PlayerStateType getPlayerState(String username) {
+
+        PlayerEntity player = repo.findById(username).orElse(null);
+
+        if (player == null)
+            return PlayerStateType.NOT_IN_GAME;
+        else if (player.inQueue)
+            return PlayerStateType.REGISTER;
+        else
+            return PlayerStateType.IN_GAME;
+
+    }
+
+    public PlayerEntity findByUsername(String username) {
+        return repo.findById(username).orElseThrow(() -> new IllegalStateException("Player has already died."));
     }
 
     public PlayerEntity findByPosition(String position) {
         return repo.findByPosition(position)
-                .orElseThrow(() -> new NullPointerException("PlayerEntity not found with position = " + position));
+                .orElse(null);
     }
 
     public List<PlayerEntity> findAllByInQueue() {
@@ -79,25 +119,6 @@ public class PlayerService {
 
     public List<PlayerEntity> findAllByInGame() {
         return repo.findAllByInQueue(false);
-    }
-
-    public List<PlayerCardData> findAllPlayerCard() {
-
-        List<PlayerEntity> playerList = findAllByInGame().stream()
-                .sorted((p1, p2) -> Integer.compare(p2.totalKill, p1.totalKill))
-                .collect(Collectors.toList());
-
-        List<PlayerCardData> cardList = new ArrayList<>();
-
-        for (PlayerEntity player : playerList) {
-            cardList.add(PlayerCardData.builder()
-                    .attr(player.attr)
-                    .nickname(player.nickname)
-                    .kill(player.totalKill)
-                    .build());
-        }
-
-        return cardList;
     }
 
     public List<MemberData> udpateIsPlayingOrNot(List<MemberData> list) {
@@ -114,7 +135,7 @@ public class PlayerService {
 
         for (PlayerEntity player : playerList) {
 
-            MemberData member = memberMap.get(player.username);
+            MemberData member = memberMap.get(player.id);
 
             if (member != null) {
                 memberMap.put(member.getUsername(), member.toBuilder().isPlaying(true).build());
@@ -124,9 +145,64 @@ public class PlayerService {
         return new ArrayList<>(memberMap.values());
     }
 
-    public void deleteById(String playerId) {
-        repo.deleteById(playerId);
+    public Map<String, SlimeData> findAllSlimes() {
+
+        Map<String, SlimeData> slimeSet = new HashMap<>();
+
+        List<PlayerEntity> playerSet = findAllByInGame();
+
+        for (PlayerEntity player : playerSet) {
+
+            SlimeData slimeData = SlimeData.builder()
+                    .username(player.id)
+                    .nickname(player.nickname)
+                    .attr(player.attr)
+                    .direction("down")
+                    .position(player.position)
+                    .createdTime(player.createdTime)
+                    .build();
+
+            slimeSet.put(player.id, slimeData);
+        }
+
+        return slimeSet;
     }
+
+        /**
+     * Queue를 주기적으로 스캔하여 플레이어를 게임에 투입.
+     * 
+     * @return {@code PlayerEntity} Player 정보가 담긴 객체.
+     *
+     */
+    public PlayerEntity scanQueue(int max) {
+
+        // 난수 생성 셋팅
+        Random random = new Random();
+        random.setSeed(System.currentTimeMillis());
+
+        // 무작위로 키를 조회.
+        // 큐브 번호는 0~(size*size-1)
+        // 락이 존재한다면 키번호 수정 후 재시도.
+        // 락을 획득했다면 플레이어 투입.
+
+        Iterator<PlayerEntity> waiterItr = findAllByInQueue().iterator();
+
+        while (waiterItr.hasNext()) {
+
+            String position = "slimebox" + random.nextInt(max);
+
+            if (findByPosition(position) == null) {
+
+                PlayerEntity player = waiterItr.next();
+
+                return inGameEvent(player, position);
+            }
+
+        }
+
+        return null;
+    }
+
 
     /**
      * 유저의 킬 횟수 증가
@@ -136,82 +212,146 @@ public class PlayerService {
      */
     public PlayerEntity incKill(PlayerEntity player) throws NullPointerException {
 
-        PlayerEntity updatedUser = repo.save(player.toBuilder()
+        PlayerEntity updatedUser = updateWithValidCheck(player.toBuilder()
                 .totalKill(player.totalKill + 1)
                 .build());
 
         return updatedUser;
     }
 
-    public List<PlayerEntity> findAll() {
+    /**
+     * 유저 수명 연장
+     * 
+     * @param player
+     * @param addTime
+     * @return 갱신한 유저 객체 리턴
+     */
+    public PlayerEntity postponeRemovedTime(PlayerEntity player, int addTime) {
 
-        List<PlayerEntity> list = (List<PlayerEntity>) repo.findAll();
+        Calendar calendar = Calendar.getInstance();
 
-        return list.isEmpty() ? null : list;
+        calendar.setTime(player.removedTime);
 
+        calendar.add(Calendar.SECOND, addTime);
+
+        player = player.toBuilder()
+                .removedTime(calendar.getTime())
+                .build();
+
+        notifyPostpone(player);
+
+        return updateWithValidCheck(player);
+
+    }
+
+    public PlayerEntity buffEvent(PlayerEntity player, int turnCount) {
+
+        player = player.toBuilder() // 버프 카운트 수정
+                .buffCount(player.buffCount + turnCount)
+                .build();
+
+        return updateWithValidCheck(player);
+    }
+
+    public PlayerEntity nuffEvent(PlayerEntity player, int turnCount) {
+
+        player = player.toBuilder() // 버프 카운트 수정
+                .nuffCount(player.nuffCount + turnCount)
+                .build();
+
+        return updateWithValidCheck(player);
+    }
+
+    public void killEvent(PlayerEntity player) {
+        incKill(player);
+        postponeRemovedTime(player, 10);
+
+    }
+
+    public PlayerEntity moveEvent(PlayerEntity player, String position) {
+        return updateWithValidCheck(player.toBuilder().position(position)
+                .buffCount(player.buffCount > 0 ? player.buffCount - 1 : 0)
+                .nuffCount(player.nuffCount > 0 ? player.nuffCount - 1 : 0)
+                .build());
+
+    }
+
+    public PlayerEntity inGameEvent(PlayerEntity player, String position) {
+
+        // 현재 시간에서 10초 추가
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.SECOND, 30);
+
+        player = player.toBuilder()
+                .inQueue(false)
+                .position(position)
+                .createdTime(new Date())
+                .removedTime(calendar.getTime())
+                .build();
+
+        save(player);
+
+        notifyInGame(player, getTotalQueue());
+
+        return player;
+
+    }
+
+    @Override
+    public void registerSub(PlayerSub subscriber) {
+        subscribers.add(subscriber);
+    }
+
+    @Override
+    public void unregisterSub(PlayerSub subscriber) {
+        subscribers.remove(subscriber);
+    }
+
+    @Override
+    public void notifyUpdate(PlayerEntity player) {
+        for (PlayerSub subscriber : subscribers) {
+            subscriber.update(player);
+        }
+    }
+
+    @Override
+    public void notifyDelete(PlayerEntity player) {
+        for (PlayerSub subscriber : subscribers) {
+            subscriber.delete(player);
+        }
+    }
+
+    @Override
+    public void notifyPostpone(PlayerEntity player) {
+        for (PlayerSub subscriber : subscribers) {
+            subscriber.postpone(player);
+        }
+    }
+
+    @Override
+    public void notifyMove(PlayerEntity player) {
+        for (PlayerSub subscriber : subscribers) {
+            subscriber.move(player);
+        }
+    }
+
+    @Override
+    public void notifyInGame(PlayerEntity player, int totalQueue) {
+        for (PlayerSub subscriber : subscribers) {
+            subscriber.inGame(player,totalQueue);
+        }
     }
 
     /**
-     * 현재 플레이 중인 유저들 중 랜덤으로 한 명의 정보를 리턴.
+     * 시한폭탄이 작동되었을 때 알림을 받고, 유저 삭제.
      * 
-     * @return
+     * @param username
      */
-    public ObserverData findRandObserver() {
-
-        List<PlayerEntity> list = (List<PlayerEntity>) repo.findAll();
-
-        Random random = new Random();
-
-        random.setSeed(System.currentTimeMillis());
-
-        if (list.size() == 0)
-            return null;
-
-        PlayerEntity user = list.get(random.nextInt(list.size()));
-
-        return ObserverData.builder()
-                .username(user.username)
-                .nickname(user.nickname)
-                .position(user.position)
-                .attr(user.attr)
-                .kill(user.totalKill)
-                .conquer(0)
-                .build();
+    @Override
+    public void notifyBomb(String username) {
+        deleteById(username);
     }
 
-    public ObserverData findObserverById(String username) {
-
-        PlayerEntity player = repo.findById(username)
-                .orElseThrow(() -> new NullPointerException("PlayerEntity not found with " + username));
-
-        return ObserverData.builder()
-                .username(player.username)
-                .nickname(player.nickname)
-                .position(player.position)
-                .attr(player.attr)
-                .kill(player.totalKill)
-                .conquer(0)
-                .build();
-
-    }
-
-    public ObserverData findObserverByNickname(String nickname) {
-        PlayerEntity player = repo.findByNickname(nickname)
-                .orElseThrow(() -> new NullPointerException("PlayerEntity not found with username = " + nickname));
-
-        return ObserverData.builder()
-                .username(player.username)
-                .nickname(player.nickname)
-                .position(player.position)
-                .attr(player.attr)
-                .kill(player.totalKill)
-                .conquer(0)
-                .build();
-
-    }
-
-    public List<PlayerEntity> findAllAi() {
-        return repo.findAllByAi(true);
-    }
 
 }

@@ -1,5 +1,6 @@
 package com.sas.server.service.ranker;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,11 +13,11 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import com.sas.server.dto.game.PlayerCardData;
-import com.sas.server.dto.game.RankerDTO;
-import com.sas.server.entity.PlayerEntity;
-import com.sas.server.entity.RankerEntity;
+import com.sas.server.controller.dto.game.RankerData;
 import com.sas.server.repository.RankerRepository;
+import com.sas.server.repository.entity.PlayerEntity;
+import com.sas.server.repository.entity.RankerEntity;
+import com.sas.server.service.player.pattern.PlayerSub;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,13 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RankerService {
+
+/**
+ * Sorted Set으로 자동 정렬을 보장.
+ * 
+ */
+
+public class RankerService implements PlayerSub {
 
     private final SimpMessagingTemplate simpMessagingTemplate;
 
@@ -33,10 +40,8 @@ public class RankerService {
     private final RankerRepository repo;
 
     private final String LEADERBOARD_ALLTIME_ZSETKEY = "leaderboard:alltime:zset:";
-    private final String LEADERBOARD_REALTIME_ZSETKEY = "leaderboard:realtime:zset:";
 
     private final String LEADERBOARD_ALLTIME_HASHKEY = "leaderboard:alltime:hash:";
-    private final String LEADERBOARD_REALTIME_HASHKEY = "leaderboard:realtime:hash:";
 
     public int getPlayerRank(String username) {
 
@@ -63,17 +68,18 @@ public class RankerService {
             scoreOf100th = zSetOps.score(LEADERBOARD_ALLTIME_ZSETKEY, rankerOf100th);
 
         if (rankerOf100th == null ||
-                user.totalKill > (scoreOf100th != null ? scoreOf100th : Double.NEGATIVE_INFINITY)) {
+                (new Date().getTime() - user.createdTime.getTime()) > (scoreOf100th != null ? scoreOf100th
+                        : Double.NEGATIVE_INFINITY)) {
 
             RankerEntity ranker = RankerEntity.builder()
-                    .username(user.username)
+                    .username(user.id)
                     .nickname(user.nickname)
                     .attr(user.attr)
-                    .kill(user.totalKill)
+                    .lifeTime(new Date().getTime() - user.createdTime.getTime())
                     .build();
 
             // 새롭게 랭커 추가
-            zSetOps.add(LEADERBOARD_ALLTIME_ZSETKEY, ranker.username, ranker.kill);
+            zSetOps.add(LEADERBOARD_ALLTIME_ZSETKEY, ranker.username, ranker.lifeTime);
             hashOps.put(LEADERBOARD_ALLTIME_HASHKEY, ranker.username, ranker);
 
             // 기존 랭커 삭제
@@ -84,34 +90,7 @@ public class RankerService {
         }
     }
 
-    public void updateRealtimeRank(PlayerEntity user) {
-
-        ZSetOperations<String, String> zSetOps = stringRedisTemplate.opsForZSet();
-        HashOperations<String, String, RankerEntity> hashOps = rankerRedisTemplate.opsForHash();
-
-        RankerEntity ranker = RankerEntity.builder()
-                .username(user.username)
-                .nickname(user.nickname)
-                .attr(user.attr)
-                .kill(user.totalKill)
-                .build();
-
-        zSetOps.add(LEADERBOARD_REALTIME_ZSETKEY, user.username, user.totalKill);
-        hashOps.put(LEADERBOARD_REALTIME_HASHKEY, ranker.username, ranker);
-    }
-
-    public void removeRealtimeRank(String username) {
-
-        ZSetOperations<String, String> zSetOps = stringRedisTemplate.opsForZSet();
-        HashOperations<String, String, RankerEntity> hashOps = rankerRedisTemplate.opsForHash();
-
-        // 플레이어를 랭킹에서 제거
-        zSetOps.remove(LEADERBOARD_REALTIME_ZSETKEY, username);
-        hashOps.delete(LEADERBOARD_REALTIME_HASHKEY, username);
-
-    }
-
-    public List<RankerDTO> getAlltimeRank() {
+    public List<RankerData> getAlltimeRank() {
 
         ZSetOperations<String, String> zSetOps = stringRedisTemplate.opsForZSet();
         HashOperations<String, String, RankerEntity> hashOps = rankerRedisTemplate.opsForHash();
@@ -129,38 +108,10 @@ public class RankerService {
 
                     RankerEntity ranker = rankers.get(username);
 
-                    return RankerDTO.builder()
+                    return RankerData.builder()
                             .attr(ranker.attr)
                             .nickname(ranker.nickname)
-                            .kill(ranker.kill)
-                            .build();
-                })
-                .collect(Collectors.toList());
-    }
-
-    public List<PlayerCardData> getRealtimeRank() {
-
-        ZSetOperations<String, String> zSetOps = stringRedisTemplate.opsForZSet();
-        HashOperations<String, String, RankerEntity> hashOps = rankerRedisTemplate.opsForHash();
-
-        Set<String> realtimeSet = zSetOps.reverseRange(LEADERBOARD_REALTIME_ZSETKEY, 0, 99);
-
-        if (realtimeSet == null)
-            return null;
-
-        Map<String, RankerEntity> rankers = hashOps.entries(LEADERBOARD_REALTIME_HASHKEY);
-
-        return realtimeSet
-                .stream()
-                .map(username -> {
-
-                    RankerEntity ranker = rankers.get(username);
-
-                    return PlayerCardData.builder()
-                            .attr(ranker.attr)
-                            .username(ranker.username)
-                            .nickname(ranker.nickname)
-                            .kill(ranker.kill)
+                            .lifeTime(ranker.lifeTime)
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -172,22 +123,9 @@ public class RankerService {
 
     }
 
-    public void publishRealtimeRanker() {
-        simpMessagingTemplate.convertAndSend("/topic/game/realtimeRanker",
-                getRealtimeRank());
+    @Override
+    public void delete(PlayerEntity player) {
+        updateAlltimeRank(player);
     }
 
-    public String findRealtimeRankerByRanking(int ranking) {
-
-        ZSetOperations<String, String> zSetOps = stringRedisTemplate.opsForZSet();
-
-        Set<String> rankername = zSetOps.reverseRange(LEADERBOARD_REALTIME_ZSETKEY, ranking + 1, ranking + 1);
-
-        if (rankername == null) {
-            return null;
-        } else {
-            return rankername.stream().findFirst().get();
-        }
-
-    }
 }

@@ -3,7 +3,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Button, Col, Container, FloatingLabel, Form, Modal, ModalBody, Row, Stack } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { initialCubeSet, initialSlimeSet, setReady, SlimeDTO } from "../redux/GameSlice.tsx";
+import { setReady } from "../redux/GameSlice.tsx";
 import { RootState } from "../redux/Store.tsx";
 import { changeLogin, updateAuth } from "../redux/UserSlice.tsx";
 import './Login.css';
@@ -60,11 +60,6 @@ export default function Login({ client }: Props) {
     const [msg, setMsg] = useState<string>('')
     const [msgType, setMsgType] = useState<string>('')
 
-    // 게임 셋팅용 정보
-    const cubeset = useSelector((state: RootState) => state.game.cubeset)
-    const slimeset = useSelector((state: RootState) => state.game.slimeset)
-
-
     const handleId = (e) => setId(e.target.value)
     const handlePwd = (e) => setPassword(e.target.value)
 
@@ -117,73 +112,15 @@ export default function Login({ client }: Props) {
         }, 1000)
     }
 
-
-
-    // 1. 큐브셋 요청
+    // 게임 로딩 완료 설정
     useEffect(() => {
 
-        if (isLogin && client?.connected) {
-
-            setMsg(getCubeset)
-
-            //초기 큐브셋 받아오기
-            client.subscribe('/user/queue/cube/cubeSet', (msg: IMessage) => {
-
-                const parser = JSON.parse(msg.body)
-
-                dispatch(initialCubeSet({
-                    cubeset: parser.reduce((result, value) => {
-
-                        const posY = value['posY']
-
-                        if (!result[posY])
-                            result[posY] = [];
-
-                        result[posY].push(value)
-
-                        return result
-                    }, [])
-
-                }))
-
-            })
-
-            client.publish({ destination: '/app/cube/cubeSet' })
-        }
-
-
-    }, [isLogin, client])
-
-    // 2. 슬라임 소환
-    useEffect(() => {
-
-        if (isLogin && cubeset && client) {
-            setMsg(getSlime)
-
-            // 초기 슬라임들 받아오기
-            client.subscribe('/user/queue/game/slimes', (msg: IMessage) => {
-
-                const slimeSet: { [key: string]: SlimeDTO } = JSON.parse(msg.body) as { [key: string]: SlimeDTO }
-
-                dispatch(initialSlimeSet({ slimeset: slimeSet }))
-
-                client.unsubscribe('/user/queue/game/slimes')
-            })
-
-            client.publish({ destination: '/app/game/slimes' })
-        }
-
-    }, [cubeset])
-
-    // 3. 게임 로딩 완료 설정
-    useEffect(() => {
-
-        if (slimeset && client && !isReady) {
+        if (!isReady) {
             setMsg(getComplete)
             dispatch(setReady())
         }
 
-    }, [slimeset])
+    }, [isReady])
 
     // 4. 로딩 메시지 초기화
     useEffect(() => {
