@@ -47,9 +47,14 @@ jobs:
         cp -r client/build sas/frontend
         cp -r server/target/* sas/backend
 
+    - name: Set permissions for scripts
+      run: |
+        chmod +x sas/start_server.sh
+        chmod +x sas/stop_server.sh
+
     - name: Create deployment zip
       run: |
-        zip -r sas.zip sas
+        zip -r sas.zip sas/
 
     - name: Upload to S3
       run: |
