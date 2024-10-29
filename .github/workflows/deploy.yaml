@@ -49,8 +49,7 @@ jobs:
 
     - name: Create deployment zip
       run: |
-        cd sas
-        zip -r sas.zip 
+        zip -r sas.zip sas
 
     - name: Upload to S3
       run: |
