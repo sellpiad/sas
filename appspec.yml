@@ -4,7 +4,7 @@ os: linux
 files:
   - source: frontend/
     destination: /home/ubuntu/sas/frontend
-  - source: backend/sas-server-1.0.0.jar
+  - source: backend/backend.jar
     destination: /home/ubuntu/sas/backend
 
 hooks:
