@@ -6,7 +6,7 @@ on:
       - main  
 
 jobs:
-  build-client:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -45,7 +45,7 @@ jobs:
         cp scripts/* sas/
         cp appspec.yml sas/
         cp -r client/build sas/frontend
-        cp -r server/target/* sas/backend/
+        cp -r server/target/* sas/backend
 
     - name: Create deployment zip
       run: |
