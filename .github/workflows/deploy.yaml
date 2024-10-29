@@ -27,6 +27,8 @@ jobs:
       run: |
         cd client
         npm run build
+      env:
+        REACT_APP_WS_TARGET: ${{ secrets.REACT_APP_WS_TARGET }}
 
     - name: Set up JDK
       uses: actions/setup-java@v4

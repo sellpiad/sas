@@ -130,8 +130,6 @@ function App() {
 
     if (isLogin) {
 
-      console.log('current target - ' + wsTarget)
-
       const client = new Client({
         webSocketFactory: () => new SockJS(wsTarget + '/ws'),
         onConnect: () => {
