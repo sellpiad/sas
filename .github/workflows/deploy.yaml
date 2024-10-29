@@ -41,7 +41,7 @@ jobs:
 
     - name: Prepare deployment package
       run: |
-        mkdir sas
+        mkdir -p sas/frontend sas/backend
         cp scripts/* sas/
         cp appspec.yml sas/
         cp -r client/build sas/frontend
