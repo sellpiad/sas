@@ -21,7 +21,6 @@
     "redux-persist": "^6.0.0",
     "sas-front": "file:",
     "sockjs-client": "^1.6.1",
-    "votewar-front": "file:",
     "web-vitals": "^2.1.4",
     "ws": "^8.17.0"
   },

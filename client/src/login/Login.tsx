@@ -1,4 +1,4 @@
-import { Client, IMessage } from "@stomp/stompjs";
+import { Client } from "@stomp/stompjs";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Button, Col, Container, FloatingLabel, Form, Modal, ModalBody, Row, Stack } from "react-bootstrap";

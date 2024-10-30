@@ -26,7 +26,6 @@ public class WebSecureConfig {
 
         http
                 .csrf((csrf) -> csrf.disable())
-                .cors((cors) -> cors.disable())
                 .formLogin((formLogin) -> formLogin
                         .successForwardUrl("/signin")
                         .failureForwardUrl("/failed"))
@@ -40,6 +39,7 @@ public class WebSecureConfig {
                                 .requestMatchers("/admin/**").hasRole("ADMIN")
                                 .requestMatchers("/signin/**").permitAll()
                                 .requestMatchers("/signout/**").permitAll()
+                                .requestMatchers("/ws/**").permitAll() 
                                 .anyRequest().hasRole("USER"))
                 .sessionManagement(
                         (sessionManagement) -> sessionManagement

@@ -75,7 +75,9 @@ function App() {
     createdTime: 0,
     removedTime: 0,
     buffCount: 0,
-    nuffCount: 0
+    nuffCount: 0,
+    targetX: 0,
+    targetY: 0
   }
 
   // 모달 관리 메소드들
@@ -129,6 +131,8 @@ function App() {
   useEffect(() => {
 
     if (isLogin) {
+
+      console.log(wsTarget)
 
       const client = new Client({
         webSocketFactory: () => new SockJS(wsTarget + '/ws'),
@@ -205,7 +209,7 @@ function App() {
               <Row className='w-100 justify-content-between '>
                 <Col xs={12} sm={6} style={{ paddingLeft: 0 }}>
                   <Navbar.Brand>
-                    <Slime key={"navbarSlime"} objectProps={navSlimeProps} slimeData={navSlimeData}></Slime>
+                    <Slime objectProps={navSlimeProps} slimeData={navSlimeData}></Slime>
                     <svg className="title-svg" width="100%" height="100%" viewBox="-5 -30 200 50">
                       <text
                         x="0" y="0" fill="#3678ce"
