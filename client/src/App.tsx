@@ -132,8 +132,6 @@ function App() {
 
     if (isLogin) {
 
-      console.log(wsTarget)
-
       const client = new Client({
         webSocketFactory: () => new SockJS(wsTarget + '/ws'),
         onConnect: () => {
@@ -151,7 +149,7 @@ function App() {
           setIsConn(false)
           persistor.purge()
         },
-        reconnectDelay: 15000, // 재연결 딜레이 (밀리초)
+        reconnectDelay: 0, // 재연결 딜레이 (밀리초)
         heartbeatIncoming: 4000,
         heartbeatOutgoing: 4000,
       })

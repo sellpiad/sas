@@ -28,7 +28,7 @@ public class WebSecureConfig {
                 .csrf((csrf) -> csrf.disable())
                 .formLogin((formLogin) -> formLogin
                         .successForwardUrl("/signin")
-                        .failureForwardUrl("/failed"))
+                        .failureForwardUrl("/failed")  )
                 .logout((logout) -> logout
                         .logoutUrl("/logout") // 로그아웃 요청을 받을 URL
                         .logoutSuccessUrl("/signout") // 로그아웃 성공 후 리다이렉트할 URL
@@ -38,8 +38,9 @@ public class WebSecureConfig {
                         (authorizeHttpRequests) -> authorizeHttpRequests
                                 .requestMatchers("/admin/**").hasRole("ADMIN")
                                 .requestMatchers("/signin/**").permitAll()
-                                .requestMatchers("/signout/**").permitAll()
-                                .requestMatchers("/ws/**").permitAll() 
+                                .requestMatchers("/signout/**").hasRole("USER")
+                                .requestMatchers("/ws/**").hasRole("USER")
+                                .requestMatchers("/failed/**").permitAll()
                                 .anyRequest().hasRole("USER"))
                 .sessionManagement(
                         (sessionManagement) -> sessionManagement
