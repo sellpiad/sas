@@ -65,6 +65,9 @@ public class ServerApplication {
 	@Value("${server.account.admin.pwd}")
 	private String adminPwd;
 
+	@Value("${app.version}")
+	private String version;
+
 	public static void main(String[] args) {
 		SpringApplication.run(ServerApplication.class, args);
 	}
@@ -77,7 +80,7 @@ public class ServerApplication {
 		clear();
 		setting();
 
-		log.info("4. Game start!");
+		log.info("4. 슬라임으로 살아남기(v{}) start!", version);
 
 	}
 
