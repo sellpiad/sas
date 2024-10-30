@@ -78,7 +78,7 @@ export default function Login({ client }: Props) {
 
         axios.post('/api/login', formData)
             .then((res) => {
-                if (res.data) {
+                if (['USER', 'ADMIN'].includes(res.data)) {
                     dispatch(changeLogin({ isLogin: true }))
                     dispatch(updateAuth({ auth: res.data }))
                 } else {
