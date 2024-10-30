@@ -60,6 +60,8 @@ export default function Login({ client }: Props) {
     const [msg, setMsg] = useState<string>('')
     const [msgType, setMsgType] = useState<string>('')
 
+    const [error,setError] = useState<string>()
+
     const handleId = (e) => setId(e.target.value)
     const handlePwd = (e) => setPassword(e.target.value)
 
