@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import './PlayerInfo.css';
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/Store";
+import { Button } from "react-bootstrap";
 
 interface Props {
     client: Client | undefined
@@ -19,13 +20,13 @@ export default function PlayerInfo({ client }: Props) {
     const data = useSelector((state: RootState) => state.observer.data)
 
     const removedTime = useRef<number>(0)
-    const [lifeTime,setLifeTime] = useState<number>(0)
+    const [lifeTime, setLifeTime] = useState<number>(0)
 
     const setTimer = (currentTime) => {
 
         const time = (removedTime.current - Date.now()) / 1000 // 초 변환
 
-        setLifeTime(Math.max(time,0))
+        setLifeTime(Math.max(time, 0))
 
         requestAnimationFrame(setTimer)
     }
@@ -36,13 +37,13 @@ export default function PlayerInfo({ client }: Props) {
         requestAnimationFrame(calcalateLifeTime)
     }
 
-    const getState = (buff:number,nuff:number) => {
+    const getState = (buff: number, nuff: number) => {
 
         const state = buff - nuff
 
-        if(state > 0)
-            return "버프 효과(⇑)가 " +  data?.buffCount + "칸 남았습니다."
-        else if(state < 0)
+        if (state > 0)
+            return "버프 효과(⇑)가 " + data?.buffCount + "칸 남았습니다."
+        else if (state < 0)
             return "너프 효과(⇓)가 " + data?.nuffCount + "칸 남았습니다."
 
     }
@@ -60,8 +61,8 @@ export default function PlayerInfo({ client }: Props) {
 
     // 옵저버 변경 시 requestAnimation 참조용 시간 업데이트.
     useEffect(() => {
-        
-        if (data){
+
+        if (data) {
             removedTime.current = new Date(data.removedTime).getTime()
         }
 
@@ -70,20 +71,19 @@ export default function PlayerInfo({ client }: Props) {
 
     return (
         <div className="playerInfo">
-            <div className="playerInfo-item">
-                <div className="actionStats-txt" >
-                    <span>남은 수명</span>
-                </div>
-                <div className="actionStats-gauge">
-                    <div className="progress-bar" style={{ animation: lifeTime > 0 ? `progressAnimationStrike ${lifeTime}ms` : undefined, width: lifeTime !== 0 ? (lifeTime/30)*100 +'%' : '' }} />
-                    <div className="actionPoint-txt">
-                        {lifeTime.toFixed(2)} 초
-                    </div>
-                </div>
-                <div className="stats-txt" >
-                    <span>{getState(data?.buffCount,data?.nuffCount)}</span>
-                </div>
+            <div className="label" >
+                <span>남은 수명</span>
             </div>
+            <div className="guage">
+                <div className="progress-bar" style={{ animation: lifeTime > 0 ? `progressAnimationStrike ${lifeTime}ms` : undefined, width: lifeTime !== 0 ? (lifeTime / 30) * 100 + '%' : '' }} />
+                <span className='actionPoint-txt'>
+                    {lifeTime.toFixed(2)} 초
+                </span>
+            </div>
+            <div className="msg" >
+                <span>{getState(data?.buffCount, data?.nuffCount)}</span>
+            </div>
+            {/*<Button className='window-toggle-btn'>전체화면으로 전환</Button>*/}
         </div>
     )
 }

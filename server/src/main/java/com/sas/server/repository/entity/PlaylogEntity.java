@@ -11,6 +11,8 @@ import com.sas.server.custom.dataType.AttributeType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -46,6 +48,7 @@ public class PlaylogEntity {
     String nickname;
 
     @Column(name = "attr", nullable = false)
+    @Enumerated(EnumType.STRING)
     AttributeType attr;
 
     @Column(name = "total_kill", nullable = false)

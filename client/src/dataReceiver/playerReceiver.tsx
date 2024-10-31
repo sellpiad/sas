@@ -28,7 +28,7 @@ const playerReceiver = (function () {
 
     function initReceiver(stompClient: Client) {
 
-        if (stompClient.connected && client === undefined) {
+        if (stompClient.connected) {
 
             client = stompClient
 
@@ -71,6 +71,8 @@ const playerReceiver = (function () {
     function getPlayer() {
         return player
     }
+
+
 
     return { initReceiver, subscribe, getPlayer }
 

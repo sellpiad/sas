@@ -28,7 +28,7 @@ import RealtimeRanking from './observer/RealtimeRanking.tsx';
 import PlayerInfo from './player/PlayerInfo.tsx';
 import PlayResultModal from './playResultModal/PlayResultModal.tsx';
 import RankingBoard from './ranker/RankingBoard.tsx';
-import { ActionType, AttributeType, ObjectProps } from './redux/GameSlice.tsx';
+import { ActionType, AttributeType, game, ObjectProps } from './redux/GameSlice.tsx';
 
 
 function App() {
@@ -234,12 +234,12 @@ function App() {
             <Row >
               {
                 isConn && <>
-                  <Col xs={12} sm={3}>
+                  <Col lg={3} className='sidebar d-none d-lg-flex'>
                     <ObserverInfo client={ws.current}/>
                     <RealtimeRanking client={ws.current} />
                     {(auth === 'ADMIN' || auth === 'MANAGER') && <Button className="Admin-Btn" variant="outline-light" onClick={showAdminModal}>관리모드</Button>}
                   </Col>
-                  <Col xs={12} sm={9}>
+                  <Col lg={9}>
                     <Stack gap={4} style={{ alignItems: "center" }}>
                       <GameField client={ws.current}></GameField>
                       {player?.state === 'IN_GAME' && <ControlPanel client={ws.current}></ControlPanel>}

@@ -67,6 +67,11 @@ public class AIService implements PlayerSub {
 
     }
 
+    public void addAI() {
+        PlayerEntity ai = createAI();
+        playerService.save(ai);
+    }
+
     public void action(String sessionId) {
 
         int delay = (int) (Math.random() * 500) + 500; // 500ms~1000ms 사이의 반응속도
@@ -148,7 +153,7 @@ public class AIService implements PlayerSub {
 
     public boolean deploymentState() {
 
-        if(scheduledPlaceRandomAI == null || scheduledPlaceRandomAI.isCancelled())
+        if (scheduledPlaceRandomAI == null || scheduledPlaceRandomAI.isCancelled())
             return false;
         else
             return true;

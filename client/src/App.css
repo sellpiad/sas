@@ -1,10 +1,12 @@
 .App {
+  min-width: 992px;
   background-color: #2e2e2e;
   display: flex;
   flex-direction: column;
   color: white;
   height: 100vh;
   overflow: hidden;
+  font-family: DNFBitBitv2;
 }
 
 .Slime {
@@ -18,14 +20,12 @@
 }
 
 .Admin-Btn {
-  font-family: DNFBitBitv2;
   font-size: 1rem;
   width: 100%;
   margin: 0;
 }
 
 .Menu-Btn {
-  font-family: DNFBitBitv2;
   font-size: 1rem;
   width: 15%;
   color: black;
@@ -39,6 +39,11 @@
 .Btn-Container {
   justify-content: center;
 }
+
+.sidebar{
+  flex-direction: column;
+}
+
 
 @media (max-width: 1200px) {
   .Slime {

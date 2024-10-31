@@ -54,36 +54,35 @@ export default function PlayerInfo({ show, onHide }) {
 
     return (
         <Modal show={show} onHide={onHide} centered >
-            <ModalBody style={{ fontFamily: "DNFBitBitv2", fontSize: "0.9rem", height: "60vh" }}>
-
-                <div className="playerinfo-title ">
+            <ModalBody className='Player-info'>
+                <div className="title ">
                     <h3>{id}</h3>
                 </div>
-                <div className="playerinfo-content">
-                    <div className="playerinfo-content-row">
-                        <span className="playerlog-content-box">주속성</span>
-                        <span className="playerlog-content-box">{mainAttr}</span>
+                <div className="content">
+                    <div className="row">
+                        <span className="item-key">주속성</span>
+                        <span className="item-value">{mainAttr}</span>
                     </div>
-                    <div className="playerinfo-content-row">
-                        <span className="playerlog-content-box">최다킬</span>
-                        <span className="playerlog-content-box">{killMax} 번</span>
+                    <div className="row">
+                        <span className="item-key">최다킬</span>
+                        <span className="item-value">{killMax} 번</span>
                     </div>
-                    <div className="playerinfo-content-row">
-                        <span className="playerlog-content-box">최고랭킹</span>
-                        <span className="playerlog-content-box">
+                    <div className="row">
+                        <span className="item-key">최고랭킹</span>
+                        <span className="item-value">
                             {highestRanking === -1 ? "OUT OF RANK" : `${highestRanking} 위`}
                         </span>
                     </div>
-                    <div className="playerinfo-content-row">
-                        <span className="playerlog-content-box">최다정복</span>
-                        <span className="playerlog-content-box">{conquerMax} 번</span>
+                    <div className="row">
+                        <span className="item-key">최다정복</span>
+                        <span className="item-value">{conquerMax} 번</span>
                     </div>
                 </div>
-                <div className="playerinfo-log">
+                <div className="log">
                     <hr />
                     <h6>PLAY LOG</h6>
 
-                    <div className="playerlog-th">
+                    <div className="th">
                         <span className="playTime-col">날짜</span>
                         <span className="username-col">닉네임</span>
                         <span className="attr-col">속성</span>

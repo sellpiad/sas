@@ -156,7 +156,7 @@ export default function CreateModal({ client, show, onHide, ...props }: Props) {
     }, [index])
 
     return (
-        <Modal show={show} onHide={onHide} size="sm" centered style={{ fontFamily: "DNFBitBitv2" }} >
+        <Modal show={show} onHide={onHide} size="sm" centered>
             <ModalBody>
                 <Stack gap={2}>
                     <Row className="info-span">

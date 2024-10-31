@@ -17,7 +17,7 @@ public interface BoardRepository extends JpaRepository<PostEntity, Long> {
 
     List<BoardData> findByCategory(String category);
 
-    @Query("SELECT BoardData(p.category, p.id, p.title, p.author) " +
+    @Query("SELECT new com.sas.server.controller.dto.board.BoardData(p.category, p.id, p.title, p.author) " +
             "FROM PostEntity p " +
             "ORDER BY CASE WHEN p.category = '공지' THEN 0 ELSE 1 END, p.id DESC")
     Page<BoardData> findWithNoticeAtTop(Pageable pageable);

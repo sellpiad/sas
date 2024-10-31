@@ -8,7 +8,7 @@ interface Props {
 
 export default function PlayLog({show,onHide}) {
     return (
-        <Modal show={show} onHide={onHide} centered style={{ fontFamily: "DNFBitBitv2", fontSize: "0.9rem" }}>
+        <Modal show={show} onHide={onHide} centered style={{ fontSize: "0.9rem" }}>
             <ModalBody>
                 <Container>
                     <Row>

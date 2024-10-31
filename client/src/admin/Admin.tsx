@@ -8,6 +8,7 @@ import { Button, Col, Modal, ModalBody, Row } from "react-bootstrap";
 import UserPanel from "./UserPanel.tsx";
 import LogPanel from "./LogPanel.tsx";
 import GamePanel from "./GamePanel.tsx";
+import './Admin.css'
 
 interface Props {
     client: Client | undefined
@@ -19,20 +20,19 @@ export default function Admin({ client, show, onHide }: Props) {
 
     const [mode, setMode] = useState<string>('USER')
 
-
     return (
-        <Modal show={show} onHide={onHide} size="xl" centered style={{ fontFamily: "DNFBitBitv2" }} >
-            <ModalBody style={{ height: "90vh",  fontFamily:"DNFBitBitv2", fontSize:"0.9rem"}}>
-                <Row style={{height:"10%"}}>
-                    <Button className="Menu-Btn" variant="outline-success" onClick={() => setMode('USER')}>유저 관리</Button>
-                    <Button className="Menu-Btn" variant="outline-success" onClick={() => setMode('LOG')}>로그 현황</Button>
-                    <Button className="Menu-Btn" variant="outline-success" onClick={() => setMode('GAME')}>게임 관리</Button>
-                </Row>
-                <Row style={{height:"90%"}}>
+        <Modal show={show} onHide={onHide} size="xl" centered>
+            <ModalBody className="Admin">
+                <div className='menu-bar'>
+                    <Button variant="outline-success" onClick={() => setMode('USER')}>유저 관리</Button>
+                    <Button variant="outline-success" onClick={() => setMode('LOG')}>로그 현황</Button>
+                    <Button variant="outline-success" onClick={() => setMode('GAME')}>게임 관리</Button>
+                </div>
+                <div className='control-panel'>
                     {mode === 'USER' && <UserPanel />}
                     {mode === 'LOG' && <LogPanel />}
                     {mode === 'GAME' && <GamePanel client={client}/>}
-                </Row>
+                </div>
             </ModalBody>
         </Modal>
     )

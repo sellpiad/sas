@@ -25,7 +25,7 @@ interface Props {
 
 export default function ObserverInfo({ client }: Props) {
 
-    const [queue, setQueue] = useState<number>()
+    const [queue, setQueue] = useState<number>(0)
     const [slimeSet, dispatch] = useSlime()
 
     useEffect(() => {

@@ -30,10 +30,10 @@ export default function LogPanel() {
 
     const getLog = () => {
         axios.get('/api/admin/getLog')
-        .then((res) => {
-            setLog(res.data)
-        })
-        .catch((err) => { })
+            .then((res) => {
+                setLog(res.data)
+            })
+            .catch((err) => { })
     }
 
     useEffect(() => {
@@ -41,36 +41,31 @@ export default function LogPanel() {
     }, [])
 
     return (
-        <>
+        <div className='Log-panel'>
             <div>
-                <Form as={Row}>
-                    <Form.Label column sm="1">검색</Form.Label>
-                    <Col sm="5">
-                        <Form.Control type="text" onChange={handleSearch}></Form.Control>
-                    </Col>
+                <Form>
+                    <Form.Control placeholder="검색" type="text" onChange={handleSearch}></Form.Control>
                 </Form>
             </div>
-
-            <div style={{ display: "flex", padding: "0 3px" }}>
-                <span className="time-col">시간</span>
-                <span className="username-col">아이디</span>
-                <span className="activityType-col">활동유형</span>
-            </div>
-            <div className="scroll-container">
-                <ul style={{ listStyleType: "none", paddingLeft: 0 }}>
-                    {
-                        log.map((value, index, array) => {
-                            return <li key={"ranker" + index} className={value['isMe'] ? 'myRank' : ''} style={{ display: "flex", justifyContent: "space-between", padding: "3px" }}>
-                                <span className="time-col">{value.time}</span>
-                                <span className="username-col">{value.username}</span>
-                                <span className="activityType-col">{value.activityType}</span>
-                            </li>
-                        })
-                    }
-                </ul>
+            <div className='header'>
+                <span className="time-th">시간</span>
+                <span className="username-th">아이디</span>
+                <span className="activityType-th">활동유형</span>
             </div>
 
-        </>
+            <ul className="log-list">
+                {
+                    log.map((value, index, array) => {
+                        return <li key={"ranker" + index} className={value['isMe'] ? 'myRank' : ''} style={{ display: "flex" }}>
+                            <span className="time-tr">{value.time}</span>
+                            <span className="username-tr">{value.username}</span>
+                            <span className="activityType-tr">{value.activityType}</span>
+                        </li>
+                    })
+                }
+            </ul>
+
+        </div>
 
     )
 }

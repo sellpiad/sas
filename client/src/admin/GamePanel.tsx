@@ -88,6 +88,7 @@ export default function GamePanel({ client }: Props) {
         axios.post('/api/admin/deployment/ai/run', { period: period }).then((res) => {
             setAiDeploy(true)
             setAiDeployPeriod(res.data)
+            console.log(aiDeploy)
         }).catch((err) => {
             console.log(err)
             setAiDeploy(false)
@@ -170,7 +171,7 @@ export default function GamePanel({ client }: Props) {
 
     useEffect(() => {
 
-        axios.get('/api/admin/deployment/state')
+        axios.get('/api/admin/deployment/ai/state')
             .then((res) => {
                 setAiDeploy(res.data)
             }).catch((err) =>
@@ -180,7 +181,7 @@ export default function GamePanel({ client }: Props) {
 
 
     return (
-        <>
+        <div className='Game-Panel'>
             <Col xs={3}>
                 <Row className="deployment">
                     <Form>
@@ -192,16 +193,21 @@ export default function GamePanel({ client }: Props) {
                 </Row>
                 <Row className="deployment">
                     <Form onSubmit={addAI}>
-                        <Form.Label>AI 수동 생성</Form.Label>
+                        <div className='submit-bar'>
+                            <Form.Label>오브젝트 생성</Form.Label>
+                            <Button variant='outline-primary' type="submit">투입</Button>
+                        </div>
                         <Form.Group as={Row}>
                             <Col sm={{ span: 3, offset: 1 }} style={{ padding: 0 }}>
                                 <Slime objectProps={createObjectProps} slimeData={slime}></Slime>
+                                {/*<AttrSymbol width={"100%"} height={"100%"} attr={"GRASS"} opacity={100} />*/}
                             </Col>
                             <Col sm={8}>
                                 <InputGroup>
                                     <InputGroup.Text>종류</InputGroup.Text>
                                     <Form.Select defaultValue={1} size="sm">
                                         <option value={1}>슬라임</option>
+                                        <option value={2}>속성석</option>
                                     </Form.Select>
                                 </InputGroup>
                                 <InputGroup>
@@ -214,57 +220,18 @@ export default function GamePanel({ client }: Props) {
                                 </InputGroup>
                             </Col>
                         </Form.Group>
-                        <Form.Group>
-                            <Col sm={{ span: 4, offset: 8 }}>
-                                <Button type="submit">투입</Button>
-                            </Col>
-                        </Form.Group>
                     </Form>
                 </Row>
-                <Row className="deployment">
-                    <Form>
-                        <Form.Label>아이템 수동 생성</Form.Label>
-                        <Form.Group as={Row}>
-                            <Col sm={{ span: 3, offset: 1 }} style={{ padding: 0 }}>
-                                <AttrSymbol width={"100%"} height={"100%"} attr={"GRASS"} opacity={100} />
-                            </Col>
-                            <Col sm={8}>
-                                <InputGroup>
-                                    <InputGroup.Text>종류</InputGroup.Text>
-                                    <Form.Select defaultValue={1} size="sm">
-                                        <option value={1}>속성석</option>
-                                    </Form.Select>
-                                </InputGroup>
-                                <InputGroup>
-                                    <InputGroup.Text>속성</InputGroup.Text>
-                                    <Form.Select defaultValue={1} size="sm">
-                                        <option value={1}>GRASS</option>
-                                        <option value={2}>WATER</option>
-                                        <option value={3}>FIRE</option>
-                                    </Form.Select>
-                                </InputGroup>
-                            </Col>
-                        </Form.Group>
-                        <Form.Group>
-                            <Col sm={{ span: 4, offset: 8 }}>
-                                <Button type="submit">투입</Button>
-                            </Col>
-                        </Form.Group>
-                    </Form>
-                </Row>
+
             </Col>
             <Col xs={8} className="game-status">
-                <Row className="deployment game-window">
-                    <CubeSet client={client} />
-                    <SlimeSet client={client} />
-                </Row>
                 <Row className="deployment game-log">
                     <span>게임 로그</span>
                 </Row>
             </Col>
 
             <CustomModal show={modal} onHide={() => setModal(false)} text={modalText} run={modalRun} />
-        </>
+        </div >
     )
 }
 
@@ -287,7 +254,7 @@ function CustomModal({ show, onHide, text, run }) {
             keyboard={false}
         >
             <Modal.Body>
-                <Form onSubmit={handleSubmit}>
+                <Form className='custom-request-modal' onSubmit={handleSubmit}>
                     <InputGroup>
                         <InputGroup.Text>{text} 실행 간격(ms)</InputGroup.Text>
                         <Form.Control name="Period" size="sm" type="number" step={1000} min={0} max={1000000} defaultValue={1000} />

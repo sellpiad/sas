@@ -59,12 +59,12 @@ export default function UserPanel() {
                                 <span className="username-col">{value.username}</span>
                                 <span className="isConnected-col">
                                     <Form>
-                                        <FormCheck type="switch" checked={value.isConnected}></FormCheck>
+                                        <FormCheck type="switch" checked={value.isConnected} onChange={()=>{}}></FormCheck>
                                     </Form>
                                 </span>
                                 <span className="isPlaying-col">
                                     <Form>
-                                        <FormCheck type="switch" checked={value.isPlaying}></FormCheck>
+                                        <FormCheck type="switch" checked={value.isPlaying} onChange={()=>{}}></FormCheck>
                                     </Form>
                                 </span>
                                 <span className="editBtn-col"><Button onClick={() => handleEditBtn(value.username)}>수정</Button></span>

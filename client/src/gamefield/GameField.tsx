@@ -56,8 +56,7 @@ export default function GameField({ client }: Props) {
 
     const [observerX, setObserverX] = useState<number>(0)
     const [observerY, setObserverY] = useState<number>(0)
-
-
+    
     // redux state 수정용
     const reduxDispatch = useDispatch()
 
@@ -123,9 +122,7 @@ export default function GameField({ client }: Props) {
                 }
 
             })
-
         }
-
 
         return () => {
             window.removeEventListener('resize', getWindowSize)

@@ -148,7 +148,7 @@ export default function Login({ client }: Props) {
     return (
         <Modal show={!isLogin} centered size="sm">
             <ModalBody>
-                {mode === 'LOGIN' && <Container style={{ fontFamily: "DNFBitBitv2" }}>
+                {mode === 'LOGIN' && <Container>
                     <Stack gap={2}>
                         <Row>
                             <h4>슬라임으로 살아남기</h4>

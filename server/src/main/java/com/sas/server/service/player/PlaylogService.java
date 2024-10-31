@@ -50,8 +50,6 @@ public class PlaylogService implements PlayerSub {
 
         List<PlaylogEntity> list = repo.findAllByUsername(username);
 
-
-
         return repo.findAllByUsername(username);
     }
 

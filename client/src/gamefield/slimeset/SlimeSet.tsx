@@ -45,12 +45,18 @@ export default function SlimeSet({ client }: Props) {
     useEffect(() => {
 
         if (client?.connected) {
+
+            // 슬라임 데이터 구독
             gameReceiver.subscribe((data: SlimeSetType | SlimeData | string) => {
                 slimePool.updatePool(data)
             })
+
+            // 슬라임 액션 데이터 구독
             actionReceiver.subscribe((data: ActionData) => {
                 slimePool.updateAction(data)
             })
+
+            // 슬라임 데이터와 액션 데이터 업데이트
             slimePool.subscribe((data: SlimeSetType) => {
                 dispatch({ type: 'UPDATE_SLIME_SET', payload: data })
             })
@@ -58,6 +64,10 @@ export default function SlimeSet({ client }: Props) {
         }
 
     }, [client?.connected])
+
+    useEffect(()=>{
+        console.dir(slimeSet)
+    },[slimeSet])
 
 
     return (

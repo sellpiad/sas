@@ -30,7 +30,6 @@ public class LoginService implements UserDetailsService {
         MemberEntity member = memberService.findById(username);
 
         if (member == null){
-            log.error("사용자 {}가 존재하지 않습니다.",username);
             throw new UsernameNotFoundException("해당하는 사용자가 존재하지 않습니다.");
         }
            

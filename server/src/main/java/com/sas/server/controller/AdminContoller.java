@@ -54,7 +54,7 @@ public class AdminContoller {
     @GetMapping("/admin/addAI")
     public void addAI(@AuthenticationPrincipal CustomUserDetails user) {
 
-        aiService.placeRandomAI(100);
+        aiService.addAI();
 
     }
 

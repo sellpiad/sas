@@ -69,7 +69,7 @@ export default function Signup({ onMode }) {
 
 
     return (
-        <Container style={{ fontFamily: "DNFBitBitv2" }}>
+        <Container>
             <Stack gap={2}>
                 <Row>
                     <h4>회원가입</h4>

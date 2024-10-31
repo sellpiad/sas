@@ -34,7 +34,7 @@ const gameReceiver = (function () {
 
     function initReceiver(stompClient: Client) {
 
-        if (stompClient.connected && client === undefined) {
+        if (stompClient.connected) {
 
             client = stompClient
 
@@ -86,8 +86,9 @@ const gameReceiver = (function () {
     function subscribe(callback: (data: SlimeSetType | SlimeData | string) => void) {
         callbacks.push(callback)
     }
-    
-    return { initReceiver, subscribe }
+
+
+    return { initReceiver, subscribe}
 
 })()
 

@@ -12,8 +12,10 @@ import com.sas.server.service.player.pattern.CubeSub;
 import com.sas.server.service.player.pattern.PlayerSub;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class MessagePublisher implements PlayerSub, CubeSub {
 
@@ -26,6 +28,7 @@ public class MessagePublisher implements PlayerSub, CubeSub {
         }
 
         template.convertAndSend(type.getType(), payload);
+
     }
 
     public void queuePublish(String username, MessageType type, Object payload) {
@@ -58,8 +61,9 @@ public class MessagePublisher implements PlayerSub, CubeSub {
                 .build();
 
         queuePublish(player.id, MessageType.QUEUE_PLAYER_STATE, PlayerStateType.IN_GAME);
-        topicPublish(MessageType.TOPIC_ADD, slime);
         topicPublish(MessageType.TOPIC_QUEUE_UPDATE, totalQueue);
+        topicPublish(MessageType.TOPIC_ADD, slime);
+        
 
     }
 

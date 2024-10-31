@@ -43,7 +43,7 @@ export default function PlayResultModal({ client, show, onHide }: Props) {
 
 
     return (
-        <Modal show={show} onHide={onHide} centered size="sm" style={{ fontFamily: "DNFBitBitv2" }}>
+        <Modal show={show} onHide={onHide} centered size="sm">
             <ModalBody>
                 <Container>
                     <Row style={{ textAlign: "center" }}>

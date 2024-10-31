@@ -17,7 +17,7 @@ const actionReceiver = (function () {
 
     function initReceiver(stompClient: Client) {
 
-        if (stompClient.connected && client === undefined) {
+        if (stompClient.connected) {
 
             client = stompClient
 
@@ -39,6 +39,8 @@ const actionReceiver = (function () {
     function subscribe(callback: Callback) {
         callbacks.push(callback)
     }
+
+    
 
     return { initReceiver, subscribe }
 

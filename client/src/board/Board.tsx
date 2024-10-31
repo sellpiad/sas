@@ -107,10 +107,10 @@ export default function Board({ show, onHide }: Props) {
 
     return (
         <Modal show={show} onHide={onHide} centered>
-            <ModalHeader closeButton style={{ fontFamily: "DNFBitBitv2", fontSize: "0.9rem" }}>
+            <ModalHeader closeButton style={{ fontSize: "0.9rem" }}>
                 <ModalTitle>자유게시판</ModalTitle>
             </ModalHeader>
-            <ModalBody style={{ height: "50vh", fontFamily: "DNFBitBitv2", fontSize: "0.9rem" }}>
+            <ModalBody style={{ height: "50vh", fontSize: "0.9rem" }}>
                 {mode === 'LIST' &&
                     <Container>
                         <Row>

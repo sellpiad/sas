@@ -1,0 +1,24 @@
+/* 관리자 윈도우*/
+
+.Admin {
+    display: flex;
+    flex-direction: column;
+    height: 90vh;
+    font-size: 0.9rem;
+    gap: 10px;
+}
+
+/* 메뉴 */
+
+.Admin .menu-bar{
+    display: flex;
+    height: 5%;
+    gap:5px;
+}
+
+/* 컨트롤 패널 */
+
+.Admin .control-panel {
+    height: 90%;
+    flex: 1 0 auto
+}

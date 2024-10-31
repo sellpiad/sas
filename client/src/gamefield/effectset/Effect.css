@@ -1,32 +1,27 @@
 .attack-msg {
     animation: moveUp 3s ease-out forwards;
     fill: red;
-    font-family: DNFBitBitv2;
     font-size: 0.8rem;
 }
 
 .draw-msg {
     fill: blue;
-    font-family: DNFBitBitv2;
     font-size: 0.4rem;
 }
 
 .feared-msg {
     animation: shaking 0.5s ease-out forwards;
     fill: yellow;
-    font-family: DNFBitBitv2;
     font-size: 0.5rem;
 }
 
 .locked-msg {
     fill: yellow;
-    font-family: DNFBitBitv2;
     font-size: 0.4rem;
 }
 
 .lockon-msg{
     fill: red;
-    font-family: DNFBitBitv2;
     font-size: 0.4rem;
 }
 

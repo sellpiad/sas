@@ -48,7 +48,7 @@ export default function RankingBoard({ client, show, onHide }: Props) {
 
     return (
         <Modal show={show} onHide={onHide} centered >
-            <ModalBody style={{ height: "40vh", fontFamily: "DNFBitBitv2", fontSize: "0.9rem" }}>
+            <ModalBody style={{ height: "40vh", fontSize: "0.9rem" }}>
                 <div style={{ height: "15%" }}>
                     <strong>역대 플레이어 랭킹</strong>
                     <div style={{ display: "flex", padding: "0 3px" }}>

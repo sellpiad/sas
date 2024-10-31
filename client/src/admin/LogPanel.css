@@ -1,16 +1,53 @@
-.time-col {
-    text-align: center;
-    width: 20%;
+/* 로그 패널 */
+
+.Log-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 10px;
 }
 
-.username-col {
+/* 로그 내역 헤더*/
+
+.Log-panel .header {
+    display: flex;
     text-align: center;
-    width: 40%;
 }
 
-.activityType-col {
+.Log-panel .header .time-th{
+    flex: 1 0 30%;
+}
+
+.Log-panel .header .username-th{
+    flex: 1 0 30%;
+}
+
+.Log-panel .header .activityType-th{
+    flex: 1 0 30%;
+}
+
+/* 로그 내역 */
+
+.Log-panel .log-list{
+    list-style-type: none;
+    padding-left: 0px;
+    line-height: 30px;
     text-align: center;
-    width: 20%;
+    flex: 1 1 auto;
+    overflow: scroll;
+    overflow-x: hidden;
+}
+
+.time-tr {
+    flex: 1 0 30%;
+}
+
+.username-tr {
+    flex: 1 0 40%;
+}
+
+.activityType-tr {
+    flex: 1 0 30%;
 }
 
 .log-container {
