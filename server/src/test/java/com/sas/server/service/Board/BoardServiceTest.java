@@ -18,8 +18,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.sas.server.controller.dto.board.BoardData;
-import com.sas.server.repository.BoardRepository;
 import com.sas.server.repository.entity.PostEntity;
+import com.sas.server.repository.jpa.BoardRepository;
 import com.sas.server.service.board.BoardService;
 
 @ExtendWith(MockitoExtension.class)

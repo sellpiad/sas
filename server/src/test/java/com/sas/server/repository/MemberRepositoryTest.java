@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.sas.server.repository.entity.MemberEntity;
+import com.sas.server.repository.jpa.MemberRepository;
 
 @SpringBootTest
 public class MemberRepositoryTest {

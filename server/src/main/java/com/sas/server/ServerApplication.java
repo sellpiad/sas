@@ -1,7 +1,6 @@
 package com.sas.server;
 
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -9,21 +8,17 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.redis.connection.DefaultStringRedisConnection;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.RedisSerializer;
-import org.springframework.messaging.MessagingException;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import com.sas.server.custom.exception.LockAcquisitionException;
-import com.sas.server.custom.exception.UserAlreadyExistsException;
-import com.sas.server.custom.util.Role;
 import com.sas.server.logic.MessagePublisher;
 import com.sas.server.logic.TimebombSystem;
-import com.sas.server.repository.entity.PlayerEntity;
 import com.sas.server.service.admin.LogService;
 import com.sas.server.service.ai.AIService;
 import com.sas.server.service.cube.CubeService;
@@ -37,7 +32,8 @@ import lombok.extern.slf4j.Slf4j;
 
 @SpringBootApplication
 @EnableScheduling
-@EnableRedisRepositories
+@EnableJpaRepositories(basePackages = "com.sas.server.repository.jpa")
+@EnableRedisRepositories(basePackages = "com.sas.server.repository.redis")
 @EnableRetry
 @Slf4j
 @RequiredArgsConstructor

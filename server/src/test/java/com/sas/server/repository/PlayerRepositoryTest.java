@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.sas.server.repository.entity.PlayerEntity;
+import com.sas.server.repository.redis.PlayerRepository;
 
 @SpringBootTest
 public class PlayerRepositoryTest {

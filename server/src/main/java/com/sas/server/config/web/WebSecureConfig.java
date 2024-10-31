@@ -37,10 +37,11 @@ public class WebSecureConfig {
                 .authorizeHttpRequests(
                         (authorizeHttpRequests) -> authorizeHttpRequests
                                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                                .requestMatchers("/signin/**").permitAll()
                                 .requestMatchers("/signout/**").hasRole("USER")
                                 .requestMatchers("/ws/**").hasRole("USER")
+                                .requestMatchers("/signin/**").permitAll()
                                 .requestMatchers("/failed/**").permitAll()
+                                .requestMatchers("/signup/**").permitAll()
                                 .anyRequest().hasRole("USER"))
                 .sessionManagement(
                         (sessionManagement) -> sessionManagement
@@ -53,13 +54,6 @@ public class WebSecureConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> {
-            web.ignoring().requestMatchers("/signup");
-        };
     }
 
     @Bean

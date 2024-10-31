@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 
 import com.sas.server.controller.dto.board.BoardData;
 import com.sas.server.controller.dto.board.PostData;
-import com.sas.server.repository.BoardRepository;
 import com.sas.server.repository.entity.PostEntity;
+import com.sas.server.repository.jpa.BoardRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.sas.server.repository.PlaylogRepository;
 import com.sas.server.repository.entity.PlayerEntity;
 import com.sas.server.repository.entity.PlaylogEntity;
+import com.sas.server.repository.jpa.PlaylogRepository;
 import com.sas.server.service.player.pattern.PlayerSub;
 
 import lombok.RequiredArgsConstructor;

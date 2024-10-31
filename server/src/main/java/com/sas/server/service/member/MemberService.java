@@ -14,9 +14,9 @@ import org.springframework.stereotype.Service;
 import com.sas.server.controller.dto.admin.MemberData;
 import com.sas.server.custom.exception.UserAlreadyExistsException;
 import com.sas.server.custom.util.Role;
-import com.sas.server.repository.MemberRepository;
 import com.sas.server.repository.entity.CustomUserDetails;
 import com.sas.server.repository.entity.MemberEntity;
+import com.sas.server.repository.jpa.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

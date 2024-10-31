@@ -14,9 +14,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.sas.server.controller.dto.game.RankerData;
-import com.sas.server.repository.RankerRepository;
 import com.sas.server.repository.entity.PlayerEntity;
 import com.sas.server.repository.entity.RankerEntity;
+import com.sas.server.repository.redis.RankerRepository;
 import com.sas.server.service.player.pattern.PlayerSub;
 
 import lombok.RequiredArgsConstructor;

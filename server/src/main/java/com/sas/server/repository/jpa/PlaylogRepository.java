@@ -1,4 +1,4 @@
-package com.sas.server.repository;
+package com.sas.server.repository.jpa;
 
 import java.util.List;
 import java.util.Optional;

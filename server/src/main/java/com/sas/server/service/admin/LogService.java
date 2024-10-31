@@ -5,9 +5,9 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.sas.server.custom.dataType.ActivityType;
-import com.sas.server.repository.LogRepository;
 import com.sas.server.repository.entity.LogEntity;
 import com.sas.server.repository.entity.PlayerEntity;
+import com.sas.server.repository.jpa.LogRepository;
 import com.sas.server.service.player.pattern.PlayerSub;
 
 import lombok.RequiredArgsConstructor;
