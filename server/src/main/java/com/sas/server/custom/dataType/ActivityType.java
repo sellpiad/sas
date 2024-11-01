@@ -15,6 +15,8 @@ public enum ActivityType {
     DELETE("게시글 삭제"),
     PLAY("게임 시작"),
     STOP("게임 종료"),
+
+    /*ADMIN 전용*/
     DEPLOY_AI_RUN("인공지능 자동 배치 시작"),
     DEPLOY_AI_STOP("인공기능 자동 배치 종료"),
     DEPLOY_ITEM_RUN("아이템 자동 배치 시작"),

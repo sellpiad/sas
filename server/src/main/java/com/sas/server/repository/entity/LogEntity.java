@@ -5,6 +5,8 @@ import java.util.Date;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.redis.core.index.Indexed;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -14,11 +16,13 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 @Table(name = "log")
 @Entity
 @Data
@@ -30,6 +34,7 @@ public class LogEntity {
 
     @Column(name = "time", nullable = false)
     @CreationTimestamp
+    @JsonFormat(shape= JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm", timezone="Asia/Seoul")
     Date time;
 
     @Indexed
@@ -40,6 +45,9 @@ public class LogEntity {
 
     @Column(name = "detail")
     String detail;
+
+    @Column(name = "isAdmin", nullable = false)
+    boolean isAdmin;
 
 
 }

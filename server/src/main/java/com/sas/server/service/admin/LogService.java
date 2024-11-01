@@ -1,7 +1,11 @@
 package com.sas.server.service.admin;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.sas.server.custom.dataType.ActivityType;
@@ -24,12 +28,27 @@ public class LogService implements PlayerSub {
                 .build());
     }
 
+    public LogEntity save(String username, ActivityType activityType, boolean isAdmin) {
+        return repo.save(LogEntity.builder()
+                .username(username)
+                .activityType(activityType.getType())
+                .isAdmin(true)
+                .build());
+    }
+
     public List<LogEntity> findAll() {
-        return repo.findAllSortedByTimeDesc();
+        return repo.findAll(Sort.by(Sort.Order.desc("time")));
     }
 
     public List<LogEntity> findAllByUsername(String username) {
         return repo.findByUsernameContaining(username);
+    }
+
+    public List<LogEntity> findAllByIsAdmin(boolean isAdmin) {
+        return repo.findAllByIsAdmin(isAdmin)
+                .stream()
+                .sorted(Comparator.comparing(LogEntity::getTime))
+                .collect(Collectors.toList());
     }
 
     @Override

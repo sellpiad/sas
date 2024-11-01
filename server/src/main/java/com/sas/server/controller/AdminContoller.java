@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sas.server.controller.dto.admin.MemberData;
-import com.sas.server.controller.dto.admin.DeployAIRequest;
 import com.sas.server.repository.entity.CustomUserDetails;
 import com.sas.server.repository.entity.LogEntity;
 import com.sas.server.service.admin.LogService;
@@ -48,7 +47,12 @@ public class AdminContoller {
 
     @GetMapping("/admin/getLog")
     public List<LogEntity> getLog(@AuthenticationPrincipal CustomUserDetails user) {
-        return logService.findAll();
+        return logService.findAllByIsAdmin(false);
+    }
+
+    @GetMapping("/admin/getAdminLog")
+    public List<LogEntity> getAdminLog(@AuthenticationPrincipal CustomUserDetails user) {
+        return logService.findAllByIsAdmin(true);
     }
 
     @GetMapping("/admin/addAI")
@@ -60,23 +64,25 @@ public class AdminContoller {
 
     /**
      * AI 자동 배치 시작
+     * 
      * @param period
      * @param user
      * @return
      */
 
     @PostMapping("/admin/deployment/ai/run")
-    public int startAiDeployment(@RequestBody DeployAIRequest req, @AuthenticationPrincipal CustomUserDetails user) {
+    public void startAiDeployment(@RequestParam("Period") long period, @RequestParam("Goal") int goal,
+            @AuthenticationPrincipal CustomUserDetails user) {
 
         if (!aiService.deploymentState()) {
-            aiService.deploymentRun(0, req.getPeriod(), TimeUnit.MILLISECONDS, 0.3);
+            aiService.deploymentRun(0, period, TimeUnit.MILLISECONDS, goal);
         }
 
-        return req.getPeriod();
-    }
+    }   
 
     /**
      * AI 자동 배치 취소
+     * 
      * @param user
      */
     @GetMapping("/admin/deployment/ai/stop")
@@ -89,6 +95,7 @@ public class AdminContoller {
 
     /**
      * AI 자동 배치 작동 유무
+     * 
      * @param user
      * @return
      */
@@ -101,6 +108,7 @@ public class AdminContoller {
 
     /**
      * 아이템 자동 배치 시작
+     * 
      * @param user
      */
     @PostMapping("/admin/deployment/item/run")

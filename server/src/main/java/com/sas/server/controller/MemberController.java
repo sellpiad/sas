@@ -36,8 +36,6 @@ public class MemberController {
 
         logService.save(username, ActivityType.LOGIN);
 
-        log.info("{} signin", username);
-
         return memberService.getUserAuth(user);
     }
 
@@ -70,8 +68,6 @@ public class MemberController {
     @PostMapping("/failed")
     public boolean failed(@RequestParam String username, String password,
             @AuthenticationPrincipal CustomUserDetails user) {
-
-        log.info("{} failed", username);
 
         return false;
     }

@@ -174,7 +174,7 @@ public class PlayerService implements PlayerPub, TimeBombSub {
      * @return {@code PlayerEntity} Player 정보가 담긴 객체.
      *
      */
-    public PlayerEntity scanQueue(int max) {
+    public boolean scanQueue(int max) {
 
         // 난수 생성 셋팅
         Random random = new Random();
@@ -195,12 +195,14 @@ public class PlayerService implements PlayerPub, TimeBombSub {
 
                 PlayerEntity player = waiterItr.next();
 
-                return inGameEvent(player, position);
+                inGameEvent(player, position);
+
+                return true;
             }
 
         }
 
-        return null;
+        return false;
     }
 
 

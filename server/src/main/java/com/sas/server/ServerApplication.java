@@ -17,6 +17,7 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import com.sas.server.custom.dataType.MessageType;
 import com.sas.server.logic.MessagePublisher;
 import com.sas.server.logic.TimebombSystem;
 import com.sas.server.service.admin.LogService;
@@ -114,7 +115,13 @@ public class ServerApplication {
 
 		// 게임 대기큐 실행
 		int max = cubeService.findAll().size();
-		scheduler.scheduleWithFixedDelay(() -> playerService.scanQueue(max), 0, 1000, TimeUnit.MILLISECONDS);
+		scheduler.scheduleWithFixedDelay(() -> {
+
+			Boolean isScanning = playerService.scanQueue(max);
+
+			messagePublisher.queuePublish("admin", MessageType.QUEUE_SCANNING_PLAYER_STATE, isScanning);
+
+		}, 0, 1000, TimeUnit.MILLISECONDS);
 
 	}
 

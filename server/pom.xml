@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.devsun.sas.server</groupId>
 	<artifactId>sas-server</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<name>server</name>
 	<description>Survive as a slime</description>
 	<properties>

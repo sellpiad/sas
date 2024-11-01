@@ -11,16 +11,21 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.stereotype.Component;
 
+import com.sas.server.controller.dto.admin.DeployAIState;
 import com.sas.server.controller.dto.game.ActionData;
+import com.sas.server.custom.annotation.LogAction;
+import com.sas.server.custom.dataType.ActivityType;
 import com.sas.server.custom.dataType.AttributeType;
 import com.sas.server.custom.dataType.MessageType;
 import com.sas.server.logic.AISlime;
 import com.sas.server.logic.MessagePublisher;
 import com.sas.server.repository.entity.PlayerEntity;
+import com.sas.server.service.admin.LogService;
 import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.player.PlayerService;
 import com.sas.server.service.player.pattern.PlayerSub;
 
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,7 +36,6 @@ public class AIService implements PlayerSub {
 
     private final CubeService cubeService;
     private final PlayerService playerService;
-
     private final MessagePublisher messagePublisher;
 
     private final ScheduledExecutorService scheduler;
@@ -47,12 +51,13 @@ public class AIService implements PlayerSub {
      * @param playerPercentage
      * @throws IllegalArgumentException
      */
-    public PlayerEntity placeRandomAI(double playerPercentage) {
+    public GameTotalStat placeRandomAI(double playerPercentage) {
 
-        int totalPlayer = playerService.findAllByInGame().size();
+        int totalPlayer = playerService.findAllByInGame().size() + playerService.findAllByInQueue().size();
         int totalCube = cubeService.findAll().size();
+        boolean isProcessing = false;
 
-        double fraction = (double) totalPlayer / totalCube;
+        double fraction = ((double) totalPlayer / (double) totalCube) * 100;
 
         if (fraction < playerPercentage) {
 
@@ -60,10 +65,14 @@ public class AIService implements PlayerSub {
 
             playerService.save(ai);
 
-            return ai;
+            isProcessing = true;
         }
 
-        return null;
+        return GameTotalStat.builder()
+                .isProcessing(isProcessing)
+                .totalCube(totalCube)
+                .totalPlayer(totalPlayer)
+                .build();
 
     }
 
@@ -136,15 +145,24 @@ public class AIService implements PlayerSub {
         return null;
     }
 
+    @LogAction(username = "admin", ActivityType = ActivityType.DEPLOY_AI_RUN, isAdmin = true)
     public void deploymentRun(long initialDelay, long period, TimeUnit unit, double percentage) {
         scheduledPlaceRandomAI = scheduler.scheduleAtFixedRate(() -> {
 
-            placeRandomAI(percentage);
+            GameTotalStat totalStat = placeRandomAI(percentage);
+            DeployAIState stat = DeployAIState.builder().period(period)
+                    .isProcessing(totalStat.isProcessing)
+                    .totalPlayer(totalStat.totalPlayer)
+                    .totalCube(totalStat.totalCube)
+                    .goal(percentage)
+                    .build();
+
+            messagePublisher.queuePublish("admin", MessageType.QUEUE_DEPLOYMENT_AI_STATE, stat);
 
         }, initialDelay, period, unit);
-
     }
 
+    @LogAction(username = "admin", ActivityType = ActivityType.DEPLOY_AI_STOP, isAdmin = true)
     public void deploymentStop() {
         if (scheduledPlaceRandomAI != null && !scheduledPlaceRandomAI.isCancelled()) {
             scheduledPlaceRandomAI.cancel(true);
@@ -171,4 +189,11 @@ public class AIService implements PlayerSub {
         }
     }
 
+}
+
+@Builder
+class GameTotalStat {
+    int totalPlayer;
+    int totalCube;
+    boolean isProcessing;
 }

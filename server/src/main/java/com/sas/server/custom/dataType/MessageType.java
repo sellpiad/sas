@@ -3,6 +3,7 @@ package com.sas.server.custom.dataType;
 import java.sql.Date;
 import java.util.List;
 
+import com.sas.server.controller.dto.admin.DeployAIState;
 import com.sas.server.controller.dto.cube.CubeData;
 import com.sas.server.controller.dto.game.ActionData;
 import com.sas.server.controller.dto.game.CubeAttrData;
@@ -34,7 +35,10 @@ public enum MessageType {
     TOPIC_RANKER_REALTIME(List.class,"/topic/game/ranker/realtime"),
 
     QUEUE_PLAYER_STATE(PlayerStateType.class,"/queue/player/state"),
-    QUEUE_INCKILL(Integer.class, "/queue/game/incKill");
+    QUEUE_INCKILL(Integer.class, "/queue/game/incKill"),
+
+    QUEUE_DEPLOYMENT_AI_STATE(DeployAIState.class,"/queue/admin/deployAiState"),
+    QUEUE_SCANNING_PLAYER_STATE(Boolean.class,"queue/admin/scanningPlayerState");
 
 
     private final Class<?> expectedType; // 예상되는 클래스 타입

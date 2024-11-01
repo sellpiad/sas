@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class CustomSessionListener implements HttpSessionListener {
 
-    private final SessionRegistry sessionRegistry;
     private final LogService logService;
     private final PlayerService playerService;
 
