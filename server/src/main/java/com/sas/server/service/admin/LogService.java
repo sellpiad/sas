@@ -47,7 +47,7 @@ public class LogService implements PlayerSub {
     public List<LogEntity> findAllByIsAdmin(boolean isAdmin) {
         return repo.findAllByIsAdmin(isAdmin)
                 .stream()
-                .sorted(Comparator.comparing(LogEntity::getTime))
+                .sorted(Comparator.comparing(LogEntity::getTime).reversed())
                 .collect(Collectors.toList());
     }
 

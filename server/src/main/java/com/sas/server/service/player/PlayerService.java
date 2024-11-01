@@ -8,17 +8,25 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.stereotype.Service;
 
 import com.sas.server.controller.dto.admin.MemberData;
+import com.sas.server.controller.dto.admin.ScanQueueState;
 import com.sas.server.controller.dto.game.SlimeData;
+import com.sas.server.custom.annotation.LogAction;
+import com.sas.server.custom.dataType.ActivityType;
+import com.sas.server.custom.dataType.MessageType;
 import com.sas.server.custom.dataType.PlayerStateType;
 import com.sas.server.logic.MessagePublisher;
 import com.sas.server.logic.TimebombSystem;
 import com.sas.server.repository.entity.PlayerEntity;
 import com.sas.server.repository.redis.PlayerRepository;
 import com.sas.server.service.admin.LogService;
+import com.sas.server.service.cube.CubeService;
 import com.sas.server.service.player.pattern.PlayerPub;
 import com.sas.server.service.player.pattern.PlayerSub;
 import com.sas.server.service.player.pattern.TimeBombSub;
@@ -51,6 +59,10 @@ public class PlayerService implements PlayerPub, TimeBombSub {
 
     private final PlayerRepository repo; // DB 입출력 객체
     private List<PlayerSub> subscribers = new ArrayList<>(); // 플레이어 생성, 삭제, 업데이트 현황 구독리스트
+
+    private final ScheduledExecutorService scheduler;
+    private final MessagePublisher messagePublisher;
+    private ScheduledFuture<?> scheduledScanQueue;
 
     public PlayerEntity save(PlayerEntity player) {
         return repo.save(player);
@@ -168,13 +180,56 @@ public class PlayerService implements PlayerPub, TimeBombSub {
         return slimeSet;
     }
 
-        /**
+    @LogAction(username = "admin", ActivityType = ActivityType.QUEUE_RUN, isAdmin = true)
+    public void scanQueueRun(int totalCube, int max, int period) {
+        scheduledScanQueue = scheduler.scheduleWithFixedDelay(() -> {
+
+            boolean isScanning = false;
+
+            try {
+                isScanning = scanQueue(max, totalCube);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+
+            ScanQueueState state = ScanQueueState.builder()
+                    .period(period)
+                    .max(max)
+                    .isProcessing(isScanning)
+                    .build();
+
+            messagePublisher.queuePublish("admin", MessageType.QUEUE_SCANNING_PLAYER_STATE, state);
+
+        }, 0, period, TimeUnit.MILLISECONDS);
+    }
+
+    @LogAction(username = "admin", ActivityType = ActivityType.QUEUE_STOP, isAdmin = true)
+    public void scanQueueStop() {
+        if (scheduledScanQueue != null && !scheduledScanQueue.isCancelled()) {
+            scheduledScanQueue.cancel(true);
+        }
+    }
+
+    public boolean scanQueueState() {
+
+        if (scheduledScanQueue == null || scheduledScanQueue.isCancelled())
+            return false;
+        else
+            return true;
+    }
+
+
+    /**
      * Queue를 주기적으로 스캔하여 플레이어를 게임에 투입.
      * 
+     * @param max       한 번에 최대 몇명 투입할 지.
+     * @param totalCube 맵 사이즈
      * @return {@code PlayerEntity} Player 정보가 담긴 객체.
      *
      */
-    public boolean scanQueue(int max) {
+    private boolean scanQueue(int max, int totalCube) {
+
+        int currentCount = 0;
 
         // 난수 생성 셋팅
         Random random = new Random();
@@ -189,7 +244,7 @@ public class PlayerService implements PlayerPub, TimeBombSub {
 
         while (waiterItr.hasNext()) {
 
-            String position = "slimebox" + random.nextInt(max);
+            String position = "slimebox" + random.nextInt(totalCube);
 
             if (findByPosition(position) == null) {
 
@@ -197,14 +252,16 @@ public class PlayerService implements PlayerPub, TimeBombSub {
 
                 inGameEvent(player, position);
 
-                return true;
+                currentCount++;
+
+                if (currentCount == max)
+                    return true;
             }
 
         }
 
         return false;
     }
-
 
     /**
      * 유저의 킬 횟수 증가
@@ -341,7 +398,7 @@ public class PlayerService implements PlayerPub, TimeBombSub {
     @Override
     public void notifyInGame(PlayerEntity player, int totalQueue) {
         for (PlayerSub subscriber : subscribers) {
-            subscriber.inGame(player,totalQueue);
+            subscriber.inGame(player, totalQueue);
         }
     }
 
@@ -354,6 +411,5 @@ public class PlayerService implements PlayerPub, TimeBombSub {
     public void notifyBomb(String username) {
         deleteById(username);
     }
-
 
 }

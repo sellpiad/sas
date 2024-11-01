@@ -3,6 +3,9 @@ package com.sas.server.controller;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,21 +48,19 @@ public class AdminContoller {
         return playerService.udpateIsPlayingOrNot(list);
     }
 
+    /**
+     * 로그 관련 메소드
+     */
+
     @GetMapping("/admin/getLog")
     public List<LogEntity> getLog(@AuthenticationPrincipal CustomUserDetails user) {
         return logService.findAllByIsAdmin(false);
     }
 
-    @GetMapping("/admin/getAdminLog")
-    public List<LogEntity> getAdminLog(@AuthenticationPrincipal CustomUserDetails user) {
+    @MessageMapping("/admin/getAdminLog")
+    @SendToUser("/queue/admin/getAdminLog")
+    public List<LogEntity> getAdminLog(SimpMessageHeaderAccessor simpMessageHeaderAccessor) {
         return logService.findAllByIsAdmin(true);
-    }
-
-    @GetMapping("/admin/addAI")
-    public void addAI(@AuthenticationPrincipal CustomUserDetails user) {
-
-        aiService.addAI();
-
     }
 
     /**
@@ -78,7 +79,7 @@ public class AdminContoller {
             aiService.deploymentRun(0, period, TimeUnit.MILLISECONDS, goal);
         }
 
-    }   
+    }
 
     /**
      * AI 자동 배치 취소
@@ -132,26 +133,47 @@ public class AdminContoller {
 
     }
 
-    @PostMapping("/admin/queue/run")
-    public void startDeployment(@AuthenticationPrincipal CustomUserDetails user) {
+    /**
+     * 대기큐 스캐닝 관련
+     * 
+     */
 
-        aiService.deploymentRun(0, 1000, TimeUnit.MILLISECONDS, 0.3);
+    @PostMapping("/admin/queue/run")
+    public void startDeployment(@AuthenticationPrincipal CustomUserDetails user, @RequestParam("Period") int period,
+            @RequestParam("Max") int max) {
+
+        int totalCube = cubeService.findAllCube().size();
+
+        playerService.scanQueueRun(totalCube, max, period);
 
     }
 
     @GetMapping("/admin/queue/stop")
     public void stopDeployment(@AuthenticationPrincipal CustomUserDetails user) {
 
-        aiService.deploymentStop();
+        playerService.scanQueueStop();
 
     }
 
     @GetMapping("/admin/queue/state")
     public boolean deplomentState(@AuthenticationPrincipal CustomUserDetails user) {
 
-        return false;
+        return playerService.scanQueueState();
 
     }
+
+    @GetMapping("/admin/addAI")
+    public void addAI(@AuthenticationPrincipal CustomUserDetails user) {
+
+        aiService.addAI();
+
+    }
+
+    /**
+     * 
+     * @param keyword
+     * @return
+     */
 
     @PostMapping("/admin/searchLog")
     public List<LogEntity> searchLog(@RequestParam String keyword) {

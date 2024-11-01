@@ -1,8 +1,5 @@
 package com.sas.server;
 
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,13 +14,11 @@ import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import com.sas.server.custom.dataType.MessageType;
 import com.sas.server.logic.MessagePublisher;
 import com.sas.server.logic.TimebombSystem;
 import com.sas.server.service.admin.LogService;
 import com.sas.server.service.ai.AIService;
 import com.sas.server.service.cube.CubeService;
-import com.sas.server.service.member.MemberService;
 import com.sas.server.service.player.PlayerService;
 import com.sas.server.service.player.PlaylogService;
 import com.sas.server.service.ranker.RankerService;
@@ -40,10 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ServerApplication {
 
-	private final ScheduledExecutorService scheduler;
-
 	private final CubeService cubeService;
-	private final MemberService memberService;
 	private final PlayerService playerService;
 	private final RankerService rankerService;
 	private final PlaylogService playlogService;
@@ -112,17 +104,6 @@ public class ServerApplication {
 
 		// 큐브 관련 이벤트 일어날 때 알림 받는 리스트.
 		cubeService.registerSub(messagePublisher);
-
-		// 게임 대기큐 실행
-		int max = cubeService.findAll().size();
-		scheduler.scheduleWithFixedDelay(() -> {
-
-			Boolean isScanning = playerService.scanQueue(max);
-
-			messagePublisher.queuePublish("admin", MessageType.QUEUE_SCANNING_PLAYER_STATE, isScanning);
-
-		}, 0, 1000, TimeUnit.MILLISECONDS);
-
 	}
 
 }

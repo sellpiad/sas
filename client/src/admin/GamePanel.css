@@ -16,10 +16,20 @@
 }
 
 .deployment p{
-    font-size: smaller;
+    font-size: small;
     margin-bottom: 2px;
-    margin-left: 40px;
+    color: #0d6efd;
+}
 
+.deployment .desc {
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-top: 30px;
+}
+
+.deployment .stat {
+    padding-top: 3px;
+    font-size: 1.1rem;
 }
 
 .deployment .submit-bar {
@@ -59,4 +69,10 @@
 .game-log {
     height: 100%;
     align-content: start;
+    overflow: hidden;
+}
+
+.game-log div {
+    height: 100%;
+    overflow-y: scroll;
 }
