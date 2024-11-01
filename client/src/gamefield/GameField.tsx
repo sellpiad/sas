@@ -56,7 +56,7 @@ export default function GameField({ client }: Props) {
 
     const [observerX, setObserverX] = useState<number>(0)
     const [observerY, setObserverY] = useState<number>(0)
-    
+
     // redux state 수정용
     const reduxDispatch = useDispatch()
 
@@ -151,11 +151,11 @@ export default function GameField({ client }: Props) {
     // 옵저버 전환 시 초기 위치 업데이트
     useEffect(() => {
 
-        if (observerData)
+        if (observerData){
             setObserveCenter(observerData.position)
-
+        }
+           
     }, [observerData])
-
 
     return (
         <div id="observer-window" className="observer-window">

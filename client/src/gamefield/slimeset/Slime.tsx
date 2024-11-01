@@ -39,14 +39,15 @@ export default function Slime({ objectProps, slimeData }: Props) {
 
     // 슬라임 렌더링 관련
     const [frame, setFrame] = useState<number>(1)
-    const [moveX, setMoveX] = useState<number>(slimeData.targetX)
-    const [moveY, setMoveY] = useState<number>(slimeData.targetY)
+    const [moveX, setMoveX] = useState<number>(slimeData.targetX ? slimeData.targetX : 0)
+    const [moveY, setMoveY] = useState<number>(slimeData.targetY ? slimeData.targetY : 0)
     const [isShaking, setShaking] = useState<boolean>(false)
     const [dir, setDir] = useState<string>('down')
+    const [isShow, setShow] = useState<boolean>(false)
 
     // requestAnimation 계산 전용.
     const startTimeRef = useRef<number>(0)
-    const targetRef = useRef<{ x: number, y: number }>({ x: slimeData.targetX, y: slimeData.targetY })
+    const targetRef = useRef<{ x: number, y: number }>({ x: 0, y: 0 })
     const actionRef = useRef<ActionType>(ActionType.IDLE)
     const durationRef = useRef<number>(300)
 
@@ -76,7 +77,7 @@ export default function Slime({ objectProps, slimeData }: Props) {
     const updateAnimation = (currentTime) => {
 
         const elaspedTime = currentTime - startTimeRef.current
-        const { frames, duration } = FRAME_CONFIG[actionRef.current] || {}
+        const { frames, duration } = FRAME_CONFIG[actionRef.current] || { frames: 1 }
 
         // 딜레이가 경과할 때마다 frame 증가
         if (elaspedTime > durationRef.current) {
@@ -157,8 +158,8 @@ export default function Slime({ objectProps, slimeData }: Props) {
 
     // 포지션 업데이트
     useEffect(() => {
-        targetRef.current.x = slimeData.targetX
-        targetRef.current.y = slimeData.targetY
+        targetRef.current.x = slimeData.targetX ? slimeData.targetX : 0
+        targetRef.current.y = slimeData.targetY ? slimeData.targetY : 0
     }, [slimeData.targetX, slimeData.targetY])
 
 
@@ -169,30 +170,44 @@ export default function Slime({ objectProps, slimeData }: Props) {
         }
     }, [slimeData.duration])
 
-  
+
     return (
-        <svg className={objectProps.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={objectProps.width} height={objectProps.height} preserveAspectRatio="xMidYMid meet" style={{ position: objectProps.position, transform: "translate(" + moveX + "px," + moveY + "px)", transition: "transform " + durationRef.current * FRAME_CONFIG[actionRef.current].frames + "ms ease" }}>
+        (moveX > 0 || (objectProps.position === 'relative')) && 
+        <svg className={objectProps.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width={objectProps.width} height={objectProps.height} preserveAspectRatio="xMidYMid meet"
+            style={{
+                position: objectProps.position,
+                transform: "translate(" + moveX + "px," + moveY + "px)",
+                transition: "transform " + durationRef.current * FRAME_CONFIG[actionRef.current].frames + "ms ease"
+            }}>
 
-            {observer === slimeData.username && <circle viewBox="0 0 150 150" cx="75" cy="75" r="10" stroke={getAttr()} strokeWidth="10" fill="transparent">
-                <animate
-                    attributeName="r"
-                    from="10"
-                    to="90"
-                    dur={FRAME_CONFIG.IDLE.frames * FRAME_CONFIG.IDLE.duration + 'ms'}
-                    begin="0s"
-                    repeatCount="indefinite"
-                    fill="freeze" />
-                <animate
-                    attributeName="opacity"
-                    from="1"
-                    to="0.3"
-                    dur={FRAME_CONFIG.IDLE.frames * FRAME_CONFIG.IDLE.duration + 'ms'}
-                    begin="0s"
-                    repeatCount="indefinite"
-                    fill="freeze" />
-            </circle>}
+            {observer === slimeData.username &&
+                <circle viewBox="0 0 150 150" cx="75" cy="75" r="10" stroke={getAttr()} strokeWidth="10" fill="transparent">
+                    <animate
+                        attributeName="r"
+                        from="10"
+                        to="90"
+                        dur={FRAME_CONFIG.IDLE.frames * FRAME_CONFIG.IDLE.duration + 'ms'}
+                        begin="0s"
+                        repeatCount="indefinite"
+                        fill="freeze" />
+                    <animate
+                        attributeName="opacity"
+                        from="1"
+                        to="0.3"
+                        dur={FRAME_CONFIG.IDLE.frames * FRAME_CONFIG.IDLE.duration + 'ms'}
+                        begin="0s"
+                        repeatCount="indefinite"
+                        fill="freeze" />
+                </circle>}
 
-            <use xlinkHref={'#slime-' + slimeData.username + '-' + dir + '-' + actionRef.current + '-' + frame} x={11} y={25} width={150} height={150} className={isShaking ? 'slime-shaking' : ''} />
+            <use xlinkHref={'#slime-' + slimeData.username + '-' + dir + '-' + actionRef.current + '-' + frame}
+                x={11}
+                y={25}
+                width={150}
+                height={150}
+                className={isShaking ? 'slime-shaking' : ''}
+            />
+
             <symbol id={'slime-' + slimeData.username + '-down-IDLE-1'} viewBox="0 0 150 150">
                 <path id="Body" fillRule="evenodd" clipRule="evenodd" d="M97 9H39V18H19V37H10V82H24V91H39H97H107V82H117V37H110V18H97V9Z" fill={getAttr()} />
                 <rect id="RightEye" x="77" y="45" width="10" height="19" fill="black" />

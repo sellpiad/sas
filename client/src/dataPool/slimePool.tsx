@@ -12,6 +12,11 @@ const slimePool = (function () {
 
     const callbacks: ((data: SlimeSetType | SlimeData | string) => void)[] = []
 
+    function init() {
+        slimeSet = new Map()
+        callbacks.length = 0
+    }
+
     function updatePool(data: SlimeSetType | SlimeData | string) {
 
         const newMap = new Map(slimeSet)
@@ -62,7 +67,7 @@ const slimePool = (function () {
 
         if (actionData.position) {
             const target = convertToCoor(actionData.position)
-            actionData = {...actionData, ...target}
+            actionData = { ...actionData, ...target }
         }
 
         if (targetSlime) {
@@ -80,11 +85,6 @@ const slimePool = (function () {
         callbacks.push(callback)
     }
 
-
-    function getSlimeSet() {
-        return slimeSet
-    }
-
     function convertToCoor(position: string) {
         const slimeBox = document.getElementById(position)
 
@@ -93,7 +93,7 @@ const slimePool = (function () {
 
     }
 
-    return { updatePool, updateAction, subscribe, getSlimeSet }
+    return { updatePool, updateAction, subscribe, init }
 
 })()
 

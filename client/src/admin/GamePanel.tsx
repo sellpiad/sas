@@ -1,4 +1,4 @@
-import { Client } from "@stomp/stompjs";
+import { Client, IMessage } from "@stomp/stompjs";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Button, Col, Form, InputGroup, Modal, ModalProps, Row } from "react-bootstrap";
@@ -14,16 +14,32 @@ interface Props {
     client: Client | undefined
 }
 
+interface AdminLog {
+    time: string
+    username: string
+    activityType: string
+}
+
+interface DeployStat {
+    period: number
+    goal: number
+    totalPlayer: number
+    totalCube: number
+    isProcessing: boolean
+}
+
 export default function GamePanel({ client }: Props) {
 
     const [aiDeploy, setAiDeploy] = useState<boolean>(false)
-    const [aiDeployPeriod, setAiDeployPeriod] = useState<number>(0)
+    const [aiDeployStat, setAiDeployStat] = useState<DeployStat>()
 
     const [itemDeploy, setItemDeploy] = useState<boolean>(false)
     const [itemDeployPeriod, setItemDeployPeriod] = useState<number>(0)
 
-    const [queue, setQueue] = useState<boolean>(false)
+    const [queue, setQueue] = useState<boolean | undefined>(false)
     const [queuePeriod, setQueuePeriod] = useState<number>(0)
+
+    const [adminLog, setAdminLog] = useState<AdminLog[]>([])
 
     const [modal, setModal] = useState<boolean>(false)
     const [modalText, setModalText] = useState<string>('')
@@ -84,11 +100,10 @@ export default function GamePanel({ client }: Props) {
             })
     }
 
-    const deploymentAIRun = (period: number) => {
-        axios.post('/api/admin/deployment/ai/run', { period: period }).then((res) => {
+    const deploymentAIRun = (formData: HTMLFormElement) => {
+        axios.post('/api/admin/deployment/ai/run', formData).then((res) => {
             setAiDeploy(true)
-            setAiDeployPeriod(res.data)
-            console.log(aiDeploy)
+            getAdminLog()
         }).catch((err) => {
             console.log(err)
             setAiDeploy(false)
@@ -99,6 +114,7 @@ export default function GamePanel({ client }: Props) {
         axios.get('/api/admin/deployment/ai/stop')
             .then((res) => {
                 setAiDeploy(false)
+                getAdminLog()
             }).catch((err) => {
                 console.log(err)
             })
@@ -142,6 +158,15 @@ export default function GamePanel({ client }: Props) {
             })
     }
 
+    const getAdminLog = () => {
+        axios.get('/api/admin/getAdminLog')
+            .then((res) => {
+                setAdminLog(res.data)
+            }).catch((err) => {
+                console.error(err)
+            })
+    }
+
     const handleAiDeploy = (e: React.ChangeEvent<HTMLInputElement>) => {
 
         if (e.target.checked) {
@@ -177,18 +202,48 @@ export default function GamePanel({ client }: Props) {
             }).catch((err) =>
                 console.log(err))
 
+        getAdminLog()
+
     }, [])
+
+    useEffect(() => {
+        if (client) {
+            client.subscribe("/user/queue/admin/deployAiState", (msg: IMessage) => {
+
+                const parser = JSON.parse(msg.body) as DeployStat
+
+                setAiDeployStat(parser)
+
+            })
+
+            client.subscribe("/user/queue/admin/scanningPlayerState", (msg: IMessage) => {
+                const isScanning = JSON.parse(msg.body) as boolean
+
+                setQueue(isScanning)
+
+            })
+        }
+    }, [client?.connected])
 
 
     return (
         <div className='Game-Panel'>
-            <Col xs={3}>
+            <Col xs={4}>
                 <Row className="deployment">
                     <Form>
                         <Form.Label>게임 현황</Form.Label>
                         <Form.Check type="switch" checked={aiDeploy} label="인공지능 자동 생성" onChange={handleAiDeploy} />
+                        {aiDeployStat &&
+                            <>
+                                <p>배치 간격: {aiDeployStat.period}ms</p>
+                                <p>현재 플레이어 수치: {((aiDeployStat.totalPlayer / aiDeployStat.totalCube) * 100).toFixed(2)}%({aiDeployStat.totalPlayer}명)</p>
+                                <p>최대 참여 설정값: {aiDeployStat.goal}%({aiDeployStat.totalCube * aiDeployStat.goal / 100}명)</p>
+                                {aiDeployStat.isProcessing && <p style={{ color: 'blue' }}>배치 중..</p>}
+                                {!aiDeployStat.isProcessing && <p style={{ color: 'green' }}>배치 중단</p>}
+                            </>
+                        }
                         <Form.Check type="switch" checked={itemDeploy} label="아이템 자동 생성" onChange={handleItemDeploy} />
-                        <Form.Check type="switch" checked={queue} label="플레이어큐" onChange={handleQueue} />
+                        <Form.Check type="switch" checked={queue} label={`플레이어큐${queue===undefined ? '(ERROR!)' : ''}`} onChange={handleQueue} />
                     </Form>
                 </Row>
                 <Row className="deployment">
@@ -227,6 +282,13 @@ export default function GamePanel({ client }: Props) {
             <Col xs={8} className="game-status">
                 <Row className="deployment game-log">
                     <span>게임 로그</span>
+                    {adminLog.map((value, index, array) => {
+                        return <li key={"ranker" + index} className={value['isMe'] ? 'myRank' : ''} style={{ display: "flex" }}>
+                            <span className="time-tr">{value.time}</span>
+                            <span className="username-tr">{value.username}</span>
+                            <span className="activityType-tr">{value.activityType}</span>
+                        </li>
+                    })}
                 </Row>
             </Col>
 
@@ -241,9 +303,9 @@ function CustomModal({ show, onHide, text, run }) {
 
         e.preventDefault()
         const formData = new FormData(e.target as HTMLFormElement)
-        const PeriodValue = parseInt(formData.get('Period') as string, 10)
         onHide()
-        run(PeriodValue)
+        run(formData)
+
     }
 
     return (
@@ -256,8 +318,12 @@ function CustomModal({ show, onHide, text, run }) {
             <Modal.Body>
                 <Form className='custom-request-modal' onSubmit={handleSubmit}>
                     <InputGroup>
-                        <InputGroup.Text>{text} 실행 간격(ms)</InputGroup.Text>
+                        <InputGroup.Text>실행 간격(ms)</InputGroup.Text>
                         <Form.Control name="Period" size="sm" type="number" step={1000} min={0} max={1000000} defaultValue={1000} />
+                    </InputGroup>
+                    <InputGroup>
+                        <InputGroup.Text>게임 인원 제한(%)</InputGroup.Text>
+                        <Form.Control name="Goal" size="sm" type="number" step={1} min={1} max={100} defaultValue={1} />
                     </InputGroup>
                     <Button type="submit">서버로 요청 보내기</Button>
                 </Form>

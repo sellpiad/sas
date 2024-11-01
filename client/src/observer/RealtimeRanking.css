@@ -20,6 +20,7 @@
 }
 
 .observerPanel-body {
+    align-content: flex-start;
     margin: 0;
     background-color: white;
     height: 55vh;

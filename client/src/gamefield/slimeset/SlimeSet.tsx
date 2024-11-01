@@ -65,10 +65,6 @@ export default function SlimeSet({ client }: Props) {
 
     }, [client?.connected])
 
-    useEffect(()=>{
-        console.dir(slimeSet)
-    },[slimeSet])
-
 
     return (
         <div style={{ position: "absolute", padding: 0 }}>

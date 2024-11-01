@@ -29,6 +29,7 @@ import PlayerInfo from './player/PlayerInfo.tsx';
 import PlayResultModal from './playResultModal/PlayResultModal.tsx';
 import RankingBoard from './ranker/RankingBoard.tsx';
 import { ActionType, AttributeType, game, ObjectProps } from './redux/GameSlice.tsx';
+import slimePool from './dataPool/slimePool.tsx';
 
 
 function App() {
@@ -158,6 +159,7 @@ function App() {
 
       if (!ws.current.connected) {
         ws.current.activate()
+        slimePool.init()
       }
 
       return () => {
@@ -207,7 +209,7 @@ function App() {
               <Row className='w-100 justify-content-between '>
                 <Col xs={12} sm={6} style={{ paddingLeft: 0 }}>
                   <Navbar.Brand>
-                    <Slime objectProps={navSlimeProps} slimeData={navSlimeData}></Slime>
+                    {/*<Slime objectProps={navSlimeProps} slimeData={navSlimeData}/>*/}
                     <svg className="title-svg" width="100%" height="100%" viewBox="-5 -30 200 50">
                       <text
                         x="0" y="0" fill="#3678ce"
